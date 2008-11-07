@@ -60,8 +60,8 @@
 //fileref.setAttribute('type','text/javascript');
 //)
 
-//javascript:var head = document.getElementsByTagName("head")[0];var js = document.createElement("script");js.src = "file:///debugger/debugger.js";head.appendChild(js);alert('inject success!');
-//javascript:var head = main.document.getElementsByTagName("head")[0];var js = main.document.createElement("script");js.src = "file:///debugger/debugger.js";head.appendChild(js);alert('inject success!');
+//javascript:var head = document.getElementsByTagName("head")[0];var js = document.createElement("script");js.src = "file:///javascriptdebugger/debugger.js";head.appendChild(js);alert('inject success!');
+//javascript:var head = main.document.getElementsByTagName("head")[0];var js = main.document.createElement("script");js.src = "file:///javascriptdebugger/debugger.js";head.appendChild(js);alert('inject success!');
 /*
 var head = document.getElementsByTagName("head")[0];
 var js = document.createElement("script");
