@@ -85,10 +85,10 @@
 = 你能为oDebugger做什么 =
 = 参与开发 =
 *开发：*
-  * oDebugger现在仅仅只有Version 0.42 这么大，还很不成熟。你可以参与它的开发。有好的建议请发邮件到：Jackey.King@gmail.com联系我吧。欢迎寄送你更改的oDebugger过来。
+  * oDebugger现在仅仅只有Version 0.42 这么大，还很不成熟。你可以参与它的开发。有好的建议请发邮件到：_Jackey.King ( AT ) gmail.com_联系我吧。欢迎寄送你更改的oDebugger过来。
 = 起个名字 =
 *名字：*
-  * 很不幸，oDebugger还没有一个自己的名字，你可以给它起个好听的名字。有好的建议请发邮件到：Jackey.King@gmail.com联系我吧。
+  * 很不幸，oDebugger还没有一个自己的名字，你可以给它起个好听的名字。有好的建议请发邮件到：_Jackey.King ( AT ) gmail.com_联系我吧。
 = oDebugger的目标是什么 =
 *目标*
   * oDebugger是为了调试js方便而出现的，它定位于方便的调试js，尤其是在那些用VC调试时，VC找不到源码的情况。还适用于：页面中的对象是从后台取得数据，用js动态创建的，这种情况下无论是保存源码还是用VC调试都不方便，一个一个的alert消息也很麻烦，所以就想到了用js来调试js。希望oDebugger以后也会定位于方便和快捷上。
