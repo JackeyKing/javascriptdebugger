@@ -38,6 +38,8 @@
 *fixed bugs //2008-11-06
 *v0.42
 *fixed bugs: add id:debuggerClientDiv & set it's style //2008-11-07
+*v0.421
+*fixed some style bugs//2008-11-08
 */
 
 /*
