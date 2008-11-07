@@ -78,10 +78,10 @@
 = 怎么动态装入oDebugger =
 = 单文件页面 =
 *代码：*
-  * 在C盘下新建文件夹debugger，把debugger.js放到里面去。打开oDebugger文件debugger.js，在文件头部*Dynamic load debugger节，会看到一些注释掉的代码，如果要执行oDebugger的页面是一个页面，就找到63行的代码，拷贝到剪切板（注意不要带前面的注释），粘贴到地址栏中，按下回车，不久就能看到 inject sucess字样的提示框，确定后就可以用了。
+  * 在C盘下新建文件夹debugger，把debugger.js放到里面去。打开oDebugger文件debugger.js，在文件头部Dynamic load debugger节，会看到一些注释掉的代码，如果要执行oDebugger的页面是一个页面，就找到63行的代码，拷贝到剪切板（注意不要带前面的注释），粘贴到地址栏中，按下回车，不久就能看到 inject sucess字样的提示框，确定后就可以用了。
 = frame框架页面 =
 *代码：*
-  * 在C盘下新建文件夹debugger，把debugger.js放到里面去。打开oDebugger文件debugger.js，在文件头部*Dynamic load debugger节，会看到一些注释掉的代码，如果要执行oDebugger的页面是一个frame框架页面，并且主frame的名字为main，就找到62行的代码，拷贝到剪切板（注意不要带前面的注释），粘贴到地址栏中，按下回车，不久就能看到 inject sucess字样的提示框，确定后就可以用了。如果主frame的名字不是main就改一下64行吧（替换掉里面的main为真正的名字），也不难 ;=)
+  * 在C盘下新建文件夹debugger，把debugger.js放到里面去。打开oDebugger文件debugger.js，在文件头部Dynamic load debugger节，会看到一些注释掉的代码，如果要执行oDebugger的页面是一个frame框架页面，并且主frame的名字为main，就找到62行的代码，拷贝到剪切板（注意不要带前面的注释），粘贴到地址栏中，按下回车，不久就能看到 inject sucess字样的提示框，确定后就可以用了。如果主frame的名字不是main就改一下64行吧（替换掉里面的main为真正的名字），也不难 ;=)
 = 你能为oDebugger做什么 =
 = 参与开发 =
 *开发：*
