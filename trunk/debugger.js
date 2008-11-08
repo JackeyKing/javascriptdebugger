@@ -301,18 +301,18 @@ var oDebugger = {
 		var ss = document.createElement('script'); ss.setAttribute('type','text/javascript'); ss.setAttribute('src','e:\\debugger\\debugger.js');var ohead = (document.getElementsByTagName('head').item(0)); ohead.appendChild(ss);alert('inject success!');
 	},
 	showdetails:function (args){
-		this.showoutput('====================================');
-		this.showoutput('tagName:' + args.tagName);
-		this.showoutput('clientTop:' + args.clientTop);
-		this.showoutput('clientLeft:' + args.clientLeft);
-		this.showoutput('offsetTop:' + args.offsetTop);
-		this.showoutput('offsetLeft:' + args.offsetLeft);
-		this.showoutput('scrollLeft:' + args.scrollLeft);
-		this.showoutput('scrollTop:' + args.scrollTop);
-		this.showoutput('style:' + args.STYLE);
-		this.showoutput('style.position:' + args.style.position);
-		this.showoutput('style.styleFloat:' + args.style.styleFloat);
-		this.showoutput('====================================');
+		this.showoutput('====================================', false);
+		this.showoutput('tagName:' + args.tagName, false);
+		this.showoutput('clientTop:' + args.clientTop, false);
+		this.showoutput('clientLeft:' + args.clientLeft, false);
+		this.showoutput('offsetTop:' + args.offsetTop, false);
+		this.showoutput('offsetLeft:' + args.offsetLeft, false);
+		this.showoutput('scrollLeft:' + args.scrollLeft, false);
+		this.showoutput('scrollTop:' + args.scrollTop, false);
+		this.showoutput('style:' + args.STYLE, false);
+		this.showoutput('style.position:' + args.style.position, false);
+		this.showoutput('style.styleFloat:' + args.style.styleFloat, false);
+		this.showoutput('====================================', false);
 	},
 	showoutput:function (args, inline, color){
 		
@@ -349,7 +349,7 @@ var oDebugger = {
 		obj.style.backgroundColor = '#FFFFDC';
 	},
 	timerChangeBackColor:function (obj, args){
-		oDebugger.showoutput('Timer begin....');
+		oDebugger.showoutput('Timer begin....', false);
 		if(oDebugger._g_lasttargetObj != null){
 			oDebugger._g_lasttargetObj.style.backgroundColor = oDebugger._g_lasttargetObj._oldBackGroundColor;
 		}
@@ -365,7 +365,7 @@ var oDebugger = {
 		if(oDebugger._g_lasttargetObj != null){
 			oDebugger._g_lasttargetObj.style.backgroundColor = oDebugger._g_lasttargetObj._oldBackGroundColor;
 		}
-		oDebugger.showoutput('Timer end....');
+		oDebugger.showoutput('Timer end....', false);
 	},
 
 	//get object's childrens
