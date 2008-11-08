@@ -75,6 +75,8 @@
   * $R() 或 od.$R() 函数。返回执行后的结果。
 *默认变量名：*
   * $(args) 或 od.$(args) 函数。取得args指定的id所对应的对象。
+*默认变量名：*
+  * od.pBody 取得oDebugger所在的页面的BODY对象。
 = 怎么动态装入oDebugger =
 = 单文件页面 =
 *代码：*
