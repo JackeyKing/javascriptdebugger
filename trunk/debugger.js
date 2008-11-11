@@ -18,6 +18,8 @@
 * The above copyright notice and this permission notice shall be
 * included in all copies or substantial portions of the Software.
 */
+//javascript:var head = document.getElementsByTagName("head")[0];var js = document.createElement("script");js.src = "file:///javascriptdebugger/debugger.js";head.appendChild(js);alert('inject success!');
+//javascript:var head = main.document.getElementsByTagName("head")[0];var js = main.document.createElement("script");js.src = "file:///javascriptdebugger/debugger.js";head.appendChild(js);alert('inject success!');
 /*
 *History
 *V0.1
@@ -40,6 +42,11 @@
 *fixed bugs: add id:debuggerClientDiv & set it's style //2008-11-07
 *v0.421
 *fixed some style bugs//2008-11-08
+*v0.5 under release
+*add show mode method
+*add some methods
+*add handler method
+*move keycode & mousepos cmd into mode method//2008-11-11
 */
 
 /*
@@ -91,7 +98,7 @@ function loadJs(file){
 */
 
 var oDebugger = {
-	Version: '0.42',
+	Version: '0.5 under release',
 /*
 *################################################################################################################################################
 *Public variables
@@ -120,8 +127,9 @@ var oDebugger = {
 	_g_eval: null,
 	funcName : /^[a-zA-Z0-9_.]+$/i,
 	_g_runCommandOrgetInput: true,
+	_g_cmdFocus:true,
 
-	debuggerStr : "Debugger(Version:" + 0.42 + '' + "):<span onclick='oDebugger.showdebugger(false);' id='debugger_hiddenBtn'>x</span><br/><input type='text' value='' id='debuggerInfo' /><button onclick=\"oDebugger.$(\'DebuggerOutput\').innerHTML=\'\'\" id='debugger_clearOutput' >clear</button><div id='debuggerClientDiv'><div contenteditable id='DebuggerOutput' designMode></div><input type='text' id='debuggerCommand'/><button onclick=\"oDebugger.dealCommand(oDebugger.$(\'debuggerCommand\'));\" id='debugger_runCommand'>run</button></div>",
+	debuggerStr : "Debugger(Version:" + 0.5 + ' under release' + "):<span onclick='oDebugger.showdebugger(false);' id='debugger_hiddenBtn'>x</span><br/><input type='text' value='' id='debuggerInfo' /><button onclick=\"oDebugger.$(\'DebuggerOutput\').innerHTML=\'\'\" id='debugger_clearOutput' >clear</button><div id='debuggerClientDiv'><div contenteditable id='DebuggerOutput' designMode></div><input type='text' id='debuggerCommand'/><button onclick=\"oDebugger.dealCommand(oDebugger.$(\'debuggerCommand\'));\" id='debugger_runCommand'>run</button></div>",
 	
 	colors: {
 		ERROR: 'red',
@@ -690,6 +698,7 @@ var oDebugger = {
 		}
 		this.registerPublicVariables();
 		this.debug.father = this;
+		this.handler.father = this;
 		Array.prototype.search=function(reg){
 		 var ta=this.slice(0);
 		 d='\0';
@@ -825,7 +834,9 @@ var oDebugger = {
 	//Common functions
 	UpMouse:function (obj){
 		obj.downStatus = false;
-		this.$('debuggerCommand').focus();
+		if(this._g_cmdFocus){
+			this.$('debuggerCommand').focus();
+		}
 	},
 	MoveLayer:function (obj, evt){
 		if (obj.downStatus){
@@ -1386,11 +1397,8 @@ var oDebugger = {
 			case 'help':
 				this.showHelp();
 				break;
-			case 'keycode':
-				this._g_enableShowKeyCode = ! this._g_enableShowKeyCode;
-				break;
-			case 'mousepos':
-				this._g_enableShowMousePos = ! this._g_enableShowMousePos;
+			case 'mode':
+				return this.showMode(args.split(' '));;
 				break;
 			case 'exit':
 				this.onExit();
@@ -1429,6 +1437,32 @@ var oDebugger = {
 		}
 		return true;
 	},
+	showMode:function(args){
+		switch(args[1]){
+			case 'select':
+				this._g_cmdFocus = ! this._g_cmdFocus;
+				break;
+			case 'inject':
+				this.showoutput('not yet been achieved', false, this.colors.TIP);
+				break;
+			case 'keycode':
+				this._g_enableShowKeyCode = ! this._g_enableShowKeyCode;
+				break;
+			case 'mousepos':
+				this._g_enableShowMousePos = ! this._g_enableShowMousePos;
+			default:
+				return false;
+				break;
+		}
+		return true;
+	},
+	/*
+	*################################################################################################################################################
+	*Event Handdler
+	*################################################################################################################################################
+	*/
+	handler:{
+	},
 	/*
 	*################################################################################################################################################
 	*Help
@@ -1448,8 +1482,9 @@ var oDebugger = {
 			'M(obj,\'obj\') show methods or properties in obj<br/>' +
 			'P(obj) or V(obj) to view obj property or value<br/>' +
 			'L(obj, [args...]) to list ListObject property(args...) value<br/>' +
-			'keycode to toget show keyCode status<br/>' +
-			'mousepos to toget show mouse (x,y) pos<br/>' +
+			'mode keycode to toget show keyCode status<br/>' +
+			'mode mousepos to toget show mouse (x,y) pos<br/>' +
+			'mode select to toget onoff focus inputCommand<br/>' +
 			'exit to exit debugger<br/>' +
 			'$toHex to convert number to Hex datas<br/>' +
 			'Move your mouse on some area, and press F8 or F7 to see what happend ;=) It\'s not just fan, there\'s some details in output<br/>' +
