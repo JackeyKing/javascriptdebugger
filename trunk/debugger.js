@@ -148,7 +148,8 @@ var oDebugger = {
 	garbageLoop:function(evt){
 		//for(;;){
 			evt = (evt) ? evt : ((window.event) ? window.event : "");
-			if(evt && evt.keyCode == 67){ //keyCode c is pressed
+			var keycode = evt.keyCode || evt.which;
+			if(evt && keycode == 67){ //keyCode c is pressed
 			}else{
 				var x = x + 'asdfsdfasdfasdf';
 				x = '';
@@ -175,7 +176,11 @@ var oDebugger = {
 	showoutput:function (args, inline, color){
 		
 		if(arguments.length <= 1){
-			this.$('DebuggerOutput').innerText += args;
+			if(document.all){
+				this.$('DebuggerOutput').innerText += args;
+			}else{
+				this.$('DebuggerOutput').textContent += args;
+			}
 		}else if(!color){
 			this.$('DebuggerOutput').innerHTML += args;
 		}else{
@@ -184,7 +189,11 @@ var oDebugger = {
 		if(arguments.length > 1 && !inline){
 			this.$('DebuggerOutput').innerHTML += '<br/>';
 		}else if(arguments.length == 1 || !inline){
-			this.$('DebuggerOutput').innerText += '\n';
+			if(document.all){
+				this.$('DebuggerOutput').innerText += '\n';
+			}else{
+				this.$('DebuggerOutput').textContent += '\n';
+			}
 		}
 		this.$('DebuggerOutput').scrollTop = Number(this.$('DebuggerOutput').scrollHeight);
 	},
@@ -456,8 +465,8 @@ var oDebugger = {
 			function(evt){
 				evt = (evt) ? evt : ((window.event) ? window.event : "")
 				oDebugger._g_targetObj = (evt.target) ? evt.target : evt.srcElement;
-				var mouseX = (evt.clientX)?evt.clientX:evt.pageX;
-				var mouseY = (evt.clientY)?evt.clientY:evt.pageY;
+				var mouseX = (evt.clientX)?evt.clientX:evt.x;//evt.pageX;
+				var mouseY = (evt.clientY)?evt.clientY:evt.y;//pageY;
 				if(oDebugger._g_enableShowMousePos){
 					oDebugger.$('debuggerInfo').value = 'MouseX:' + mouseX + ' MouseY:' + mouseY;
 				}
@@ -489,9 +498,10 @@ var oDebugger = {
 			document.getElementsByTagName("body").item(0), 'onkeydown',
 			function(evt){
 				evt = (evt) ? evt : ((window.event) ? window.event : "")
-				if(evt.keyCode=='123'){oDebugger.showdebugger(oDebugger.Debugger.style.display == 'none'?true:false);try{oDebugger.$('debuggerCommand').focus();}catch(e){}}
-				if(evt.keyCode=='118'){oDebugger._g_returnValue = [];oDebugger.timerChangeBackColor(oDebugger._g_targetObj);}
-				if(evt.keyCode=='119' && oDebugger._g_targetObj != null){oDebugger.changeBackColor(oDebugger._g_targetObj);oDebugger.showdetails(oDebugger._g_targetObj);}
+				var keycode = evt.keyCode || evt.which;
+				if(keycode=='123'){oDebugger.showdebugger(oDebugger.Debugger.style.display == 'none'?true:false);try{oDebugger.$('debuggerCommand').focus();}catch(e){}}
+				if(keycode=='118'){oDebugger._g_returnValue = [];oDebugger.timerChangeBackColor(oDebugger._g_targetObj);}
+				if(keycode=='119' && oDebugger._g_targetObj != null){oDebugger.changeBackColor(oDebugger._g_targetObj);oDebugger.showdetails(oDebugger._g_targetObj);}
 			}
 		);
 		/*
@@ -512,11 +522,12 @@ var oDebugger = {
 		//this.$('debuggerCommand').attachEvent('onkeydown',
 			function(evt){
 				evt = (evt) ? evt : ((window.event) ? window.event : "");
+				var keycode = evt.keyCode || evt.which;
 				if(oDebugger._g_enableShowKeyCode){
-					oDebugger.showoutput(evt.keyCode, false, oDebugger.colors.ERROR);
+					oDebugger.showoutput(keycode, false, oDebugger.colors.ERROR);
 				}
 				if(evt.ctrlKey){
-					switch(evt.keyCode){
+					switch(keycode){
 						case 48: //0
 						case 49: //1
 						case 50: //2
@@ -527,7 +538,7 @@ var oDebugger = {
 						case 55: //7
 						case 56: //8
 						case 57: //9
-							oDebugger.$('debuggerCommand').value = oDebugger.$('debuggerCommand')._commandHistory[Number(evt.keyCode) - 48];
+							oDebugger.$('debuggerCommand').value = oDebugger.$('debuggerCommand')._commandHistory[Number(keycode) - 48];
 							break;
 						case 38: //up arrow
 							oDebugger.$('debuggerCommand').value = oDebugger.$('debuggerCommand')._commandHistory[oDebugger.$('debuggerCommand')._curCommandHistoryIndex];
@@ -548,7 +559,7 @@ var oDebugger = {
 					}
 				}
 				if(evt.altKey){
-					switch(evt.keyCode){
+					switch(keycode){
 						case 48: //0
 						case 49: //1
 						case 50: //2
@@ -560,19 +571,19 @@ var oDebugger = {
 						case 56: //8
 						case 57: //9
 							if(evt.altLeft){
-								oDebugger.$('debuggerCommand').value = oDebugger.$('debuggerCommand')._commandStore[Number(evt.keyCode) - 48];
+								oDebugger.$('debuggerCommand').value = oDebugger.$('debuggerCommand')._commandStore[Number(keycode) - 48];
 							}else{
-								oDebugger.$('debuggerCommand')._commandStore[Number(evt.keyCode) - 48] = oDebugger.$('debuggerCommand').value;
+								oDebugger.$('debuggerCommand')._commandStore[Number(keycode) - 48] = oDebugger.$('debuggerCommand').value;
 							}
 							break;
 						default:
 							break;
 					}
 				}
-				if(evt.keyCode == '13'){
+				if(keycode == '13'){
 					oDebugger.dealCommand(oDebugger.$('debuggerCommand'));
 				}
-				if(evt.keyCode == '27'){oDebugger.$('debuggerCommand').value = '';} //ESC pressed
+				if(keycode == '27'){oDebugger.$('debuggerCommand').value = '';} //ESC pressed
 			}
 		);
 		this.bindEventListner(
@@ -580,7 +591,7 @@ var oDebugger = {
 		//this.$('debuggerCommand').attachEvent('onkeyup',
 			function(evt){
 				evt = (evt) ? evt : ((window.event) ? window.event : "");
-				if(evt.keyCode == 17){	//ctrl key up
+				if(keycode == 17){	//ctrl key up
 					oDebugger.$('debuggerCommand')._curCommandHistoryIndex = 0;
 				}
 			}
@@ -737,8 +748,8 @@ var oDebugger = {
 	},
 	MoveLayer:function (obj, evt){
 		evt = (evt) ? evt : ((window.event) ? window.event : "");
-		var mouseX = (evt.clientX)?evt.clientX:evt.pageX;
-		var mouseY = (evt.clientY)?evt.clientY:evt.pageY;
+		var mouseX = (evt.clientX)?evt.clientX:evt.x;//pageX;
+		var mouseY = (evt.clientY)?evt.clientY:evt.y;//pageY;
 		if (obj.downStatus){
 			obj.style.left = mouseX - obj.startX; //obj.startLeft+
 			obj.style.top = mouseY - obj.startY; //obj.startTop+
@@ -751,8 +762,8 @@ var oDebugger = {
 	DownMouse:function (obj, evt){
 		//if (!document.all) return true;//暂时只支持4.0以上的IE浏览器
 		evt = (evt) ? evt : ((window.event) ? window.event : "");
-		var mouseX = (evt.clientX)?evt.clientX:evt.pageX;
-		var mouseY = (evt.clientY)?evt.clientY:evt.pageY;
+		var mouseX = (evt.clientX)?evt.clientX:evt.x;
+		var mouseY = (evt.clientY)?evt.clientY:evt.x;
 		obj.downStatus = true;
 		obj.startX = mouseX - obj.offsetLeft;
 		obj.startY = mouseY - obj.offsetTop;
@@ -776,7 +787,7 @@ var oDebugger = {
 		this.Debugger.style.scrollbarHighlightColor='#959CBB';
 		this.Debugger.style.scrollbarShadowColor='#959CBB';
 		this.Debugger.style.cursor='move';
-		this.Debugger.style.fontSize='12px';
+		this.Debugger.style.fontSize='15px';
 		this.$('debugger_runCommand').STYLE='border-right:#2c59aa 1px solid;padding-right: 2px;border-top: #2c59aa 1px solid;padding-left: 2px;font-size: 12px;filter: progid:dximagetransform.microsoft.gradient(gradienttype=0, startcolorstr=#ffffff, endcolorstr=#c3daf5); border-left: #2c59aa 1px solid;color:#445289;padding-top: 2px;border-bottom: #2c59aa 1px solid;cursor: hand;cursor:pointer;';
 		this.$('debugger_runCommand').style.borderRight='#2c59aa 1px solid';
 		this.$('debugger_runCommand').style.paddingRight='2px';
@@ -1045,7 +1056,11 @@ var oDebugger = {
 	//create color text
 	colorizeInput:function   (strGiven,   strColor){
 		var oFont = appendElement('font');
-		oFont.innerText = strGiven;
+		if(document.all){
+			oFont.innerText = strGiven;
+		}else{
+			oFont.textContent = strGiven;
+		}
 		oFont.color = '#FF0000';//strColor;
 		return oFont;
 	},
@@ -1263,7 +1278,7 @@ var oDebugger = {
 	},
 	bindEventListner:function(obj, evt, funcName){
 		if(window.addEventListener){ // Mozilla, Netscape, Firefox
-			obj.addEventListener(evt, funcName, false);
+			obj.addEventListener(evt.substring(2), funcName, false);
 		} else { // IE
 			obj.attachEvent(evt, funcName);
 		}
