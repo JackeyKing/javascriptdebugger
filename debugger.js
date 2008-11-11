@@ -435,7 +435,7 @@ var oDebugger = {
 	*/
 	//init the debugger
 	initdebugger:function (){
-		this._g_eval = eval;
+		this._g_eval = window.eval;
 		//load css Style for debugger
 		//LoadJsCssFile('debugger.css', 'css');
 		//create debugger's UI
@@ -461,7 +461,7 @@ var oDebugger = {
 				var elem = (evt.target) ? evt.target : evt.srcElement;
 				oDebugger.UpMouse(elem, evt);});
 		this.bindEventListner(
-			document.getElementsByTagName("body").item(0), 'onmousemove',
+			(document.all)?document.getElementsByTagName("body").item(0):window, 'onmousemove',
 			function(evt){
 				evt = (evt) ? evt : ((window.event) ? window.event : "")
 				oDebugger._g_targetObj = (evt.target) ? evt.target : evt.srcElement;
@@ -495,7 +495,7 @@ var oDebugger = {
 		//keyCode 123 = F12
 		//keyCode 118 , 119 = F7, F8
 		this.bindEventListner(
-			document.getElementsByTagName("body").item(0), 'onkeydown',
+			(document.all)?document.getElementsByTagName("body").item(0):window, 'onkeydown',
 			function(evt){
 				evt = (evt) ? evt : ((window.event) ? window.event : "")
 				var keycode = evt.keyCode || evt.which;
@@ -591,6 +591,7 @@ var oDebugger = {
 		//this.$('debuggerCommand').attachEvent('onkeyup',
 			function(evt){
 				evt = (evt) ? evt : ((window.event) ? window.event : "");
+				var keycode = evt.keyCode || evt.which;
 				if(keycode == 17){	//ctrl key up
 					oDebugger.$('debuggerCommand')._curCommandHistoryIndex = 0;
 				}
@@ -1470,7 +1471,12 @@ var oDebugger = {
 		if(this.userDefineCommand(obj.value)){this.$('debuggerCommand').value = '';return;}
 		try{
 			this.showoutput('RETURN: ', true, this.colors.COMMAND);
-			this._g_returnValue = this._g_eval(obj.value);
+			//this._g_returnValue = this._g_eval(obj.value);
+			if(document.all){
+				this._g_returnValue = this._g_eval(obj.value);//execScript
+			}else{
+				this._g_returnValue = window.eval(obj.value);
+			}
 			this.showoutput(this._g_returnValue, false, this.colors.TIP);
 		}catch(e){
 			this._g_returnValue = e.description;
@@ -1551,6 +1557,7 @@ var oDebugger = {
 				break;
 			case 'mousepos':
 				this._g_enableShowMousePos = ! this._g_enableShowMousePos;
+				break;
 			default:
 				return false;
 				break;
