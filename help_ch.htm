@@ -5,7 +5,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <META NAME="Author" CONTENT="Jackey.King">
   <META NAME="Keywords" CONTENT="oDebugger, help">
-  <META NAME="Description" CONTENT="for oDebugger V0.42">
+  <META NAME="Description" CONTENT="for oDebugger V0.50">
 	<meta NAME="Version" CONTENT="0.12">
   <style type='text/css'>
   BODY{
@@ -123,7 +123,7 @@
 			<span>命令：</span>
 		</div>
 		<div>
-			<span>mousepos</span>
+			<span>mode mousepos</span>
 			开关显示鼠标位置。
 		</div>
 	</div>
@@ -133,8 +133,18 @@
 			<span>命令：</span>
 		</div>
 		<div>
-			<span>keycode</span>
+			<span>mode keycode</span>
 			开关显示keycode。
+		</div>
+	</div>
+	<div class='title'>开关选择状态</div>
+	<div>
+		<div>
+			<span>命令：</span>
+		</div>
+		<div>
+			<span>mode select</span>
+			关掉或打开锁定焦点在命令输入窗口，这样就可以拷贝输出的东西到别的地方去了。
 		</div>
 	</div>
 	<div class='title'>改变鼠标所处位置下的对象背景色</div>
@@ -358,7 +368,7 @@
 		</div>
 		<div>
 			<span></span>
-			在C盘下新建文件夹javascriptdebugger，把debugger.js放到里面去。打开oDebugger文件debugger.js，在文件头部<span>*Dynamic load debugger</span>节，会看到一些注释掉的代码，如果要执行oDebugger的页面是一个页面，就找到65行的代码，拷贝到剪切板（注意不要带前面的注释），粘贴到地址栏中，按下回车，不久就能看到 inject sucess字样的提示框，确定后就可以用了。
+			在C盘下新建文件夹javascriptdebugger，把debugger.js放到里面去。打开oDebugger文件debugger.js，在文件头部<span>*Dynamic load debugger</span>节，会看到一些注释掉的代码，如果要执行oDebugger的页面是一个页面，就找到21行的代码，拷贝到剪切板（注意不要带前面的注释），粘贴到地址栏中，按下回车，不久就能看到 inject sucess字样的提示框，确定后就可以用了。
 		</div>
 	</div>
 	<div class='title'>frame框架页面</div>
@@ -368,7 +378,7 @@
 		</div>
 		<div>
 			<span></span>
-			在C盘下新建文件夹javascriptdebugger，把debugger.js放到里面去。打开oDebugger文件debugger.js，在文件头部<span>*Dynamic load debugger</span>节，会看到一些注释掉的代码，如果要执行oDebugger的页面是一个frame框架页面，并且主frame的名字为main，就找到62行的代码，拷贝到剪切板（注意不要带前面的注释），粘贴到地址栏中，按下回车，不久就能看到 inject sucess字样的提示框，确定后就可以用了。如果主frame的名字不是main就改一下66行吧（替换掉里面的main为真正的名字），也不难 ;=)
+			在C盘下新建文件夹javascriptdebugger，把debugger.js放到里面去。打开oDebugger文件debugger.js，在文件头部<span>*Dynamic load debugger</span>节，会看到一些注释掉的代码，如果要执行oDebugger的页面是一个frame框架页面，并且主frame的名字为main，就找到62行的代码，拷贝到剪切板（注意不要带前面的注释），粘贴到地址栏中，按下回车，不久就能看到 inject sucess字样的提示框，确定后就可以用了。如果主frame的名字不是main就改一下22行吧（替换掉里面的main为真正的名字），也不难 ;=)
 		</div>
 	</div>
 	<div class='title0'>你能为oDebugger做什么</div>
