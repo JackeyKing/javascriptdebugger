@@ -404,7 +404,9 @@ var oDebugger = {
 	watch:function (obj, timerCount){
 		if(typeof(obj) == 'object'){
 			this.showoutput('Object');
-			obj.attachEvent('onpropertychange', function(evt){
+			this.bindEventListner(
+				obj, 'onpropertychange', function(evt){
+			//obj.attachEvent('onpropertychange', function(evt){
 					this.showoutput('Object property changed!');
 				});
 		}else{
@@ -428,10 +430,14 @@ var oDebugger = {
 		this._g_lastpos_y = Number(document.getElementsByTagName("body").item(0).offsetHeight)/2;
 		this._g_lastpos_y = 100;
 		this._g_lastpos_x = Number(document.getElementsByTagName("body").item(0).offsetWidth)/2;
-		this.Debugger.attachEvent('onmousedown', function(evt){oDebugger.DownMouse(evt.srcElement, evt);});
-		this.Debugger.attachEvent('onmousemove', function(evt){oDebugger.MoveLayer(evt.srcElement, evt);});
-		this.Debugger.attachEvent('onmouseup', function(evt){oDebugger.UpMouse(evt.srcElement, evt);});
-		document.getElementsByTagName("body").item(0).attachEvent('onmousemove',
+		//this.Debugger.attachEvent('onmousedown', function(evt){oDebugger.DownMouse(evt.srcElement, evt);});
+		//this.Debugger.attachEvent('onmousemove', function(evt){oDebugger.MoveLayer(evt.srcElement, evt);});
+		//this.Debugger.attachEvent('onmouseup', function(evt){oDebugger.UpMouse(evt.srcElement, evt);});
+		this.bindEventListner(this.Debugger, 'onmousedown', function(evt){oDebugger.DownMouse(evt.srcElement, evt);});
+		this.bindEventListner(this.Debugger, 'onmousemove', function(evt){oDebugger.MoveLayer(evt.srcElement, evt);});
+		this.bindEventListner(this.Debugger, 'onmouseup', function(evt){oDebugger.UpMouse(evt.srcElement, evt);});
+		this.bindEventListner(
+			document.getElementsByTagName("body").item(0), 'onmousemove',
 			function(evt){
 				oDebugger._g_targetObj = evt.srcElement;
 				if(oDebugger._g_enableShowMousePos){
@@ -439,6 +445,14 @@ var oDebugger = {
 				}
 			}
 		);
+		/*document.getElementsByTagName("body").item(0).attachEvent('onmousemove',
+			function(evt){
+				oDebugger._g_targetObj = evt.srcElement;
+				if(oDebugger._g_enableShowMousePos){
+					oDebugger.$('debuggerInfo').value = 'MouseX:' + evt.clientX + ' MouseY:' + evt.clientY;
+				}
+			}
+		);*/
 		//modify the debugger loaded flag
 		this._g_isDR = true;
 		//Utils
@@ -453,19 +467,30 @@ var oDebugger = {
 		//Attach EVENTs
 		//keyCode 123 = F12
 		//keyCode 118 , 119 = F7, F8
-		document.getElementsByTagName("body").item(0).attachEvent('onkeydown',
+		this.bindEventListner(
+			document.getElementsByTagName("body").item(0), 'onkeydown',
 			function(evt){
 				if(evt.keyCode=='123'){oDebugger.showdebugger(oDebugger.Debugger.style.display == 'none'?true:false);try{oDebugger.$('debuggerCommand').focus();}catch(e){}}
 				if(evt.keyCode=='118'){oDebugger._g_returnValue = [];oDebugger.timerChangeBackColor(oDebugger._g_targetObj);}
 				if(evt.keyCode=='119' && oDebugger._g_targetObj != null){oDebugger.changeBackColor(oDebugger._g_targetObj);oDebugger.showdetails(oDebugger._g_targetObj);}
 			}
 		);
+		/*
+		document.getElementsByTagName("body").item(0).attachEvent('onkeydown',
+			function(evt){
+				if(evt.keyCode=='123'){oDebugger.showdebugger(oDebugger.Debugger.style.display == 'none'?true:false);try{oDebugger.$('debuggerCommand').focus();}catch(e){}}
+				if(evt.keyCode=='118'){oDebugger._g_returnValue = [];oDebugger.timerChangeBackColor(oDebugger._g_targetObj);}
+				if(evt.keyCode=='119' && oDebugger._g_targetObj != null){oDebugger.changeBackColor(oDebugger._g_targetObj);oDebugger.showdetails(oDebugger._g_targetObj);}
+			}
+		);*/
 		this.$('debuggerCommand')._commandHistory = new Array(this._g_maxCommandHistory);
 		this.$('debuggerCommand')._commandStore = new Array(this._g_maxCommandStore);
 		//keyCode 13 Enter
 		//keyCode 37 <- 38 ^ 39 -> 40 |
 		//keyCode 8 BackSpace  46 Delete
-		this.$('debuggerCommand').attachEvent('onkeydown',
+		this.bindEventListner(
+			this.$('debuggerCommand'), 'onkeydown',
+		//this.$('debuggerCommand').attachEvent('onkeydown',
 			function(evt){
 				if(oDebugger._g_enableShowKeyCode){
 					oDebugger.showoutput(evt.keyCode, false, oDebugger.colors.ERROR);
@@ -530,7 +555,9 @@ var oDebugger = {
 				if(evt.keyCode == '27'){oDebugger.$('debuggerCommand').value = '';} //ESC pressed
 			}
 		);
-		this.$('debuggerCommand').attachEvent('onkeyup',
+		this.bindEventListner(
+			this.$('debuggerCommand'), 'onkeyup',
+		//this.$('debuggerCommand').attachEvent('onkeyup',
 			function(evt){
 				if(evt.keyCode == 17){	//ctrl key up
 					oDebugger.$('debuggerCommand')._curCommandHistoryIndex = 0;
@@ -722,6 +749,7 @@ var oDebugger = {
 		this.Debugger.style.scrollbarHighlightColor='#959CBB';
 		this.Debugger.style.scrollbarShadowColor='#959CBB';
 		this.Debugger.style.cursor='move';
+		this.Debugger.style.fontSize='12px';
 		this.$('debugger_runCommand').STYLE='border-right:#2c59aa 1px solid;padding-right: 2px;border-top: #2c59aa 1px solid;padding-left: 2px;font-size: 12px;filter: progid:dximagetransform.microsoft.gradient(gradienttype=0, startcolorstr=#ffffff, endcolorstr=#c3daf5); border-left: #2c59aa 1px solid;color:#445289;padding-top: 2px;border-bottom: #2c59aa 1px solid;cursor: hand;cursor:pointer;';
 		this.$('debugger_runCommand').style.borderRight='#2c59aa 1px solid';
 		this.$('debugger_runCommand').style.paddingRight='2px';
@@ -1205,6 +1233,13 @@ var oDebugger = {
 	},
 	trim:function(args) {
 		return args.replace( /^\s+|\s+$/, '');
+	},
+	bindEventListner:function(obj, evt, funcName){
+		if(window.addEventListener){ // Mozilla, Netscape, Firefox
+			obj.addEventListener(evt, funcName, false);
+		} else { // IE
+			obj.attachEvent(evt, funcName);
+		}
 	},
 	/*
 	*################################################################################################################################################
