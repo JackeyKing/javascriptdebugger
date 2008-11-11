@@ -18,8 +18,10 @@
 * The above copyright notice and this permission notice shall be
 * included in all copies or substantial portions of the Software.
 */
-//javascript:var head = document.getElementsByTagName("head")[0];var js = document.createElement("script");js.src = "file:///javascriptdebugger/debugger.js";head.appendChild(js);alert('inject success!');
-//javascript:var head = main.document.getElementsByTagName("head")[0];var js = main.document.createElement("script");js.src = "file:///javascriptdebugger/debugger.js";head.appendChild(js);alert('inject success!');
+/*
+javascript:var head = document.getElementsByTagName("head")[0];var js = document.createElement("script");js.src = "file:///javascriptdebugger/debugger.js";head.appendChild(js);alert('inject success!');
+javascript:var head = main.document.getElementsByTagName("head")[0];var js = main.document.createElement("script");js.src = "file:///javascriptdebugger/debugger.js";head.appendChild(js);alert('inject success!');
+*/
 /*
 *History
 *V0.1
