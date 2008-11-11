@@ -1349,6 +1349,16 @@ var oDebugger = {
 		//setTimeout("window.status=''",1800)
 		trng.collapse(false);
 	},
+	removeClassName:function(elem, className){
+		elem.className = trim(elem.className.replace(className, ''));
+	},
+	addClassName:function(elem, className){
+		this.removeClassName (elem, className);
+		elem.className = trim((elem.className + ' ' + className));
+	},
+	trim:function(args) {
+		return args.replace( /^\s+|\s+$/, '');
+	},
 	/*
 	*################################################################################################################################################
 	*Run debugger commands
