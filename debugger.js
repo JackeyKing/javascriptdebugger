@@ -146,13 +146,16 @@ var oDebugger = {
 		var ss = document.createElement('script'); ss.setAttribute('type','text/javascript'); ss.setAttribute('src','e:\\debugger\\debugger.js');var ohead = (document.getElementsByTagName('head').item(0)); ohead.appendChild(ss);alert('inject success!');
 	},
 	garbageLoop:function(){
-		for(;;){
-			if(window.event.keyCode == 67){ //keyCode c is pressed
+		//for(;;){
+			if(event && event.keyCode == 67){ //keyCode c is pressed
+			}else{
 				var x = x + 'asdfsdfasdfasdf';
 				x = '';
-				break;
+				x = 'garbageLoop';
+				oDebugger.showoutput(x, false);
+				setTimeout(oDebugger.garbageLoop, 10);
 			}
-		}
+		//}
 	},
 	showdetails:function (args){
 		this.showoutput('====================================', false);
