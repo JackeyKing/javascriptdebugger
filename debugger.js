@@ -145,9 +145,10 @@ var oDebugger = {
 	testme:function (){
 		var ss = document.createElement('script'); ss.setAttribute('type','text/javascript'); ss.setAttribute('src','e:\\debugger\\debugger.js');var ohead = (document.getElementsByTagName('head').item(0)); ohead.appendChild(ss);alert('inject success!');
 	},
-	garbageLoop:function(){
+	garbageLoop:function(evt){
 		//for(;;){
-			if(event && event.keyCode == 67){ //keyCode c is pressed
+			evt = (evt) ? evt : ((window.event) ? window.event : "");
+			if(evt && evt.keyCode == 67){ //keyCode c is pressed
 			}else{
 				var x = x + 'asdfsdfasdfasdf';
 				x = '';
@@ -216,7 +217,9 @@ var oDebugger = {
 		obj.style.backgroundColor = '#FFFFDC';
 		oDebugger.showdetails(obj);
 		if(obj.parentElement){
-			setTimeout(function(evt){oDebugger.timerChangeBackColor(oDebugger._g_lasttargetObj.parentElement);}, 900);
+			setTimeout(function(evt){
+					evt = (evt) ? evt : ((window.event) ? window.event : "");
+					oDebugger.timerChangeBackColor(oDebugger._g_lasttargetObj.parentElement);}, 900);
 			return;
 		}
 		if(oDebugger._g_lasttargetObj != null){
@@ -399,13 +402,16 @@ var oDebugger = {
 		}else{
 			this._g_watchDatas.obj = obj;
 		}
-		setTimeout(function(evt){oDebugger.watchVariable(obj, timerCount);}, timerCount);
+		setTimeout(function(evt){
+				evt = (evt) ? evt : ((window.event) ? window.event : "");
+				oDebugger.watchVariable(obj, timerCount);}, timerCount);
 	},
 	watch:function (obj, timerCount){
 		if(typeof(obj) == 'object'){
 			this.showoutput('Object');
 			this.bindEventListner(
 				obj, 'onpropertychange', function(evt){
+					evt = (evt) ? evt : ((window.event) ? window.event : "");
 			//obj.attachEvent('onpropertychange', function(evt){
 					this.showoutput('Object property changed!');
 				});
@@ -433,15 +439,27 @@ var oDebugger = {
 		//this.Debugger.attachEvent('onmousedown', function(evt){oDebugger.DownMouse(evt.srcElement, evt);});
 		//this.Debugger.attachEvent('onmousemove', function(evt){oDebugger.MoveLayer(evt.srcElement, evt);});
 		//this.Debugger.attachEvent('onmouseup', function(evt){oDebugger.UpMouse(evt.srcElement, evt);});
-		this.bindEventListner(this.Debugger, 'onmousedown', function(evt){oDebugger.DownMouse(evt.srcElement, evt);});
-		this.bindEventListner(this.Debugger, 'onmousemove', function(evt){oDebugger.MoveLayer(evt.srcElement, evt);});
-		this.bindEventListner(this.Debugger, 'onmouseup', function(evt){oDebugger.UpMouse(evt.srcElement, evt);});
+		this.bindEventListner(this.Debugger, 'onmousedown', function(evt){
+				evt = (evt) ? evt : ((window.event) ? window.event : "");
+				var elem = (evt.target) ? evt.target : evt.srcElement;
+				oDebugger.DownMouse(elem, evt);});
+		this.bindEventListner(this.Debugger, 'onmousemove', function(evt){
+				evt = (evt) ? evt : ((window.event) ? window.event : "");
+				var elem = (evt.target) ? evt.target : evt.srcElement;
+				oDebugger.MoveLayer(elem, evt);});
+		this.bindEventListner(this.Debugger, 'onmouseup', function(evt){
+				evt = (evt) ? evt : ((window.event) ? window.event : "");
+				var elem = (evt.target) ? evt.target : evt.srcElement;
+				oDebugger.UpMouse(elem, evt);});
 		this.bindEventListner(
 			document.getElementsByTagName("body").item(0), 'onmousemove',
 			function(evt){
-				oDebugger._g_targetObj = evt.srcElement;
+				evt = (evt) ? evt : ((window.event) ? window.event : "")
+				oDebugger._g_targetObj = (evt.target) ? evt.target : evt.srcElement;
+				var mouseX = (evt.clientX)?evt.clientX:evt.pageX;
+				var mouseY = (evt.clientY)?evt.clientY:evt.pageY;
 				if(oDebugger._g_enableShowMousePos){
-					oDebugger.$('debuggerInfo').value = 'MouseX:' + evt.clientX + ' MouseY:' + evt.clientY;
+					oDebugger.$('debuggerInfo').value = 'MouseX:' + mouseX + ' MouseY:' + mouseY;
 				}
 			}
 		);
@@ -470,6 +488,7 @@ var oDebugger = {
 		this.bindEventListner(
 			document.getElementsByTagName("body").item(0), 'onkeydown',
 			function(evt){
+				evt = (evt) ? evt : ((window.event) ? window.event : "")
 				if(evt.keyCode=='123'){oDebugger.showdebugger(oDebugger.Debugger.style.display == 'none'?true:false);try{oDebugger.$('debuggerCommand').focus();}catch(e){}}
 				if(evt.keyCode=='118'){oDebugger._g_returnValue = [];oDebugger.timerChangeBackColor(oDebugger._g_targetObj);}
 				if(evt.keyCode=='119' && oDebugger._g_targetObj != null){oDebugger.changeBackColor(oDebugger._g_targetObj);oDebugger.showdetails(oDebugger._g_targetObj);}
@@ -492,6 +511,7 @@ var oDebugger = {
 			this.$('debuggerCommand'), 'onkeydown',
 		//this.$('debuggerCommand').attachEvent('onkeydown',
 			function(evt){
+				evt = (evt) ? evt : ((window.event) ? window.event : "");
 				if(oDebugger._g_enableShowKeyCode){
 					oDebugger.showoutput(evt.keyCode, false, oDebugger.colors.ERROR);
 				}
@@ -559,6 +579,7 @@ var oDebugger = {
 			this.$('debuggerCommand'), 'onkeyup',
 		//this.$('debuggerCommand').attachEvent('onkeyup',
 			function(evt){
+				evt = (evt) ? evt : ((window.event) ? window.event : "");
 				if(evt.keyCode == 17){	//ctrl key up
 					oDebugger.$('debuggerCommand')._curCommandHistoryIndex = 0;
 				}
@@ -708,16 +729,19 @@ var oDebugger = {
 	*################################################################################################################################################
 	*/
 	//Common functions
-	UpMouse:function (obj){
+	UpMouse:function (obj, evt){
 		obj.downStatus = false;
 		if(this._g_cmdFocus){
 			this.$('debuggerCommand').focus();
 		}
 	},
 	MoveLayer:function (obj, evt){
+		evt = (evt) ? evt : ((window.event) ? window.event : "");
+		var mouseX = (evt.clientX)?evt.clientX:evt.pageX;
+		var mouseY = (evt.clientY)?evt.clientY:evt.pageY;
 		if (obj.downStatus){
-			obj.style.left = evt.clientX-obj.startX; //obj.startLeft+
-			obj.style.top = evt.clientY-obj.startY; //obj.startTop+
+			obj.style.left = mouseX - obj.startX; //obj.startLeft+
+			obj.style.top = mouseY - obj.startY; //obj.startTop+
 			//obj.viewpos.value = " X:"+event.clientX+" Y:"+event.clientY+"
 			//startX:"+startX+"  startY:"+startY;
 			this._g_lastpos_y = obj.style.top;
@@ -725,10 +749,13 @@ var oDebugger = {
 		}
 	},
 	DownMouse:function (obj, evt){
-		if (!document.all) return true;//暂时只支持4.0以上的IE浏览器
+		//if (!document.all) return true;//暂时只支持4.0以上的IE浏览器
+		evt = (evt) ? evt : ((window.event) ? window.event : "");
+		var mouseX = (evt.clientX)?evt.clientX:evt.pageX;
+		var mouseY = (evt.clientY)?evt.clientY:evt.pageY;
 		obj.downStatus = true;
-		obj.startX = evt.clientX - obj.offsetLeft;
-		obj.startY = evt.clientY - obj.offsetTop;
+		obj.startX = mouseX - obj.offsetLeft;
+		obj.startY = mouseY - obj.offsetTop;
 	},
 	setDebuggerStyle:function (){
 		this.Debugger.style.position = 'absolute';
