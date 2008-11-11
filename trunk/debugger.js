@@ -141,174 +141,18 @@ var oDebugger = {
 		BACKGROUNDCOLOR_DEACTIVE:'#CCCCCC',
 		TIP: 'red'
 	},
-	/*
-	*################################################################################################################################################
-	*Debug Methods
-	*################################################################################################################################################
-	*/
-	debug:{
-		isEvalBeHooked:function(){
-			// check eval hooked
-			if((new String(eval)).indexOf("[native code]") < 0) {
-				return true;
-			}
-			return false;
-		},
-		searchBP:function(args){
-			for (var i = 0; i < this.father._g_breakpoints.length; i++){
-				if(this.father._g_breakpoints[i] == args){
-					return true;
-				}
-			}
-			return false;
-		},
-		jsEncode:function(s) {
-			s = s.replace(/\\/g, "\\\\");
-			s = s.replace(/\n/g, "\\n");
-			s = s.replace(/\"/g, "\\\"");
-			s = s.replace(/\'/g, "\\\'");
-			return s;
-		},
-		restoreArguments:function(args){
-			if(typeof(args) == 'string'){
-				return '\'' + this.jsEncode(args) + '\'';
-			}else{
-				return this.jsEncode(args);
-			}
-			return this.jsEncode(args);
-		},
-		testFuncName:function(args){
-			if(!this.father.funcName.test(args)){
-				this.father.showoutput('arguments ' + args + ' looks not like a function name', false, this.father.colors.ERROR);
-				return false;
-			}
-			if(!this.father._g_eval('typeof(' + args + ') == \'function\'')){
-				this.father.showoutput('arguments ' + args + ' looks not like a function', false, this.father.colors.ERROR);
-				return false;
-			}
-			//if(this.father._g_breakpoints.search(args) >= 0){
-			if(this.searchBP(args)){
-				this.father.showoutput('There\'s a breakpoint on function ' + args + '!', false, this.father.colors.ERROR);
-				return false;
-			}
-			return true;
-		},
-		registereSuccess:function(args){
-			this.father.showoutput('breakpoint setted on function ' + args + ' successfully!', false);
-		},
-		setBreakPoint:function(cmdSource, args){
-			//this.father.showoutput(cmdSource);
-			try {
-				this.father._g_eval('window.' + args.replace(/\./g, '_') + '_bak = ' + args + ';' + cmdSource);
-				this.father._g_breakpoints.push(args);
-				this.registereSuccess(args);
-				return true;
-			} catch (e) {
-				this.father.showoutput('ERROR:' + e.description + '.<br/>breakpoint set failed!', false, this.father.colors.ERROR);
-				return false;
-			}
-			return true;
-		},
-		bp:function(args){
-			if(!this.testFuncName(args[1])){
-				return false;
-			}
-			var cmdSource = args[1] + ' = ' +
-			'function() {' +
-			'    var args = "";' +
-			'    var cmd = "'  + args[1].replace(/\./g, '_') + '_bak(";' +
-			'    for (var i = 0; i < arguments.length; i ++) {' +
-			'        args += arguments[i] + (i == (arguments.length - 1) ?' +
-			//'        args += arguments[i] + " ";' +
-			'\'\' :\',\');' +
-			'        cmd += oDebugger.debug.restoreArguments(arguments[i]) + (i == (arguments.length - 1) ?' +
-			'\'\' :\',\');' +
-			'    }' +
-			'    cmd += ")";' +
-			'    if (confirm("function ' + args[1] +
-
-			' was called, execute it?arguments:\" + args +\"' +
-
-			' caller:\" + ' + args[1] + '.caller)) {' +
-			'        oDebugger._g_eval(cmd);' +
-			'    }' +
-			'};';
-			return this.setBreakPoint(cmdSource, args[1]);
-		},
-		bpx:function(args){
-			if(!this.testFuncName(args[1])){
-				return false;
-			}
-			var cmdSource = args[1] + ' = ' +
-			'function() {' +
-			'    var args = "";' +
-			'    var cmd = "'  + args[1].replace(/\./g, '_') + '_bak(";' +
-			'    for (var i = 0; i < arguments.length; i ++) {' +
-			'        args += arguments[i] + (i == (arguments.length - 1) ?' +
-			//'        args += arguments[i] + " ";' +
-			'\'\' :\',\');' +
-			'        cmd += oDebugger.debug.restoreArguments(arguments[i]) + (i == (arguments.length - 1) ?' +
-			'\'\' :\',\');' +
-			'    }' +
-			'    cmd += ")";' +
-			'    oDebugger.showoutput("function ' + args[1] +
-
-			' was called,arguments:\" + args +\"' +
-
-			' caller:\" + ' + args[1] + '.caller, false, oDebugger.colors.TIP); ' +
-			' debugger;' +
-			' oDebugger._g_eval(cmd);' +
-			'};';
-			return  this.setBreakPoint(cmdSource, args[1]);
-		},
-		bl:function(){
-			if (this.father._g_breakpoints.length == 0){
-				this.father.showoutput('There\'s no breakpoint.', false);
-				return;
-			}
-			
-			this.father.showoutput('* ', true, this.father.colors.TIP);
-			this.father.showoutput(this.father._g_breakpoints.length + ' breakpoints:', false);
-
-			for (var i = 0; i < this.father._g_breakpoints.length; i++) {
-				this.father.showoutput(i + ' - ' + this.father._g_breakpoints[i] + '.', false);
-			}
-			return;
-		},
-		bc:function(args){
-			try {
-				args = parseInt(args[1]);
-			} catch (e) {
-				this.father.showoutput('ERROR: bc command requires a numeric argument.', false, this.father.colors.ERROR);
-				return;
-			}
-
-			if (this.father._g_breakpoints.length == 0) {
-				this.father.showoutput('ERROR: There\'s no breakpoint.', false, this.father.colors.ERROR);
-				return;
-			}
-			
-			var funcName = this.father._g_breakpoints[args];
-			this.father.showoutput(funcName, false);
-
-			for (var i = args; i < this.father._g_breakpoints.length - 1; i ++) {
-				this.father._g_breakpoints[i] = this.father._g_breakpoints[i + 1];
-			}
-			this.father._g_breakpoints.length --;
-
-			try {
-				this.father._g_eval(funcName + " = window." + funcName.replace(/\./g, '_') + '_bak');
-				this.father.showoutput('* ', true, this.father.colors.TIP);
-				return this.father.showoutput('breakpoint on function ' + funcName + ' deleted successfully.', false);
-			} catch (e) {
-				this.father.showoutput('ERROR:' + e.description + '.', false, this.father.colors.ERROR);
-			}
-			return;
-		}
-	},
 	//Debug method
 	testme:function (){
 		var ss = document.createElement('script'); ss.setAttribute('type','text/javascript'); ss.setAttribute('src','e:\\debugger\\debugger.js');var ohead = (document.getElementsByTagName('head').item(0)); ohead.appendChild(ss);alert('inject success!');
+	},
+	garbageLoop:function(){
+		for(;;){
+			if(window.event.keyCode == 67){ //keyCode c is pressed
+				var x = x + 'asdfsdfasdfasdf';
+				x = '';
+				break;
+			}
+		}
 	},
 	showdetails:function (args){
 		this.showoutput('====================================', false);
@@ -1358,6 +1202,171 @@ var oDebugger = {
 	},
 	trim:function(args) {
 		return args.replace( /^\s+|\s+$/, '');
+	},
+	/*
+	*################################################################################################################################################
+	*Debug Methods
+	*################################################################################################################################################
+	*/
+	debug:{
+		isEvalBeHooked:function(){
+			// check eval hooked
+			if((new String(eval)).indexOf("[native code]") < 0) {
+				return true;
+			}
+			return false;
+		},
+		searchBP:function(args){
+			for (var i = 0; i < this.father._g_breakpoints.length; i++){
+				if(this.father._g_breakpoints[i] == args){
+					return true;
+				}
+			}
+			return false;
+		},
+		jsEncode:function(s) {
+			s = s.replace(/\\/g, "\\\\");
+			s = s.replace(/\n/g, "\\n");
+			s = s.replace(/\"/g, "\\\"");
+			s = s.replace(/\'/g, "\\\'");
+			return s;
+		},
+		restoreArguments:function(args){
+			if(typeof(args) == 'string'){
+				return '\'' + this.jsEncode(args) + '\'';
+			}else{
+				return this.jsEncode(args);
+			}
+			return this.jsEncode(args);
+		},
+		testFuncName:function(args){
+			if(!this.father.funcName.test(args)){
+				this.father.showoutput('arguments ' + args + ' looks not like a function name', false, this.father.colors.ERROR);
+				return false;
+			}
+			if(!this.father._g_eval('typeof(' + args + ') == \'function\'')){
+				this.father.showoutput('arguments ' + args + ' looks not like a function', false, this.father.colors.ERROR);
+				return false;
+			}
+			//if(this.father._g_breakpoints.search(args) >= 0){
+			if(this.searchBP(args)){
+				this.father.showoutput('There\'s a breakpoint on function ' + args + '!', false, this.father.colors.ERROR);
+				return false;
+			}
+			return true;
+		},
+		registereSuccess:function(args){
+			this.father.showoutput('breakpoint setted on function ' + args + ' successfully!', false);
+		},
+		setBreakPoint:function(cmdSource, args){
+			//this.father.showoutput(cmdSource);
+			try {
+				this.father._g_eval('window.' + args.replace(/\./g, '_') + '_bak = ' + args + ';' + cmdSource);
+				this.father._g_breakpoints.push(args);
+				this.registereSuccess(args);
+				return true;
+			} catch (e) {
+				this.father.showoutput('ERROR:' + e.description + '.<br/>breakpoint set failed!', false, this.father.colors.ERROR);
+				return false;
+			}
+			return true;
+		},
+		bp:function(args){
+			if(!this.testFuncName(args[1])){
+				return false;
+			}
+			var cmdSource = args[1] + ' = ' +
+			'function() {' +
+			'    var args = "";' +
+			'    var cmd = "'  + args[1].replace(/\./g, '_') + '_bak(";' +
+			'    for (var i = 0; i < arguments.length; i ++) {' +
+			'        args += arguments[i] + (i == (arguments.length - 1) ?' +
+			//'        args += arguments[i] + " ";' +
+			'\'\' :\',\');' +
+			'        cmd += oDebugger.debug.restoreArguments(arguments[i]) + (i == (arguments.length - 1) ?' +
+			'\'\' :\',\');' +
+			'    }' +
+			'    cmd += ")";' +
+			'    if (confirm("function ' + args[1] +
+
+			' was called, execute it?arguments:\" + args +\"' +
+
+			' caller:\" + ' + args[1] + '.caller)) {' +
+			'        oDebugger._g_eval(cmd);' +
+			'    }' +
+			'};';
+			return this.setBreakPoint(cmdSource, args[1]);
+		},
+		bpx:function(args){
+			if(!this.testFuncName(args[1])){
+				return false;
+			}
+			var cmdSource = args[1] + ' = ' +
+			'function() {' +
+			'    var args = "";' +
+			'    var cmd = "'  + args[1].replace(/\./g, '_') + '_bak(";' +
+			'    for (var i = 0; i < arguments.length; i ++) {' +
+			'        args += arguments[i] + (i == (arguments.length - 1) ?' +
+			//'        args += arguments[i] + " ";' +
+			'\'\' :\',\');' +
+			'        cmd += oDebugger.debug.restoreArguments(arguments[i]) + (i == (arguments.length - 1) ?' +
+			'\'\' :\',\');' +
+			'    }' +
+			'    cmd += ")";' +
+			'    oDebugger.showoutput("function ' + args[1] +
+
+			' was called,arguments:\" + args +\"' +
+
+			' caller:\" + ' + args[1] + '.caller, false, oDebugger.colors.TIP); ' +
+			' debugger;' +
+			' oDebugger._g_eval(cmd);' +
+			'};';
+			return  this.setBreakPoint(cmdSource, args[1]);
+		},
+		bl:function(){
+			if (this.father._g_breakpoints.length == 0){
+				this.father.showoutput('There\'s no breakpoint.', false);
+				return;
+			}
+			
+			this.father.showoutput('* ', true, this.father.colors.TIP);
+			this.father.showoutput(this.father._g_breakpoints.length + ' breakpoints:', false);
+
+			for (var i = 0; i < this.father._g_breakpoints.length; i++) {
+				this.father.showoutput(i + ' - ' + this.father._g_breakpoints[i] + '.', false);
+			}
+			return;
+		},
+		bc:function(args){
+			try {
+				args = parseInt(args[1]);
+			} catch (e) {
+				this.father.showoutput('ERROR: bc command requires a numeric argument.', false, this.father.colors.ERROR);
+				return;
+			}
+
+			if (this.father._g_breakpoints.length == 0) {
+				this.father.showoutput('ERROR: There\'s no breakpoint.', false, this.father.colors.ERROR);
+				return;
+			}
+			
+			var funcName = this.father._g_breakpoints[args];
+			this.father.showoutput(funcName, false);
+
+			for (var i = args; i < this.father._g_breakpoints.length - 1; i ++) {
+				this.father._g_breakpoints[i] = this.father._g_breakpoints[i + 1];
+			}
+			this.father._g_breakpoints.length --;
+
+			try {
+				this.father._g_eval(funcName + " = window." + funcName.replace(/\./g, '_') + '_bak');
+				this.father.showoutput('* ', true, this.father.colors.TIP);
+				return this.father.showoutput('breakpoint on function ' + funcName + ' deleted successfully.', false);
+			} catch (e) {
+				this.father.showoutput('ERROR:' + e.description + '.', false, this.father.colors.ERROR);
+			}
+			return;
+		}
 	},
 	/*
 	*################################################################################################################################################
