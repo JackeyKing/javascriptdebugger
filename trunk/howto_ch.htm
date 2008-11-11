@@ -1,0 +1,114 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+ <HEAD>
+  <TITLE> oDebugger Help File v0.12 </TITLE>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <META NAME="Author" CONTENT="Jackey.King">
+  <META NAME="Keywords" CONTENT="oDebugger, help">
+  <META NAME="Description" CONTENT="for oDebugger V0.42">
+	<meta NAME="Version" CONTENT="0.12">
+  <style type='text/css'>
+  BODY{
+	font-family:Arial, Verdana, Times New Roman,'宋体';
+	font-size:12px;
+	/*background-color:#FFFFFF;*/
+	background-color:#bce672;
+	margin:0 0 0 0;
+  }
+  A{
+	text-decoration: none;
+	font-style: normal;
+	color:#0000FF;
+	cursor:pointer;
+  }
+  .title0{
+	background-color:#ffa631;
+	height:28px;
+	line-height:28px;
+	color:#eaff56;
+	position:relative;
+	margin:0px;
+	overflow:hidden;
+  }
+  .title{
+	background-color:#eaff56;
+	height:24px;
+	line-height:24px;
+	color:#FF00FF;
+	position:relative;
+	margin:0px;
+	overflow:hidden;
+  }
+  SPAN{
+	/*background-color:#CCCCCC;*/
+	color:#ff7500;
+	font-weight: blod;
+  }
+  DIV{
+	background-color:#bce672;
+	position:relative;
+	margin: 0 0 5px 0;
+	/*color:#fff143; //鹅黄*/
+	color:#f47983;
+  }
+  DIV DIV{
+	background-color:#faff72;
+	position:relative;
+	margin: 0 0 5px 0;
+	/*color:#fff143; //鹅黄*/
+	color:#f47983;
+  }
+  DIV DIV SPAN{
+	color:#ff7500;
+	font-weight: blod;
+	margin-right:10px;
+  }
+  .code{
+  }
+  #container{
+	margin: 0px 50px 0 50px;
+	height:100%;
+	width:100%;
+	position:relative;
+	overflow-y:auto;
+	overflow-x:hidden;
+	scrollbar-3dlight-color: #959CBB;
+	scrollbar-arrow-color: #666666;
+	scrollbar-base-color: #445289;
+	scrollbar-darkshadow-color: #959CBB;
+	scrollbar-face-color: #D6DDF3;
+	scrollbar-highlight-color: #959CBB;
+	scrollbar-shadow-color: #959CBB;
+  }
+  .head{
+	font-size:24px;
+	font-weight: blod;
+	background-color:#d9b611;
+	height:28px;
+	line-height:28px;
+	color:#bddd22;
+	position:relative;
+	margin:0px;
+	overflow:hidden;
+  }
+  </style>
+ </HEAD>
+ <BODY scroll="no">
+  <div id='container'>
+	<div class='head'>HOW TO</div>
+	<div class='title0'>HOWTO</div>
+	<div class='title'>怎样才能把需要显示的值显示在oDebugger的窗口中</div>
+	<div>
+		<div>
+			<span>代码：</span>
+		</div>
+		<div>
+			<div class='code'>if(S){
+				S(parentObj.scrollTop + ' ' + tagObj.tagName, false);
+			}</div>
+			oDebugger初始化时，会注册一个 S 函数，如果注册成功，就能把它的参数输出到oDebugger的窗口中了。这样会方便跟踪显示某个变量的值。S 函数的参数：第一个是要输出的值，第二个是是否不换行。第三个是颜色。如<span class='code'>S('hello', false, '#FF0000')</span>
+		</div>
+	</div>
+  </div>
+ </BODY>
+</HTML>
