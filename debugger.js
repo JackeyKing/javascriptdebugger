@@ -1326,6 +1326,16 @@ var oDebugger = {
 		}
 		return retVal.toString(tmp);
 	},
+	copy:function(obj){
+		var trng = document.body.createTextRange();
+		trng.moveToElementText(obj);
+		trng.scrollIntoView();
+		trng.select();
+		trng.execCommand("Copy");
+		//window.status="Contents highlighted and copied to clipboard!"
+		//setTimeout("window.status=''",1800)
+		trng.collapse(false);
+	},
 	/*
 	*################################################################################################################################################
 	*Run debugger commands
