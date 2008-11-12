@@ -57,6 +57,9 @@ javascript:var head = main.document.getElementsByTagName("head")[0];var js = mai
 *add menu		//2008-11-12
 *v0.51 pre release
 *fixed listObject ( L ) bugs		//2008-11-12
+*v0.6 pre release
+*fix bugs
+*modified bpx bp method's calling method, caller now have perfect run		//2008-11-12
 */
 
 /*
@@ -108,7 +111,7 @@ function loadJs(file){
 */
 
 var oDebugger = {
-	Version: '0.5 pre release',
+	Version: '0.6 pre release',
 /*
 *################################################################################################################################################
 *Public variables
@@ -149,7 +152,7 @@ var oDebugger = {
 	_g_runCommandOrgetInput: true,
 	_g_cmdFocus:true,
 
-	debuggerStr : "Debugger(Version:" + 0.5 + ' pre release' + "):<span onclick='oDebugger.showdebugger(false);' id='debugger_hiddenBtn'>x</span><br/><input type='text' value='' id='debuggerInfo' /><button onclick=\"oDebugger.$(\'DebuggerOutput\').innerHTML=\'\'\" id='debugger_clearOutput' >clear</button><div id='debuggerClientDiv'><div contenteditable id='DebuggerOutput' designMode></div><input type='text' id='debuggerCommand'/><button onclick=\"oDebugger.dealCommand(oDebugger.$(\'debuggerCommand\'));\" id='debugger_runCommand'>run</button></div>",
+	debuggerStr : "Debugger(Version:" + 0.6 + ' pre release' + "):<span onclick='oDebugger.showdebugger(false);' id='debugger_hiddenBtn'>x</span><br/><input type='text' value='' id='debuggerInfo' /><button onclick=\"oDebugger.$(\'DebuggerOutput\').innerHTML=\'\'\" id='debugger_clearOutput' >clear</button><div id='debuggerClientDiv'><div contenteditable id='DebuggerOutput' designMode></div><input type='text' id='debuggerCommand'/><button onclick=\"oDebugger.dealCommand(oDebugger.$(\'debuggerCommand\'));\" id='debugger_runCommand'>run</button></div>",
 	menuStr : '<li>' +
 		'<ul onclick="javascript:oDebugger.showHelp();">Help</ul>' +
 		'</li>',
@@ -1579,15 +1582,14 @@ var oDebugger = {
 			var cmdSource = args[1] + ' = ' +
 			'function() {' +
 			'    var args = "";' +
-			'    var cmd = "'  + args[1].replace(/\./g, '_') + '_bak(";' +
+			'    var cmd = "'  + args[1].replace(/\./g, '_') + '_bak.apply(";' +
 			'    for (var i = 0; i < arguments.length; i ++) {' +
 			'        args += arguments[i] + (i == (arguments.length - 1) ?' +
-			//'        args += arguments[i] + " ";' +
 			'\'\' :\',\');' +
-			'        cmd += oDebugger.debug.restoreArguments(arguments[i]) + (i == (arguments.length - 1) ?' +
-			'\'\' :\',\');' +
+			//'        cmd += oDebugger.debug.restoreArguments(arguments[i]) + (i == (arguments.length - 1) ?' +
+			//'\'\' :\',\');' +
 			'    }' +
-			'    cmd += ")";' +
+			'    cmd += "this, arguments)";' +
 			'    if (confirm("function ' + args[1] +
 
 			' was called, execute it?arguments:\" + args +\"' +
@@ -1605,15 +1607,14 @@ var oDebugger = {
 			var cmdSource = args[1] + ' = ' +
 			'function() {' +
 			'    var args = "";' +
-			'    var cmd = "'  + args[1].replace(/\./g, '_') + '_bak(";' +
+			'    var cmd = "'  + args[1].replace(/\./g, '_') + '_bak.apply(";' +
 			'    for (var i = 0; i < arguments.length; i ++) {' +
 			'        args += arguments[i] + (i == (arguments.length - 1) ?' +
-			//'        args += arguments[i] + " ";' +
 			'\'\' :\',\');' +
-			'        cmd += oDebugger.debug.restoreArguments(arguments[i]) + (i == (arguments.length - 1) ?' +
-			'\'\' :\',\');' +
+			//'        cmd += oDebugger.debug.restoreArguments(arguments[i]) + (i == (arguments.length - 1) ?' +
+			//'\'\' :\',\');' +
 			'    }' +
-			'    cmd += ")";' +
+			'    cmd += "this, arguments)";' +
 			'    oDebugger.showoutput("function ' + args[1] +
 
 			' was called,arguments:\" + args +\"' +
@@ -1817,6 +1818,10 @@ var oDebugger = {
 				break;
 			case 'alpha':
 				this.Debugger.style.filter = 'Alpha(Opacity = ' + (args[2] || 75) + ')';
+				break;
+			case 'bgcolor':
+				this.colors.BACKGROUNDCOLOR = (args[2] || this.colors.BACKGROUNDCOLOR);
+				this.Debugger.style.backgroundColor = this.colors.BACKGROUNDCOLOR;
 				break;
 			default:
 				return false;
