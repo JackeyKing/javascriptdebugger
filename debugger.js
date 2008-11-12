@@ -537,8 +537,8 @@ var oDebugger = {
 			function(evt){
 				evt = (evt) ? evt : ((window.event) ? window.event : "");
 				oDebugger._g_targetObj = (evt.target) ? evt.target : evt.srcElement;
-				var mouseX = (evt.clientX)?evt.clientX:evt.x;//evt.pageX;
-				var mouseY = (evt.clientY)?evt.clientY:evt.y;//pageY;
+				var mouseX = (evt.pageX)?evt.pageX:evt.x;//evt.clientX:evt.x;//evt.pageX;
+				var mouseY = (evt.pageY)?evt.pageY:evt.y;//evt.clientY:evt.y;//pageY;
 				if(oDebugger._g_enableShowMousePos){
 					oDebugger.$('debuggerInfo').value = 'MouseX:' + mouseX + ' MouseY:' + mouseY;
 				}
@@ -880,8 +880,8 @@ var oDebugger = {
 	},
 	showMenu:function(evt, obj, show){
 		if(show){
-			obj.style.top = (evt.clientY)?evt.clientY:evt.y;
-			obj.style.left = (evt.clientX)?evt.clientX:evt.x;;
+			obj.style.top = (evt.pageY)?evt.pageY:evt.y;
+			obj.style.left = (evt.pageX)?evt.pageX:evt.x;;
 			obj.style.display = 'block';
 		}else{
 			obj.style.display = 'none';
@@ -889,8 +889,8 @@ var oDebugger = {
 	},
 	MoveLayer:function (obj, evt){
 		evt = (evt) ? evt : ((window.event) ? window.event : "");
-		var mouseX = (evt.clientX)?evt.clientX:evt.x;//pageX;
-		var mouseY = (evt.clientY)?evt.clientY:evt.y;//pageY;
+		var mouseX = (evt.pageX)?evt.pageX:evt.x;//clientX;
+		var mouseY = (evt.pageY)?evt.pageY:evt.y;//clientY;
 		if (obj.downStatus){
 			obj.style.left = mouseX - obj.startX; //obj.startLeft+
 			obj.style.top = mouseY - obj.startY; //obj.startTop+
@@ -903,8 +903,8 @@ var oDebugger = {
 	DownMouse:function (obj, evt){
 		//if (!document.all) return true;//暂时只支持4.0以上的IE浏览器
 		evt = (evt) ? evt : ((window.event) ? window.event : "");
-		var mouseX = (evt.clientX)?evt.clientX:evt.x;
-		var mouseY = (evt.clientY)?evt.clientY:evt.x;
+		var mouseX = (evt.pageX)?evt.pageX:evt.x;
+		var mouseY = (evt.pageY)?evt.pageY:evt.y;
 		obj.downStatus = true;
 		obj.startX = mouseX - obj.offsetLeft;
 		obj.startY = mouseY - obj.offsetTop;
