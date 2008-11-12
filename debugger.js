@@ -139,6 +139,7 @@ var oDebugger = {
 		borderTop:'',
 		borderBottom:''
 	},
+	_g_menuTarget: null,
 
 	_g_breakpoints : new Array(),
 	_g_eval: null,
@@ -147,7 +148,13 @@ var oDebugger = {
 	_g_cmdFocus:true,
 
 	debuggerStr : "Debugger(Version:" + 0.5 + ' pre release' + "):<span onclick='oDebugger.showdebugger(false);' id='debugger_hiddenBtn'>x</span><br/><input type='text' value='' id='debuggerInfo' /><button onclick=\"oDebugger.$(\'DebuggerOutput\').innerHTML=\'\'\" id='debugger_clearOutput' >clear</button><div id='debuggerClientDiv'><div contenteditable id='DebuggerOutput' designMode></div><input type='text' id='debuggerCommand'/><button onclick=\"oDebugger.dealCommand(oDebugger.$(\'debuggerCommand\'));\" id='debugger_runCommand'>run</button></div>",
-	menuStr : '<li><ul>asdfsdf</ul></li>',
+	menuStr : '<li>' +
+		'<ul onclick="javascript:oDebugger.showHelp();">Help</ul>' +
+		'</li>',
+	subMenuStr : '<li>' +
+		'<ul onclick="javascript:oDebugger.selectAll(oDebugger.$(\'DebuggerOutput\'));">Select All</ul>' +
+		'<ul onclick="javascript:oDebugger.copy(oDebugger.$(\'DebuggerOutput\'));">Copy</ul>' +
+		'</li>',
 
 	colors: {
 		ERROR: 'red',
@@ -157,7 +164,9 @@ var oDebugger = {
 		BACKGROUNDCOLOR_DEACTIVE:'#CCCCCC',
 		TIP: 'red',
 		MOUSETIP: 'blue',
-		MENUBACKGROUNDCOLOR:'#FFFFFF'
+		MENUBACKGROUNDCOLOR:'#FFFFFF',
+		MENUCOLOR:'#CCCCCC',
+		MENUOVER: 'blue'
 	},
 	//Debug method You can add your debugger code below ;=)
 	testme:function (){
@@ -459,8 +468,10 @@ var oDebugger = {
 		//create debugger's UI
 		this.Debugger = this.appendElement('DIV', this.debuggerStr, '', 'position:absolute;overflow-x:auto;overflow-y:auto;top:0;left:0;float:left;width:320px;background-color:#FFFF00;filter: Alpha(Opacity = 75);scrollbar-3dlight-color: #959CBB;scrollbar-arrow-color: #666666;scrollbar-base-color: #445289;scrollbar-darkshadow-color: #959CBB;scrollbar-face-color: #D6DDF3;scrollbar-highlight-color: #959CBB;scrollbar-shadow-color: #959CBB;cursor:move;cursor:move;');
 		this.Menu = this.appendElement('DIV', this.menuStr, '', 'position:absolute;display:none;overflow:hidden;top:0;left:0;width:240px;background-color:#CCCCCC;filter: Alpha(Opacity = 75);cursor:hand;cursor:pointer;');
+		this.SubMenu = this.appendElement('DIV', this.subMenuStr, '', 'position:absolute;display:none;overflow:hidden;top:0;left:0;width:240px;background-color:#CCCCCC;filter: Alpha(Opacity = 75);cursor:hand;cursor:pointer;');
 		document.getElementsByTagName("body").item(0).appendChild(this.Debugger);
 		document.getElementsByTagName('body').item(0).appendChild(this.Menu);
+		document.getElementsByTagName('body').item(0).appendChild(this.SubMenu);
 		this.pBody = document.getElementsByTagName("body").item(0);
 		this._g_lastpos_y = Number(document.getElementsByTagName("body").item(0).offsetHeight)/2;
 		this._g_lastpos_y = 100;
@@ -499,20 +510,58 @@ var oDebugger = {
 			this.Debugger, 'oncontextmenu',
 			function(evt){
 				evt = (evt) ? evt : ((window.event) ? window.event : "");
-				//if(oDebugger.Debugger == (evt.target) ? evt.target : evt.srcElement){
-					oDebugger.showMenu(evt, true);
-					oDebugger.stopBubble(evt);
-				//}
+				var elem = (evt.target) ? evt.target : evt.srcElement;
+				oDebugger._g_menuTarget = oDebugger;
+				oDebugger.showMenu(evt, oDebugger.Menu, true);
+				oDebugger.stopBubble(evt);
+			}
+		);
+		this.bindEventListner(
+			this.$('DebuggerOutput'), 'oncontextmenu',
+			function(evt){
+				evt = (evt) ? evt : ((window.event) ? window.event : "");
+				var elem = (evt.target) ? evt.target : evt.srcElement;
+				oDebugger._g_menuTarget = oDebugger.$('DebuggerOutput');
+				oDebugger.showMenu(evt, oDebugger.SubMenu, true);
+				oDebugger.stopBubble(evt);
 			}
 		);
 		this.bindEventListner(this.Menu, 'onmouseout', function(evt){
 				evt = (evt) ? evt : ((window.event) ? window.event : "");
 				var elem = (evt.target) ? evt.target : evt.srcElement;
-				oDebugger.showMenu(evt, false);});
+				oDebugger.showMenu(evt, oDebugger.Menu, false);});
 		this.bindEventListner(this.Menu, 'onclick', function(evt){
 				evt = (evt) ? evt : ((window.event) ? window.event : "");
 				var elem = (evt.target) ? evt.target : evt.srcElement;
-				oDebugger.showMenu(evt, false);});
+				oDebugger.showMenu(evt, oDebugger.Menu, false);});
+		this.bindEventListner(this.SubMenu, 'onmouseout', function(evt){
+				evt = (evt) ? evt : ((window.event) ? window.event : "");
+				var elem = (evt.target) ? evt.target : evt.srcElement;
+				oDebugger.showMenu(evt, oDebugger.SubMenu, false);});
+		this.bindEventListner(this.SubMenu, 'onclick', function(evt){
+				evt = (evt) ? evt : ((window.event) ? window.event : "");
+				var elem = (evt.target) ? evt.target : evt.srcElement;
+				oDebugger.showMenu(evt, oDebugger.SubMenu, false);});
+		this.bindEventListner(
+			this.Menu, 'oncontextmenu',	function(evt){
+				evt = (evt) ? evt : ((window.event) ? window.event : "");
+				var elem = (evt.target) ? evt.target : evt.srcElement;
+				oDebugger.showMenu(evt, oDebugger.Menu, false);
+				oDebugger.stopBubble(evt);});
+		this.bindEventListner(
+			this.SubMenu, 'oncontextmenu', function(evt){
+				evt = (evt) ? evt : ((window.event) ? window.event : "");
+				var elem = (evt.target) ? evt.target : evt.srcElement;
+				oDebugger.showMenu(evt, oDebugger.SubMenu, false);
+				oDebugger.stopBubble(evt);});
+		this.bindEventListner(this.Menu, 'onmouseover', function(evt){
+				evt = (evt) ? evt : ((window.event) ? window.event : "");
+				var elem = (evt.target) ? evt.target : evt.srcElement;
+				oDebugger.Menu.style.display = 'block';});
+		this.bindEventListner(this.SubMenu, 'onmouseover', function(evt){
+				evt = (evt) ? evt : ((window.event) ? window.event : "");
+				var elem = (evt.target) ? evt.target : evt.srcElement;
+				oDebugger.SubMenu.style.display = 'block';});
 		/*document.getElementsByTagName("body").item(0).attachEvent('onmousemove',
 			function(evt){
 				oDebugger._g_targetObj = evt.srcElement;
@@ -787,20 +836,14 @@ var oDebugger = {
 		if(this._g_cmdFocus){
 			this.$('debuggerCommand').focus();
 		}
-		//if(evt.button == 2){
-		//	this.showMenu(obj, evt);
-		//	this.stopBubble();
-		//}
 	},
-	showMenu:function(evt, show){
+	showMenu:function(evt, obj, show){
 		if(show){
-			var mouseX = (evt.clientX)?evt.clientX:evt.x;
-			var mouseY = (evt.clientY)?evt.clientY:evt.y;
-			this.Menu.style.top = mouseY;
-			this.Menu.style.left = mouseX;
-			this.Menu.style.display = 'block';
+			obj.style.top = (evt.clientY)?evt.clientY:evt.y;
+			obj.style.left = (evt.clientX)?evt.clientX:evt.x;;
+			obj.style.display = 'block';
 		}else{
-			this.Menu.style.display = 'none';
+			obj.style.display = 'none';
 		}
 	},
 	MoveLayer:function (obj, evt){
@@ -854,6 +897,15 @@ var oDebugger = {
 		this.Menu.style.overflow='hidden';
 		this.Menu.style.cursor='pointer';
 		this.Menu.style.fontSize='12px';
+		this.SubMenu.style.position = 'absolute';
+		this.SubMenu.style.width = '240px';
+		this.SubMenu.style.height = 'auto';
+		this.SubMenu.style.display = 'none';
+		this.SubMenu.style.backgroundColor = this.colors.MENUBACKGROUNDCOLOR;
+		this.SubMenu.style.filter = 'Alpha(Opacity = 75)';
+		this.SubMenu.style.overflow='hidden';
+		this.SubMenu.style.cursor='pointer';
+		this.SubMenu.style.fontSize='12px';
 		this.$('debugger_runCommand').STYLE='border-right:#2c59aa 1px solid;padding-right: 2px;border-top: #2c59aa 1px solid;padding-left: 2px;font-size: 12px;filter: progid:dximagetransform.microsoft.gradient(gradienttype=0, startcolorstr=#ffffff, endcolorstr=#c3daf5); border-left: #2c59aa 1px solid;color:#445289;padding-top: 2px;border-bottom: #2c59aa 1px solid;cursor: hand;cursor:pointer;';
 		this.$('debugger_runCommand').style.borderRight='#2c59aa 1px solid';
 		this.$('debugger_runCommand').style.paddingRight='2px';
@@ -932,6 +984,7 @@ var oDebugger = {
 		this.$('debugger_hiddenBtn').style.right='0';
 		this.$('debugger_hiddenBtn').style.position='relative';
 		this.$('debugger_hiddenBtn').style.styleFloat='right';
+		this.$('debugger_hiddenBtn').style.cssFloat='right';
 		this.$('debugger_hiddenBtn').style.width='10px';
 		this.$('debugger_hiddenBtn').style.height='10px';
 		this.$('debugger_hiddenBtn').style.borderWidth='1px';
@@ -940,6 +993,44 @@ var oDebugger = {
 		this.$('debugger_hiddenBtn').style.backgroundColor='#F2F3F9';
 		this.$('debugger_hiddenBtn').style.cursor='default';
 		this.$('debugger_hiddenBtn').style.cursor='default';
+		this.setDebuggerMenuStyle(this.Menu);
+		this.setDebuggerMenuStyle(this.SubMenu);
+	},
+	setDebuggerMenuStyle:function(obj){
+		var objs = obj.getElementsByTagName('UL');
+		for( var i = 0; i < objs.length; i++){
+			objs[i].style.padding = '0';
+			objs[i].style.margin = '0 0 1px 1px';
+			objs[i].style.width = '100%';
+			objs[i].style.backgroundColor = this.colors.MENUBACKGROUNDCOLOR;
+			this.bindEventListner(objs[i], 'onmouseover', function(evt){
+				evt = (evt) ? evt : ((window.event) ? window.event : "");
+				var elem = (evt.target) ? evt.target : evt.srcElement;
+				elem.style.backgroundColor = oDebugger.colors.MENUOVER;
+				});
+			this.bindEventListner(objs[i], 'onmouseout', function(evt){
+				evt = (evt) ? evt : ((window.event) ? window.event : "");
+				var elem = (evt.target) ? evt.target : evt.srcElement;
+				elem.style.backgroundColor = oDebugger.colors.MENUBACKGROUNDCOLOR;
+				});
+		}
+		objs = obj.getElementsByTagName('LI');
+		for( var i = 0; i < objs.length; i++){
+			objs[i].style.padding = '0';
+			objs[i].style.margin = '0';
+			objs[i].style.listStyleType = 'none';
+			objs[i].style.height = '24px';
+			objs[i].style.backgroundColor = this.colors.MENUCOLOR;
+			objs[i].style.width = '100%';
+		}
+		objs = obj.getElementsByTagName('A');
+		for( var i = 0; i < objs.length; i++){
+			objs[i].style.padding = '0';
+			objs[i].style.margin = '0';
+			objs[i].style.textDecoration = 'none';
+			objs[i].style.display = 'block';
+			objs[i].style.width = '100%';
+		}
 	},
 	/*
 	* return the get Element by id
@@ -1330,6 +1421,13 @@ var oDebugger = {
 		trng.execCommand("Copy");
 		//window.status="Contents highlighted and copied to clipboard!"
 		//setTimeout("window.status=''",1800)
+		trng.collapse(false);
+	},
+	selectAll:function(obj){
+		var trng = document.body.createTextRange();
+		trng.moveToElementText(obj);
+		trng.scrollIntoView();
+		trng.select();
 		trng.collapse(false);
 	},
 	removeClassName:function(elem, className){
