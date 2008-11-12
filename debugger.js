@@ -49,6 +49,12 @@ javascript:var head = main.document.getElementsByTagName("head")[0];var js = mai
 *add some methods
 *add handler method
 *move keycode & mousepos cmd into mode method//2008-11-11
+*v0.5 under release
+*try move to firefox
+*move keycode & mousepos cmd into mode method//2008-11-11 - 2008-11-12
+*v0.5 pre release
+*add mouse mode inspect
+*add menu		//2008-11-12
 */
 
 /*
@@ -100,7 +106,7 @@ function loadJs(file){
 */
 
 var oDebugger = {
-	Version: '0.5 under release',
+	Version: '0.5 pre release',
 /*
 *################################################################################################################################################
 *Public variables
@@ -124,6 +130,15 @@ var oDebugger = {
 	_g_watchDatas : {}, //watch datas
 	_g_enableShowKeyCode : false,
 	_g_enableShowMousePos : false,
+	_g_enableShowMouseObject : false,
+	_g_lastMouseObject : null,
+	_g_lastMouseObjectStyle:{
+		border:'',
+		borderLeft:'',
+		borderRight:'',
+		borderTop:'',
+		borderBottom:''
+	},
 
 	_g_breakpoints : new Array(),
 	_g_eval: null,
@@ -131,17 +146,20 @@ var oDebugger = {
 	_g_runCommandOrgetInput: true,
 	_g_cmdFocus:true,
 
-	debuggerStr : "Debugger(Version:" + 0.5 + ' under release' + "):<span onclick='oDebugger.showdebugger(false);' id='debugger_hiddenBtn'>x</span><br/><input type='text' value='' id='debuggerInfo' /><button onclick=\"oDebugger.$(\'DebuggerOutput\').innerHTML=\'\'\" id='debugger_clearOutput' >clear</button><div id='debuggerClientDiv'><div contenteditable id='DebuggerOutput' designMode></div><input type='text' id='debuggerCommand'/><button onclick=\"oDebugger.dealCommand(oDebugger.$(\'debuggerCommand\'));\" id='debugger_runCommand'>run</button></div>",
-	
+	debuggerStr : "Debugger(Version:" + 0.5 + ' pre release' + "):<span onclick='oDebugger.showdebugger(false);' id='debugger_hiddenBtn'>x</span><br/><input type='text' value='' id='debuggerInfo' /><button onclick=\"oDebugger.$(\'DebuggerOutput\').innerHTML=\'\'\" id='debugger_clearOutput' >clear</button><div id='debuggerClientDiv'><div contenteditable id='DebuggerOutput' designMode></div><input type='text' id='debuggerCommand'/><button onclick=\"oDebugger.dealCommand(oDebugger.$(\'debuggerCommand\'));\" id='debugger_runCommand'>run</button></div>",
+	menuStr : '<li><ul>asdfsdf</ul></li>',
+
 	colors: {
 		ERROR: 'red',
 		COMMAND:'blue',
 		HELP:'#FF00FF',
 		BACKGROUNDCOLOR:'#FFFF00',
 		BACKGROUNDCOLOR_DEACTIVE:'#CCCCCC',
-		TIP: 'red'
+		TIP: 'red',
+		MOUSETIP: 'blue',
+		MENUBACKGROUNDCOLOR:'#FFFFFF'
 	},
-	//Debug method
+	//Debug method You can add your debugger code below ;=)
 	testme:function (){
 		var ss = document.createElement('script'); ss.setAttribute('type','text/javascript'); ss.setAttribute('src','e:\\debugger\\debugger.js');var ohead = (document.getElementsByTagName('head').item(0)); ohead.appendChild(ss);alert('inject success!');
 	},
@@ -440,7 +458,9 @@ var oDebugger = {
 		//LoadJsCssFile('debugger.css', 'css');
 		//create debugger's UI
 		this.Debugger = this.appendElement('DIV', this.debuggerStr, '', 'position:absolute;overflow-x:auto;overflow-y:auto;top:0;left:0;float:left;width:320px;background-color:#FFFF00;filter: Alpha(Opacity = 75);scrollbar-3dlight-color: #959CBB;scrollbar-arrow-color: #666666;scrollbar-base-color: #445289;scrollbar-darkshadow-color: #959CBB;scrollbar-face-color: #D6DDF3;scrollbar-highlight-color: #959CBB;scrollbar-shadow-color: #959CBB;cursor:move;cursor:move;');
+		this.Menu = this.appendElement('DIV', this.menuStr, '', 'position:absolute;display:none;overflow:hidden;top:0;left:0;width:240px;background-color:#CCCCCC;filter: Alpha(Opacity = 75);cursor:hand;cursor:pointer;');
 		document.getElementsByTagName("body").item(0).appendChild(this.Debugger);
+		document.getElementsByTagName('body').item(0).appendChild(this.Menu);
 		this.pBody = document.getElementsByTagName("body").item(0);
 		this._g_lastpos_y = Number(document.getElementsByTagName("body").item(0).offsetHeight)/2;
 		this._g_lastpos_y = 100;
@@ -463,15 +483,36 @@ var oDebugger = {
 		this.bindEventListner(
 			(document.all)?document.getElementsByTagName("body").item(0):window, 'onmousemove',
 			function(evt){
-				evt = (evt) ? evt : ((window.event) ? window.event : "")
+				evt = (evt) ? evt : ((window.event) ? window.event : "");
 				oDebugger._g_targetObj = (evt.target) ? evt.target : evt.srcElement;
 				var mouseX = (evt.clientX)?evt.clientX:evt.x;//evt.pageX;
 				var mouseY = (evt.clientY)?evt.clientY:evt.y;//pageY;
 				if(oDebugger._g_enableShowMousePos){
 					oDebugger.$('debuggerInfo').value = 'MouseX:' + mouseX + ' MouseY:' + mouseY;
 				}
+				if(oDebugger._g_enableShowMouseObject){
+					oDebugger.showMouseObject(evt, oDebugger._g_targetObj);
+				}
 			}
 		);
+		this.bindEventListner(
+			this.Debugger, 'oncontextmenu',
+			function(evt){
+				evt = (evt) ? evt : ((window.event) ? window.event : "");
+				//if(oDebugger.Debugger == (evt.target) ? evt.target : evt.srcElement){
+					oDebugger.showMenu(evt, true);
+					oDebugger.stopBubble(evt);
+				//}
+			}
+		);
+		this.bindEventListner(this.Menu, 'onmouseout', function(evt){
+				evt = (evt) ? evt : ((window.event) ? window.event : "");
+				var elem = (evt.target) ? evt.target : evt.srcElement;
+				oDebugger.showMenu(evt, false);});
+		this.bindEventListner(this.Menu, 'onclick', function(evt){
+				evt = (evt) ? evt : ((window.event) ? window.event : "");
+				var elem = (evt.target) ? evt.target : evt.srcElement;
+				oDebugger.showMenu(evt, false);});
 		/*document.getElementsByTagName("body").item(0).attachEvent('onmousemove',
 			function(evt){
 				oDebugger._g_targetObj = evt.srcElement;
@@ -497,7 +538,7 @@ var oDebugger = {
 		this.bindEventListner(
 			(document.all)?document.getElementsByTagName("body").item(0):window, 'onkeydown',
 			function(evt){
-				evt = (evt) ? evt : ((window.event) ? window.event : "")
+				evt = (evt) ? evt : ((window.event) ? window.event : "");
 				var keycode = evt.keyCode || evt.which;
 				if(keycode=='123'){oDebugger.showdebugger(oDebugger.Debugger.style.display == 'none'?true:false);try{oDebugger.$('debuggerCommand').focus();}catch(e){}}
 				if(keycode=='118'){oDebugger._g_returnValue = [];oDebugger.timerChangeBackColor(oDebugger._g_targetObj);}
@@ -746,6 +787,21 @@ var oDebugger = {
 		if(this._g_cmdFocus){
 			this.$('debuggerCommand').focus();
 		}
+		//if(evt.button == 2){
+		//	this.showMenu(obj, evt);
+		//	this.stopBubble();
+		//}
+	},
+	showMenu:function(evt, show){
+		if(show){
+			var mouseX = (evt.clientX)?evt.clientX:evt.x;
+			var mouseY = (evt.clientY)?evt.clientY:evt.y;
+			this.Menu.style.top = mouseY;
+			this.Menu.style.left = mouseX;
+			this.Menu.style.display = 'block';
+		}else{
+			this.Menu.style.display = 'none';
+		}
 	},
 	MoveLayer:function (obj, evt){
 		evt = (evt) ? evt : ((window.event) ? window.event : "");
@@ -789,6 +845,15 @@ var oDebugger = {
 		this.Debugger.style.scrollbarShadowColor='#959CBB';
 		this.Debugger.style.cursor='move';
 		this.Debugger.style.fontSize='15px';
+		this.Menu.style.position = 'absolute';
+		this.Menu.style.width = '240px';
+		this.Menu.style.height = 'auto';
+		this.Menu.style.display = 'none';
+		this.Menu.style.backgroundColor = this.colors.MENUBACKGROUNDCOLOR;
+		this.Menu.style.filter = 'Alpha(Opacity = 75)';
+		this.Menu.style.overflow='hidden';
+		this.Menu.style.cursor='pointer';
+		this.Menu.style.fontSize='12px';
 		this.$('debugger_runCommand').STYLE='border-right:#2c59aa 1px solid;padding-right: 2px;border-top: #2c59aa 1px solid;padding-left: 2px;font-size: 12px;filter: progid:dximagetransform.microsoft.gradient(gradienttype=0, startcolorstr=#ffffff, endcolorstr=#c3daf5); border-left: #2c59aa 1px solid;color:#445289;padding-top: 2px;border-bottom: #2c59aa 1px solid;cursor: hand;cursor:pointer;';
 		this.$('debugger_runCommand').style.borderRight='#2c59aa 1px solid';
 		this.$('debugger_runCommand').style.paddingRight='2px';
@@ -1284,6 +1349,25 @@ var oDebugger = {
 			obj.attachEvent(evt, funcName);
 		}
 	},
+	stopBubble:function(e) {
+		//如果提供了事件对象，则这是一个非IE浏览器
+		if ( e && e.stopPropagation ){
+        //因此它支持W3C的stopPropagation()方法
+			e.stopPropagation();
+		}else{
+        //否则，我们需要使用IE的方式来取消事件冒泡
+			window.event.cancelBubble = true;
+			window.event.returnValue = false;
+		}
+	},
+	htmlEncode:function(args) {
+		var s = args;
+		s = s.replace(/\&/g, '&amp;');
+		s = s.replace(/\</g, '&lt;');
+		s = s.replace(/\>/g, '&gt;');
+		s = s.replace(/\"/g, '&quot;');
+		return s;
+	},
 	/*
 	*################################################################################################################################################
 	*Debug Methods
@@ -1449,6 +1533,39 @@ var oDebugger = {
 			return;
 		}
 	},
+	showMouseObject:function(evt, obj){
+		try{
+			if(this._g_lastMouseObject != null && obj && this._g_lastMouseObject != obj){
+				this._g_lastMouseObject.style.border = this._g_lastMouseObjectStyle.border;
+				//this._g_lastMouseObject.style.borderLeft = this._g_lastMouseObjectStyle.borderLeft;
+				//this._g_lastMouseObject.style.borderRight = this._g_lastMouseObjectStyle.borderRight;
+				//this._g_lastMouseObject.style.borderTop = this._g_lastMouseObjectStyle.borderTop;
+				//this._g_lastMouseObject.style.borderBottom = this._g_lastMouseObjectStyle.borderBottom;
+			}
+			if(obj && (this._g_lastMouseObject == null || this._g_lastMouseObject  != obj)){
+				this._g_lastMouseObject = obj;
+				this._g_lastMouseObjectStyle.border = obj.style.border;
+				//this._g_lastMouseObjectStyle.borderLeft = obj.style.borderLeft;
+				//this._g_lastMouseObjectStyle.borderRight = obj.style.borderRight;
+				//this._g_lastMouseObjectStyle.borderTop = obj.style.borderTop;
+				//this._g_lastMouseObjectStyle.borderBottom = obj.style.borderBottom;
+
+				this.showoutput('');
+				this.showoutput(this.htmlEncode(obj.outerHTML), false, this.colors.TIP);
+				obj.style.border = '2px solid ' + this.colors.MOUSETIP;
+				//obj.style.borderLeft = '2px solid ' + this.colors.TIP;
+				//obj.style.borderRight = '2px solid ' + this.colors.TIP;
+				//obj.style.borderTop = '2px solid ' + this.colors.TIP;
+				//obj.style.borderBottom = '2px solid ' + this.colors.TIP;
+			}
+			if(arguments.length < 2 && this._g_lastMouseObject != null){
+				this._g_lastMouseObject.style.border = this._g_lastMouseObjectStyle.border;
+				this._g_lastMouseObject = null;
+			}
+		}catch(e){
+			this.showoutput('ERROR:' + e.description + '.', false, this.colors.ERROR);
+		}
+	},
 	/*
 	*################################################################################################################################################
 	*Run debugger commands
@@ -1558,6 +1675,10 @@ var oDebugger = {
 			case 'mousepos':
 				this._g_enableShowMousePos = ! this._g_enableShowMousePos;
 				break;
+			case 'inspect':
+				this._g_enableShowMouseObject = ! this._g_enableShowMouseObject;
+				this.showMouseObject();
+				break;
 			default:
 				return false;
 				break;
@@ -1593,6 +1714,7 @@ var oDebugger = {
 			'mode keycode to toget show keyCode status<br/>' +
 			'mode mousepos to toget show mouse (x,y) pos<br/>' +
 			'mode select to toget onoff focus inputCommand<br/>' +
+			'mode inspect to toget onoff the inspect of object which under mouse<br/>' +
 			'exit to exit debugger<br/>' +
 			'$toHex to convert number to Hex datas<br/>' +
 			'Move your mouse on some area, and press F8 or F7 to see what happend ;=) It\'s not just fan, there\'s some details in output<br/>' +
