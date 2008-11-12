@@ -55,6 +55,8 @@ javascript:var head = main.document.getElementsByTagName("head")[0];var js = mai
 *v0.5 pre release
 *add mouse mode inspect
 *add menu		//2008-11-12
+*v0.51 pre release
+*fixed listObject ( L ) bugs		//2008-11-12
 */
 
 /*
@@ -168,6 +170,10 @@ var oDebugger = {
 		MENUCOLOR:'#CCCCCC',
 		MENUOVER: 'blue'
 	},
+	alpha: {
+		MENU: '75',
+		BODY: '75'
+	},
 	//Debug method You can add your debugger code below ;=)
 	testme:function (){
 		var ss = document.createElement('script'); ss.setAttribute('type','text/javascript'); ss.setAttribute('src','e:\\debugger\\debugger.js');var ohead = (document.getElementsByTagName('head').item(0)); ohead.appendChild(ss);alert('inject success!');
@@ -264,6 +270,40 @@ var oDebugger = {
 		oDebugger.showoutput('Timer end....', false);
 	},
 
+	_getMethods:function (obj){
+		oDebugger.showoutput('-------=getMethods Begin=-------');
+		oDebugger.showoutput(' ');
+		var i = 0;
+		var tmp = '';
+		//var objid = String(obj);
+		for(var x in obj)
+		{
+			if( x == 0 ){
+				break;
+			} else {
+				var str = "obj." + x;
+				var pattern = /[^a-z\_A-Z0-9\.]/ig;
+				var arr = str.match(pattern);
+				if(!arr){   //如果对象为规则，符合eval的要求，规则的对象名由0-9a-Z_组成
+					if(typeof(oDebugger._g_eval("obj." + x)) == 'function'){
+						tmp = "obj." + x +  "   =   " + String(oDebugger._g_eval("obj." + x)).substring(0, String(oDebugger._g_eval(objid + "." + x)).indexOf('{'));
+					}else{
+						tmp = "obj." + x + "   =   " + oDebugger._g_eval("obj." + x);
+					}
+					oDebugger.showoutput(tmp, false);
+				}//if   判断对象是否规则结束
+			}//else   结束
+			i++;
+			if( i > 2000 ){
+				oDebugger.showoutput('=============Error==============', false);
+				oDebugger.showoutput('Error!!!! Loop\'s count more than 2000!!!', false, oDebugger.colors.ERROR);
+				oDebugger.showoutput('=============Error==============', false);
+				break;
+			};
+		}//for   结束
+		//forloop's counts i;
+		oDebugger.showoutput('========getProperty End=========', false);
+	},
 	//get object's childrens
 	_getProperty:function (obj, objid){
 		this.showoutput('-------=getProperty Begin=-------');
@@ -415,19 +455,17 @@ var oDebugger = {
 
 	_showvalue:function (obj)
 	{
-		this.showoutput('========showvalue Begin=======');
-		this.showoutput( this._g_eval(obj) );
-		this.showoutput('========showvalue End=========');
+		oDebugger.showoutput('========showvalue Begin=======', false);
+		oDebugger.showoutput(' ');
+		oDebugger.showoutput( oDebugger._g_eval('obj'));
+		oDebugger.showoutput('========showvalue End=========', false);
 	},
 
 	listObject:function (obj){
-		this.showoutput('Object length:' + obj.length);
-		for (var i = 0; i < obj.length; i++)
+		for ( var i in obj)
 		{
-			for (var j = 1; j <= (arguments.length - 1); j++)
-			{
-				this.showoutput('Object.' + arguments[j] + ' = ' + this._g_eval( 'obj[i].' + arguments[j] ) );
-			}
+			var test = 'obj.' + i;
+			oDebugger.showoutput('' + i + '(' + typeof(i) + ')' + ' = ' + oDebugger._g_eval('obj.' + i), false);
 		}
 	},
 
@@ -575,7 +613,7 @@ var oDebugger = {
 		//Utils
 		//Shortcuts  make a shortcut for somefuncs
 		this.S = this.showoutput; //show something
-		this.M = this._getProperty;//get Method and variables property
+		this.M = this._getMethods;//get Method and variables property
 		this.P = this._showvalue;
 		this.V = this._showvalue;
 		this.L = this.listObject;
@@ -873,7 +911,7 @@ var oDebugger = {
 		this.Debugger.style.width = '320px';
 		this.Debugger.style.height = '425px';
 		this.Debugger.style.backgroundColor = this.colors.BACKGROUNDCOLOR;
-		this.Debugger.style.filter = 'Alpha(Opacity = 75)';
+		this.Debugger.style.filter = 'Alpha(Opacity = ' + this.alpha.BODY + ')';
 		this.Debugger.style.left = this._g_lastpos_x;
 		this.Debugger.style.top = this._g_lastpos_y;
 		this.Debugger.style.overflowX='auto';
@@ -893,7 +931,7 @@ var oDebugger = {
 		this.Menu.style.height = 'auto';
 		this.Menu.style.display = 'none';
 		this.Menu.style.backgroundColor = this.colors.MENUBACKGROUNDCOLOR;
-		this.Menu.style.filter = 'Alpha(Opacity = 75)';
+		this.Menu.style.filter = 'Alpha(Opacity = ' + this.alpha.MENU + ')';
 		this.Menu.style.overflow='hidden';
 		this.Menu.style.cursor='pointer';
 		this.Menu.style.fontSize='12px';
@@ -902,7 +940,7 @@ var oDebugger = {
 		this.SubMenu.style.height = 'auto';
 		this.SubMenu.style.display = 'none';
 		this.SubMenu.style.backgroundColor = this.colors.MENUBACKGROUNDCOLOR;
-		this.SubMenu.style.filter = 'Alpha(Opacity = 75)';
+		this.SubMenu.style.filter = 'Alpha(Opacity = ' + this.alpha.MENU + ')';
 		this.SubMenu.style.overflow='hidden';
 		this.SubMenu.style.cursor='pointer';
 		this.SubMenu.style.fontSize='12px';
@@ -1776,6 +1814,9 @@ var oDebugger = {
 			case 'inspect':
 				this._g_enableShowMouseObject = ! this._g_enableShowMouseObject;
 				this.showMouseObject();
+				break;
+			case 'alpha':
+				this.Debugger.style.filter = 'Alpha(Opacity = ' + (args[2] || 75) + ')';
 				break;
 			default:
 				return false;
