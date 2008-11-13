@@ -287,15 +287,15 @@ var oDebugger = {
 				var str = "obj." + x;
 				var pattern = /[^a-z\_A-Z0-9\.]/ig;
 				var arr = str.match(pattern);
-				if(!arr){   //如果对象为规则，符合eval的要求，规则的对象名由0-9a-Z_组成
+				if(!arr){ 
 					if(typeof(oDebugger._g_eval("obj." + x)) == 'function'){
 						tmp = "obj." + x +  "   =   " + String(oDebugger._g_eval("obj." + x)).substring(0, String(oDebugger._g_eval(objid + "." + x)).indexOf('{'));
 					}else{
 						tmp = "obj." + x + "   =   " + oDebugger._g_eval("obj." + x);
 					}
 					oDebugger.showoutput(tmp, false);
-				}//if   判断对象是否规则结束
-			}//else   结束
+				}
+			}
 			i++;
 			if( i > 2000 ){
 				oDebugger.showoutput('=============Error==============', false);
@@ -303,8 +303,7 @@ var oDebugger = {
 				oDebugger.showoutput('=============Error==============', false);
 				break;
 			};
-		}//for   结束
-		//forloop's counts i;
+		}
 		oDebugger.showoutput('========getProperty End=========', false);
 	},
 	//get object's childrens
@@ -323,15 +322,15 @@ var oDebugger = {
 				var arr = str.match(pattern);
 				//oDebugger.showoutput('----arr-----------');
 				//oDebugger.showoutput(arr);
-				if(!arr){   //如果对象为规则，符合eval的要求，规则的对象名由0-9a-Z_组成
+				if(!arr){
 					if(typeof(this._g_eval(objid + "." + x)) == 'function'){
 						tmp = objid + "." + x +  "   =   " + String(this._g_eval(objid + "." + x)).substring(0, String(this._g_eval(objid + "." + x)).indexOf('{'));
 					}else{
 						tmp = objid + "." + x + "   =   " + this._g_eval(objid + "." + x);
 					}
 					this.showoutput(tmp);
-				}//if   判断对象是否规则结束
-			}//else   结束
+				}
+			}
 			i++;
 			if( i > 2000 ){
 				this.showoutput('=============Error==============');
@@ -339,7 +338,7 @@ var oDebugger = {
 				this.showoutput('=============Error==============');
 				break;
 			};
-		}//for   结束
+		}
 		//forloop's counts i;
 		this.showoutput('========getProperty End=========');
 	},
@@ -359,28 +358,28 @@ var oDebugger = {
 				var arr = str.match(pattern);
 				//oDebugger.showoutput('----arr-----------');
 				//oDebugger.showoutput(arr);
-				if(!arr){   //如果对象为规则，符合eval的要求，规则的对象名由0-9a-Z_组成
+				if(!arr){
 					if(typeof(this._g_eval(objid + "." + x)) == 'function'){
 						tmp = tmp = objid + "." + x +  "   =   " + String(this._g_eval(objid + "." + x)).substring(0, String(this._g_eval(objid + "." + x)).indexOf('{'));
 					}else{
 						tmp = objid + "." + x + "   =   " + this._g_eval(objid + "." + x);
 					}
 					this.showoutput(tmp);
-					if((this._g_eval(objid + "." + x ) == "[object]") ){   //if[object]是否为对象。
+					if((this._g_eval(objid + "." + x ) == "[object]") ){
 						var   objsub;
 						objsub = this._g_eval(objid + "." + x);
 						objsubid = objid + "." + x;
-						if(objsubid.search(/document/i) == -1 )     //如果将document也循环，那么将陷入死循环。
-						{ //因为每个对象都有子对象document.
-							if(objsubid.search(/(parent)/i) == -1){     //parent也不可以
+						if(objsubid.search(/document/i) == -1 )
+						{
+							if(objsubid.search(/(parent)/i) == -1){
 								this._getSTree(objsub, objid);
 								//oDebugger.showoutput(tmp);
 								i++;
 							}
-						}   //   if   非document对象结束
-					}//if   [object]   结束
-				}//if   判断对象是否规则结束
-			}//else   结束
+						}
+					}
+				}
+			}
 			i++;
 			if( i > 2000 ){
 				this.showoutput('=============Error==============');
@@ -388,7 +387,7 @@ var oDebugger = {
 				this.showoutput('=============Error==============');
 				break;
 			};
-		}//for   结束
+		}
 		//forloop's counts i;
 		this.showoutput('========getSTree End=========');
 	},
@@ -413,24 +412,24 @@ var oDebugger = {
 				var arr = str.match(pattern);
 				//oDebugger.showoutput('----arr-----------');
 				//oDebugger.showoutput(arr);
-				if(!arr){   //如果对象为规则，符合eval的要求，规则的对象名由0-9a-Z_组成
+				if(!arr){
 					tmp = objid + "." + x + "   =   " + this._g_eval(objid + "." + x) ;
 					this.showoutput(tmp);
-					if((this._g_eval(objid + "." + x ) == "[object]") ){   //if[object]是否为对象。
+					if((this._g_eval(objid + "." + x ) == "[object]") ){
 						var   objsub;
 						objsub = this._g_eval(objid + "." + x);
 						objsubid = objid + "." + x;
-						if(objsubid.search(/document/i) == -1 )     //如果将document也循环，那么将陷入死循环。
-						{ //因为每个对象都有子对象document.
-							if(objsubid.search(/(parent)/i) == -1){     //parent也不可以
+						if(objsubid.search(/document/i) == -1 )
+						{
+							if(objsubid.search(/(parent)/i) == -1){
 								this._getprop(objsub,objsubid);
 								//oDebugger.showoutput(tmp);
 								i++;
 							}
-						}   //   if   非document对象结束
-					}//if   [object]   结束
-				}//if   判断对象是否规则结束
-			}//else   结束
+						}
+					}
+				}
+			}
 			i++;
 			if( i > 2000 ){
 				this.showoutput('=============Error==============');
@@ -438,7 +437,7 @@ var oDebugger = {
 				this.showoutput('=============Error==============');
 				break;
 			};
-		}//for   结束
+		}
 		//forloop's counts i;
 		this.showoutput('========getprop End=========');
 	},
@@ -452,7 +451,7 @@ var oDebugger = {
 			}else{//if(eval(objid+"."+x)=="[object]")
 				this.showoutput( objid + "." + x + "   =   " + this._g_eval(objid + "." + x) );
 			}
-		}//for   结束
+		}
 		this.showoutput('========showprop End=========');
 	},
 
@@ -1208,7 +1207,7 @@ var oDebugger = {
 	/*
 	var head = document.getElementsByTagName("head")[0];
 	var js = document.createElement("script");
-	js.src = "e\:\\debugger\\debugger.js";//"需要加载的JS路径";
+	js.src = "e\:\\debugger\\debugger.js";
 	js.onload = js.onreadystatechange = function()
 	{
 		if (!this.readyState || this.readyState == "loaded" || this.readyState == "complete")
@@ -1227,8 +1226,6 @@ var oDebugger = {
 		if (!this.readyState || this.readyState == "loaded" || this.readyState == "complete")
 		{
 			 head.removeChild(js);
-			 //JS加载完毕了. 
-			 //执行是否登陆成功的判断
 		}
 	}
 	head.appendChild(js);
@@ -1241,7 +1238,7 @@ var oDebugger = {
 		 head.removeChild(scriptTag);
 		 }
 		 script = document.createElement('script');
-		 script.src = ""+file; //file是全路径,后缀是.js
+		 script.src = ""+file; 
 		 script.type = 'text/javascript';
 		 script.id = 'loadScript';
 		 head.appendChild(script);
@@ -1254,7 +1251,7 @@ var oDebugger = {
 		   head.removeChild(cssTag);
 		 }
 		 css = document.createElement('link');
-		 css.href = ""+file; //file是全路径,后缀是.css
+		 css.href = ""+file; 
 		 css.rel = 'stylesheet';
 		 css.type = 'text/css';
 		 css.id = 'loadCss';
@@ -1499,12 +1496,9 @@ var oDebugger = {
 		}
 	},
 	stopBubble:function(e) {
-		//如果提供了事件对象，则这是一个非IE浏览器
 		if ( e && e.stopPropagation ){
-        //因此它支持W3C的stopPropagation()方法
 			e.stopPropagation();
 		}else{
-        //否则，我们需要使用IE的方式来取消事件冒泡
 			window.event.cancelBubble = true;
 			window.event.returnValue = false;
 		}
