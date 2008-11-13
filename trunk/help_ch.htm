@@ -63,6 +63,8 @@
 	font-weight: blod;
 	margin-right:10px;
   }
+  .code{
+  }
   #container{
 	margin: 0px 50px 0 50px;
 	height:100%;
@@ -155,6 +157,26 @@
 		<div>
 			<span>mode inspect</span>
 			开关显示检查状态。firebug的Inspect很酷吧？现在oDebugger也有inspect了。只需输入mode inspect就可以打开可关掉inspect ;=)
+		</div>
+	</div>
+	<div class='title'>改变oDebugger的背景色</div>
+	<div>
+		<div>
+			<span>命令：</span>
+		</div>
+		<div>
+			<span>mode bgcolor &lt;args&gt;</span>
+			设置oDebugger的背景色，args是html颜色值，如 blue、white 或 #FFFFFF。
+		</div>
+	</div>
+	<div class='title'>临时改变oDebugger的背景色</div>
+	<div>
+		<div>
+			<span>命令：</span>
+		</div>
+		<div>
+			<span>mode alpha &lt;args&gt;</span>
+			设置oDebugger的透明度，args是数字类型的透明度值，从0到100 (0是完全透明)。
 		</div>
 	</div>
 	<div class='title'>改变鼠标所处位置下的对象背景色</div>
@@ -340,7 +362,16 @@
 		</div>
 		<div>
 			<span>L(args) 或 od.L(args)</span>
-			函数。列出对象args。
+			函数。列出对象args的属性和方法名及方法的参数。
+		</div>
+	</div>
+	<div>
+		<div>
+			<span>默认变量名：</span>
+		</div>
+		<div>
+			<span>od.listObjectDetails(args)</span>
+			函数。列出对象args的属性和方法名及方法的参数以及方法的具体实现代码。
 		</div>
 	</div>
 	<div>
@@ -391,6 +422,27 @@
 			在C盘下新建文件夹javascriptdebugger，把debugger.js放到里面去。打开oDebugger文件debugger.js，在文件头部<span>*Dynamic load debugger</span>节，会看到一些注释掉的代码，如果要执行oDebugger的页面是一个frame框架页面，并且主frame的名字为main，就找到23行的代码，拷贝到剪切板，粘贴到地址栏中，按下回车，不久就能看到 inject sucess字样的提示框，确定后就可以用了。如果主frame的名字不是main就改一下23行吧（替换掉里面的main为真正的名字），也不难 ;=)
 		</div>
 	</div>
+	<div class='title0'>怎么静态引入oDebugger</div>
+	<div class='title'>html文档页面</div>
+	<div>
+		<div>
+			<span>代码：</span>
+		</div>
+		<div>
+			<span></span>
+			把debugger.js放到任意地方，记住路径名。在html文档head中添加<span class='code'>&lt;script type='text/javascript' lanuage='javascript' src='你的路径/debugger.js' &gt;&lt;/script&gt;</span>，刷新页面或重新打开页面，并允许javascript脚本，过一小会就能看到oDebugger了。
+		</div>
+	</div>
+	<div class='title'>php、jsp、asp...等文档页面</div>
+	<div>
+		<div>
+			<span>代码：</span>
+		</div>
+		<div>
+			<span></span>
+			把debugger.js放到服务器的发布目录下，这儿假设放在了根目录下。在上述文档的head中添加<span class='code'>&lt;script type='text/javascript' lanuage='javascript' src='/debugger.js' &gt;&lt;/script&gt;</span>，刷新页面或重新打开页面，并允许javascript脚本，过一小会就能看到oDebugger了。
+		</div>
+	</div>
 	<div class='title0'>你能为oDebugger做什么</div>
 	<div class='title'>参与开发</div>
 	<div>
@@ -399,7 +451,7 @@
 		</div>
 		<div>
 			<span></span>
-			oDebugger现在仅仅只有Version 0.5 这么大，还很不成熟。你可以参与它的开发。有好的建议请发邮件到：<a href='mailto:Jackey.King@gmail.com'>Jackey.King@gmail.com</a>联系我吧。欢迎寄送你更改的oDebugger过来。
+			oDebugger现在仅仅只有Version 0.6 这么大，还很不成熟。你可以参与它的开发。有好的建议请发邮件到：<a href='mailto:Jackey.King@gmail.com'>Jackey.King@gmail.com</a>联系我吧。欢迎寄送你更改的oDebugger过来。
 		</div>
 	</div>
 	<div class='title'>起个名字</div>

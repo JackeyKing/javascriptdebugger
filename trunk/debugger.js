@@ -467,11 +467,20 @@ var oDebugger = {
 	listObject:function (obj){
 		for ( var i in obj)
 		{
-			var test = 'obj.' + i;
-			oDebugger.showoutput('' + i + '(' + typeof(i) + ')' + ' = ' + oDebugger._g_eval('obj.' + i), false);
+			oDebugger.showoutput('' + i , true, oDebugger.colors.TIP);
+			oDebugger.showoutput(' = ', true);
+			oDebugger.showoutput((typeof(oDebugger._g_eval('obj.' + i)) == 'function')?String(oDebugger._g_eval("obj." + i)).substring(0, String(oDebugger._g_eval("obj." + i)).indexOf('{')):oDebugger.htmlEncode(String(oDebugger._g_eval('obj.' + i))), false);
 		}
 	},
 
+	listObjectDetails:function (obj){
+		for ( var i in obj)
+		{
+			oDebugger.showoutput('' + i , true, oDebugger.colors.TIP);
+			oDebugger.showoutput(' = ', true);
+			oDebugger.showoutput(oDebugger.htmlEncode(String(oDebugger._g_eval('obj.' + i))), false);
+		}
+	},
 
 	watchVariable:function (obj, timerCount){
 		if(this._g_watchDatas.obj && this._g_watchDatas.obj != obj){
