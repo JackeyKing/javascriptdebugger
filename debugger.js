@@ -645,6 +645,7 @@ var oDebugger = {
 		);*/
 		this.$('debuggerCommand')._commandHistory = new Array(this._g_maxCommandHistory);
 		this.$('debuggerCommand')._commandStore = new Array(this._g_maxCommandStore);
+		this.$('debuggerCommand')._curCommandHistoryIndex = 0;
 		//keyCode 13 Enter
 		//keyCode 37 <- 38 ^ 39 -> 40 |
 		//keyCode 8 BackSpace  46 Delete
@@ -1831,7 +1832,7 @@ var oDebugger = {
 	},
 	/*
 	*################################################################################################################################################
-	*Event Handdler
+	*Event Handler
 	*################################################################################################################################################
 	*/
 	handler:{
