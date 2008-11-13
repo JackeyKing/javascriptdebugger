@@ -103,7 +103,7 @@ function loadJs(file){
      head.removeChild(scriptTag);
      }
      script = document.createElement('script');
-     script.src = ""+file; //file是全路径,后缀是.js
+     script.src = ""+file;
      script.type = 'text/javascript';
      script.id = 'loadScript';
      head.appendChild(script);
@@ -1189,12 +1189,12 @@ var oDebugger = {
 	},
 	//Load js or css files
 	LoadJsCssFile:function (filename, filetype){
-		if (filetype=="js"){ //如果是.js文件
+		if (filetype=="js"){
 			var fileref=document.createElement('script');
 			fileref.setAttribute("type","text/javascript");
 			fileref.setAttribute("src",filename);
 		}
-		else if (filetype=="css"){ //如果是.css文件
+		else if (filetype=="css"){
 			var fileref=document.createElement("link");
 			fileref.setAttribute("rel", "stylesheet");
 			fileref.setAttribute("type", "text/css");
