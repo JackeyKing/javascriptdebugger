@@ -109,6 +109,15 @@
 			oDebugger初始化时，会注册一个 S 函数，如果注册成功，就能把它的参数输出到oDebugger的窗口中了。这样会方便跟踪显示某个变量的值。S 函数的参数：第一个是要输出的值，第二个是是否不换行。第三个是颜色。如<span class='code'>S('hello', false, '#FF0000')</span>
 		</div>
 	</div>
+	<div class='title'>怎样动态装载oDebugger</div>
+	<div>
+		<div>
+			<span>提示：</span>
+		</div>
+		<div>
+			看help_cn.htm中的动态装入小节。如果没有地址栏（地址栏被屏蔽了），这时想动态装入oDebugger确实是个问题。不过问题总会被解决的 ;=) 。下载程序source库中的getIE.rar，找到里面debug文件夹下的getIE.exe，运行它。确保debugger.js放在了C:\javascriptdebugger文件夹中，关掉其它的IE页面，只留要装入oDebugger的页面。如果是没有框架的页面，点 Single Page(file://) 按钮试试，看有没有成功，如果不成功就点 Single Page(/)按钮再看看。如果是有框架的页面，并且要显示oDebugger的页面的名字是main的话，点 Frame Page(file://) 按钮试试，看有没有成功，如果不成功就点 Frame Page(/)按钮再看看。一般来说，会有一个成功的，如果都不成功，那只能说So sorry了 ;=) 这个小小的动态装载器只是个粗制烂造的版本，如果你想完善它，就看看getIE.rar里面的代码吧，也不麻烦，就是写的有些乱。你可以给它加上用鼠标找窗口的功能，也可以加上输入框架页面中的名字的功能，当然，如果你有更好的想法，也可以实现它。 ;=) 差点忘了，release目录下的getIE.exe执行了是没有效果的（起码在我这儿是这样），程序中间可能某个地方需要等待执行的，而我没有等待，就用慢慢的debug版吧 ;=)
+		</div>
+	</div>
   </div>
  </BODY>
 </HTML>
