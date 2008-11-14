@@ -22,6 +22,11 @@
 *
 */
 /*
+*################################################################################################################################################
+*Dynamic load debugger
+*################################################################################################################################################
+*/
+/*
 javascript:var head = document.getElementsByTagName("head")[0];var js = document.createElement("script");js.src = "file:///javascriptdebugger/debugger.js";head.appendChild(js);alert('inject success!');
 javascript:var head = main.document.getElementsByTagName("head")[0];var js = main.document.createElement("script");js.src = "file:///javascriptdebugger/debugger.js";head.appendChild(js);alert('inject success!');
 */
@@ -65,53 +70,6 @@ javascript:var head = main.document.getElementsByTagName("head")[0];var js = mai
 *modified bpx bp method's calling method, caller now have perfect run		//2008-11-12
 */
 
-/*
-*################################################################################################################################################
-*Dynamic load debugger
-*################################################################################################################################################
-*/
-
-//Copy a line string to iexplorer's location bar, and press RETURN, when you got a message like 'inject success!', that's mean debugger have finished it's dynamic loaded
-//Tips: you need modify some locations in those strings; If your debugger.js is put in C:\debugger\debugger.js , the you can use this: file:///debugger/debugger.js to replace it.
-
-//javascript:initdebugger();
-//inline function to load debugger.js file
-//usage: copyit to location input, and press return;
-//javascript:document.getElementsByTagName('head').item(0).appendChild((document.createElement('script')).setAttribute('src','e:\\debugger\\debugger.js'));
-//javascript: var ss = document.createElement('script'); ss.setAttribute('type','text/javascript'); ss.setAttribute('src','e:\\debugger\\debugger.js');var ohead = (document.getElementsByTagName('head').item(0)); ohead.appendChild(ss);alert('inject success!');
-//javascript: var ss = main.document.createElement('script'); ss.setAttribute('type','text/javascript'); ss.setAttribute('src','js/debugger.js');var ohead = (main.document.getElementsByTagName('head').item(0)); ohead.appendChild(ss);alert('inject success!');
-//for frames, main frame name is 'main'
-//javascript: var ss = main.document.createElement('link'); ss.setAttribute('type','text/css');ss.setAttribute('rel','stylesheet'); ss.setAttribute('src','js/debugger.css');var ohead = (main.document.getElementsByTagName('head').item(0)); ohead.appendChild(ss);alert('inject success!');
-//fileref.setAttribute('type','text/javascript');
-//)
-
-//javascript:var head = document.getElementsByTagName("head")[0];var js = document.createElement("script");js.src = "file:///javascriptdebugger/debugger.js";head.appendChild(js);alert('inject success!');
-//javascript:var head = main.document.getElementsByTagName("head")[0];var js = main.document.createElement("script");js.src = "file:///javascriptdebugger/debugger.js";head.appendChild(js);alert('inject success!');
-/*
-var head = document.getElementsByTagName("head")[0];
-var js = document.createElement("script");
-js.src = "e\:\\debugger\\debugger.js";
-js.onload = js.onreadystatechange = function(){
-    if (!this.readyState || this.readyState == "loaded" || this.readyState == "complete")
-     {
-        //do something
-     }
-}
-head.appendChild(js);
-
-function loadJs(file){
-     var scriptTag = document.getElementById('loadScript');
-     var head = document.getElementsByTagName('head').item(0);
-     if(scriptTag){
-     head.removeChild(scriptTag);
-     }
-     script = document.createElement('script');
-     script.src = ""+file;
-     script.type = 'text/javascript';
-     script.id = 'loadScript';
-     head.appendChild(script);
-}
-*/
 
 var oDebugger = {
 	Version: '0.6 pre release',
