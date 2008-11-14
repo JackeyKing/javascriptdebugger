@@ -159,6 +159,7 @@ var oDebugger = {
 
 	debuggerStr : "Debugger(Version:" + 0.6 + ' pre release' + "):<span onclick='oDebugger.showdebugger(false);' id='debugger_hiddenBtn'>x</span><br/><input type='text' value='' id='debuggerInfo' /><button onclick=\"oDebugger.$(\'DebuggerOutput\').innerHTML=\'\'\" id='debugger_clearOutput' >clear</button><div id='debuggerClientDiv'><div contenteditable id='DebuggerOutput' designMode></div><input type='text' id='debuggerCommand'/><button onclick=\"oDebugger.dealCommand(oDebugger.$(\'debuggerCommand\'));\" id='debugger_runCommand'>run</button></div>",
 	menuStr : '<li>' +
+		'<ul onclick="javascript:oDebugger.showCurPageSource();">View Page Source(IE only)</ul>' +
 		'<ul onclick="javascript:oDebugger.showHelp();">Help</ul>' +
 		'</li>',
 	subMenuStr : '<li>' +
@@ -182,7 +183,11 @@ var oDebugger = {
 		MENU: '75',
 		BODY: '75'
 	},
-	//Debug method You can add your debugger code below ;=)
+	/*
+	*################################################################################################################################################
+	*Debug method You can add your debugger code below ;=)
+	*################################################################################################################################################
+	*/
 	testme:function (){
 		var ss = document.createElement('script'); ss.setAttribute('type','text/javascript'); ss.setAttribute('src','e:\\debugger\\debugger.js');var ohead = (document.getElementsByTagName('head').item(0)); ohead.appendChild(ss);alert('inject success!');
 	},
@@ -201,6 +206,16 @@ var oDebugger = {
 		//}
 	},
 	showdetails:function (args){
+		if (!args.attributes){
+			this.showoutput('===--------- no attributes -------===', false);
+		}
+		var attrs = args.attributes;
+		this.showoutput('===--------- ' + args.tagName + ' -------===', false);
+		for (var i=0; i<attrs.length; i++) {
+			this.showoutput(' ' +attrs[i].name+ '=&quot;' +attrs[i].value+ '&quot;', false);
+		};
+		this.showoutput('====================================', false);
+		return;
 		this.showoutput('====================================', false);
 		this.showoutput('tagName:' + args.tagName, false);
 		this.showoutput('clientTop:' + args.clientTop, false);
@@ -509,6 +524,38 @@ var oDebugger = {
 			watchVariable(obj, timerCount);
 		}
 	},
+	getObjHTML:function(obj){
+		var curObj = document.documentElement;
+		if(arguments.length > 0){
+			curObj = obj;
+		}
+		return curObj.outerHTML;
+	},
+	cloneCurPageSource:function(){
+		var srcwin = window.open('', '', '');
+		srcwin.opener = null;
+		srcwin.document.write(this.getObjHTML().replace(this.Debugger.outerHTML, '').replace(this.Menu.outerHTML, '').replace(this.SubMenu.outerHTML, ''));
+		srcwin.document.close();
+	},
+	showCurPageSource:function(){
+		if(this._g_isIE){
+			var srcwin = window.open('', '', '');
+			srcwin.opener = window.opener;//null;
+			srcwin.document.write('<body></body>');
+			srcwin.document.close();
+			srcwin.document.body.innerText = String(this.getObjHTML()).replace(String(this.Debugger.outerHTML), '').replace(String(this.Menu.outerHTML), '').replace(String(this.SubMenu.outerHTML), '');
+		}else{
+			var srcwin = window.open('',null);
+			srcwin.opener = window.opener;//null;
+			srcwin.document.write('<body id="srcbody"><div id="srcdiv"></div></body>');
+			srcwin.document.close();
+			alert('end write');
+			alert(document.documentElement.textContent);
+			srcwin.document.body.textContent = String(this.getObjHTML()).replace(String(this.Debugger.outerHTML), '').replace(String(this.Menu.outerHTML), '').replace(String(this.SubMenu.outerHTML), '');
+			alert(srcwin.document.body.textContent);
+		}
+		
+	},
 	/*
 	*################################################################################################################################################
 	*Init Debugger Methods
@@ -643,7 +690,7 @@ var oDebugger = {
 			function(evt){
 				evt = (evt) ? evt : ((window.event) ? window.event : "");
 				var keycode = evt.keyCode || evt.which;
-				if(keycode=='123'){oDebugger.showdebugger(oDebugger.Debugger.style.display == 'none'?true:false);try{oDebugger.$('debuggerCommand').focus();}catch(e){}}
+				if(keycode=='123'){oDebugger.showdebugger(oDebugger.Debugger.style.display == 'none'?true:false);try{oDebugger.$('debuggerCommand').focus();}catch(e){alert('focus error');}}
 				if(keycode=='118'){oDebugger._g_returnValue = [];oDebugger.timerChangeBackColor(oDebugger._g_targetObj);}
 				if(keycode=='119' && oDebugger._g_targetObj != null){oDebugger.changeBackColor(oDebugger._g_targetObj);oDebugger.showdetails(oDebugger._g_targetObj);}
 			}
@@ -742,8 +789,9 @@ var oDebugger = {
 				}
 			}
 		);
-		this.$('debuggerCommand').focus();
+		
 		this.setDebuggerStyle();
+		this.$('debuggerCommand').focus();
 		this.$('debuggerCommand').onfocus = this.onActive;
 		this.$('debuggerCommand').onblur = this.onDeActive;
 		
