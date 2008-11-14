@@ -152,6 +152,8 @@ var oDebugger = {
 	_g_runCommandOrgetInput: true,
 	_g_cmdFocus:true,
 
+	_g_isIE:((document.all)?true:false),
+
 	debuggerStr : "Debugger(Version:" + 0.6 + ' pre release' + "):<span onclick='oDebugger.showdebugger(false);' id='debugger_hiddenBtn'>x</span><br/><input type='text' value='' id='debuggerInfo' /><button onclick=\"oDebugger.$(\'DebuggerOutput\').innerHTML=\'\'\" id='debugger_clearOutput' >clear</button><div id='debuggerClientDiv'><div contenteditable id='DebuggerOutput' designMode></div><input type='text' id='debuggerCommand'/><button onclick=\"oDebugger.dealCommand(oDebugger.$(\'debuggerCommand\'));\" id='debugger_runCommand'>run</button></div>",
 	menuStr : '<li>' +
 		'<ul onclick="javascript:oDebugger.showHelp();">Help</ul>' +
@@ -212,7 +214,7 @@ var oDebugger = {
 	showoutput:function (args, inline, color){
 		
 		if(arguments.length <= 1){
-			if(document.all){
+			if(this._g_isIE){
 				this.$('DebuggerOutput').innerText += args;
 			}else{
 				this.$('DebuggerOutput').textContent += args;
@@ -225,7 +227,7 @@ var oDebugger = {
 		if(arguments.length > 1 && !inline){
 			this.$('DebuggerOutput').innerHTML += '<br/>';
 		}else if(arguments.length == 1 || !inline){
-			if(document.all){
+			if(this._g_isIE){
 				this.$('DebuggerOutput').innerText += '\n';
 			}else{
 				this.$('DebuggerOutput').textContent += '\n';
@@ -541,7 +543,7 @@ var oDebugger = {
 				var elem = (evt.target) ? evt.target : evt.srcElement;
 				oDebugger.UpMouse(elem, evt);});
 		this.bindEventListner(
-			(document.all)?document.getElementsByTagName("body").item(0):window, 'onmousemove',
+			(this._g_isIE)?document.getElementsByTagName("body").item(0):window, 'onmousemove',
 			function(evt){
 				evt = (evt) ? evt : ((window.event) ? window.event : "");
 				oDebugger._g_targetObj = (evt.target) ? evt.target : evt.srcElement;
@@ -634,7 +636,7 @@ var oDebugger = {
 		//keyCode 123 = F12
 		//keyCode 118 , 119 = F7, F8
 		this.bindEventListner(
-			(document.all)?document.getElementsByTagName("body").item(0):window, 'onkeydown',
+			(this._g_isIE)?document.getElementsByTagName("body").item(0):window, 'onkeydown',
 			function(evt){
 				evt = (evt) ? evt : ((window.event) ? window.event : "");
 				var keycode = evt.keyCode || evt.which;
@@ -910,7 +912,6 @@ var oDebugger = {
 		}
 	},
 	DownMouse:function (obj, evt){
-		//if (!document.all) return true;//暂时只支持4.0以上的IE浏览器
 		evt = (evt) ? evt : ((window.event) ? window.event : "");
 		var mouseX = (evt.pageX)?evt.pageX:evt.x;
 		var mouseY = (evt.pageY)?evt.pageY:evt.y;
@@ -1261,7 +1262,7 @@ var oDebugger = {
 	//create color text
 	colorizeInput:function   (strGiven,   strColor){
 		var oFont = appendElement('font');
-		if(document.all){
+		if(this._g_isIE){
 			oFont.innerText = strGiven;
 		}else{
 			oFont.textContent = strGiven;
@@ -1730,15 +1731,20 @@ var oDebugger = {
 		try{
 			this.showoutput('RETURN: ', true, this.colors.COMMAND);
 			//this._g_returnValue = this._g_eval(obj.value);
-			if(document.all){
+			if(this._g_isIE){
 				this._g_returnValue = this._g_eval(obj.value);//execScript
 			}else{
 				this._g_returnValue = window.eval(obj.value);
 			}
 			this.showoutput(this._g_returnValue, false, this.colors.TIP);
 		}catch(e){
-			this._g_returnValue = e.description;
-			this.showoutput(e.description, false, this.colors.ERROR);
+			if(this._g_isIE){
+				this._g_returnValue = e.description;
+				this.showoutput(e.description, false, this.colors.ERROR);
+			}else{
+				this._g_returnValue = e;
+				this.showoutput(e, false, this.colors.ERROR);
+			}
 		}
 	},
 	getInput:function (obj){
