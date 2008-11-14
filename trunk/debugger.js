@@ -159,7 +159,7 @@ var oDebugger = {
 
 	debuggerStr : "Debugger(Version:" + 0.6 + ' pre release' + "):<span onclick='oDebugger.showdebugger(false);' id='debugger_hiddenBtn'>x</span><br/><input type='text' value='' id='debuggerInfo' /><button onclick=\"oDebugger.$(\'DebuggerOutput\').innerHTML=\'\'\" id='debugger_clearOutput' >clear</button><div id='debuggerClientDiv'><div contenteditable id='DebuggerOutput' designMode></div><input type='text' id='debuggerCommand'/><button onclick=\"oDebugger.dealCommand(oDebugger.$(\'debuggerCommand\'));\" id='debugger_runCommand'>run</button></div>",
 	menuStr : '<li>' +
-		'<ul onclick="javascript:oDebugger.showCurPageSource();">View Page Source(IE only)</ul>' +
+		'<ul onclick="javascript:oDebugger.showCurPageSource();">View Page Source</ul>' +
 		'<ul onclick="javascript:oDebugger.showHelp();">Help</ul>' +
 		'</li>',
 	subMenuStr : '<li>' +
@@ -177,7 +177,7 @@ var oDebugger = {
 		MOUSETIP: 'blue',
 		MENUBACKGROUNDCOLOR:'#FFFFFF',
 		MENUCOLOR:'#CCCCCC',
-		MENUOVER: 'blue'
+		MENUOVER: '#E8E8E8'
 	},
 	alpha: {
 		MENU: '75',
@@ -537,23 +537,25 @@ var oDebugger = {
 		srcwin.document.write(this.getObjHTML().replace(this.Debugger.outerHTML, '').replace(this.Menu.outerHTML, '').replace(this.SubMenu.outerHTML, ''));
 		srcwin.document.close();
 	},
-	showCurPageSource:function(){
+	removeODebuggerCode:function(args){
+		//args.replace(//gi, '');
+		//return args;
 		if(this._g_isIE){
-			var srcwin = window.open('', '', '');
-			srcwin.opener = window.opener;//null;
-			srcwin.document.write('<body></body>');
-			srcwin.document.close();
-			srcwin.document.body.innerText = String(this.getObjHTML()).replace(String(this.Debugger.outerHTML), '').replace(String(this.Menu.outerHTML), '').replace(String(this.SubMenu.outerHTML), '');
+			return args.replace(String(this.Debugger.outerHTML), '').replace(String(this.Menu.outerHTML), '').replace(String(this.SubMenu.outerHTML), '');
 		}else{
-			var srcwin = window.open('',null);
-			srcwin.opener = window.opener;//null;
-			srcwin.document.write('<body id="srcbody"><div id="srcdiv"></div></body>');
-			srcwin.document.close();
-			alert('end write');
-			alert(document.documentElement.textContent);
-			srcwin.document.body.textContent = String(this.getObjHTML()).replace(String(this.Debugger.outerHTML), '').replace(String(this.Menu.outerHTML), '').replace(String(this.SubMenu.outerHTML), '');
-			alert(srcwin.document.body.textContent);
+			return args.replace(String(this.Debugger.outerHTML), '').replace(String(this.Menu.innerHTML), '').replace(String(this.SubMenu.innerHTML), '');
 		}
+	},
+	showCurPageSource:function(){
+		var srcwin = window.open('',null);
+		srcwin.opener = window.opener;//null;
+		srcwin.document.write('<body></body>');
+		if(this._g_isIE){
+			srcwin.document.body.innerText = this.removeODebuggerCode(String(this.getObjHTML()));
+		}else{
+			srcwin.document.body.textContent = this.removeODebuggerCode(String(document.documentElement.innerHTML));
+		}
+		srcwin.document.close();
 		
 	},
 	/*
@@ -991,7 +993,7 @@ var oDebugger = {
 		this.Debugger.style.cursor='move';
 		this.Debugger.style.fontSize='15px';
 		this.Menu.style.position = 'absolute';
-		this.Menu.style.width = '240px';
+		this.Menu.style.width = '160px';
 		this.Menu.style.height = 'auto';
 		this.Menu.style.display = 'none';
 		this.Menu.style.backgroundColor = this.colors.MENUBACKGROUNDCOLOR;
@@ -1000,7 +1002,7 @@ var oDebugger = {
 		this.Menu.style.cursor='pointer';
 		this.Menu.style.fontSize='12px';
 		this.SubMenu.style.position = 'absolute';
-		this.SubMenu.style.width = '240px';
+		this.SubMenu.style.width = '120px';
 		this.SubMenu.style.height = 'auto';
 		this.SubMenu.style.display = 'none';
 		this.SubMenu.style.backgroundColor = this.colors.MENUBACKGROUNDCOLOR;
@@ -1102,8 +1104,10 @@ var oDebugger = {
 		var objs = obj.getElementsByTagName('UL');
 		for( var i = 0; i < objs.length; i++){
 			objs[i].style.padding = '0';
-			objs[i].style.margin = '0 0 1px 1px';
+			objs[i].style.margin = '0px 1px 1px 10px';
 			objs[i].style.width = '100%';
+			objs[i].style.height = '24px';
+			objs[i].style.lineHeight = '24px';
 			objs[i].style.backgroundColor = this.colors.MENUBACKGROUNDCOLOR;
 			this.bindEventListner(objs[i], 'onmouseover', function(evt){
 				evt = (evt) ? evt : ((window.event) ? window.event : "");
@@ -1119,9 +1123,11 @@ var oDebugger = {
 		objs = obj.getElementsByTagName('LI');
 		for( var i = 0; i < objs.length; i++){
 			objs[i].style.padding = '0';
-			objs[i].style.margin = '0';
+			objs[i].style.margin = '0px 0px 0px 0px';
+			objs[i].style.borderTop = '1px solid ' + oDebugger.colors.MENUCOLOR;
+			objs[i].style.borderBottom = '1px solid ' + oDebugger.colors.MENUCOLOR;
 			objs[i].style.listStyleType = 'none';
-			objs[i].style.height = '24px';
+			objs[i].style.height = 'auto';
 			objs[i].style.backgroundColor = this.colors.MENUCOLOR;
 			objs[i].style.width = '100%';
 		}
