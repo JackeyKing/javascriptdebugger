@@ -650,7 +650,7 @@ var oDebugger = {
 			function(evt){
 				evt = (evt) ? evt : ((window.event) ? window.event : "");
 				var keycode = evt.keyCode || evt.which;
-				if(keycode=='123'){oDebugger.showdebugger(oDebugger.Debugger.style.display == 'none'?true:false);try{oDebugger.$('debuggerCommand').focus();}catch(e){alert('focus error');}}
+				if(keycode=='123'){oDebugger.showdebugger(oDebugger.Debugger.style.display == 'none'?true:false);try{oDebugger.$('debuggerCommand').focus();}catch(e){}}
 				if(keycode=='118'){oDebugger._g_returnValue = [];oDebugger.timerChangeBackColor(oDebugger._g_targetObj);}
 				if(keycode=='119' && oDebugger._g_targetObj != null){oDebugger.changeBackColor(oDebugger._g_targetObj);oDebugger.showdetails(oDebugger._g_targetObj);}
 			}
