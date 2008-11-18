@@ -79,7 +79,7 @@ javascript:var head = main.document.getElementsByTagName("head")[0];var js = mai
 *fix bugs
 *modified bpx bp method's calling method, caller now have perfect run		//2008-11-12
 *v0.6 beta 1
-*fix bugs           //2008-11-12
+*fix bugs           //2008-11-18
 */
 
 
