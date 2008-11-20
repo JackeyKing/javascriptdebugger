@@ -85,7 +85,7 @@ javascript:var head = main.document.getElementsByTagName("head")[0];var js = mai
 
 
 var oDebugger = {
-	Version: '0.6 beta 1',
+	Version: '0.6 beta 2',
 /*
 *################################################################################################################################################
 *Public variables
@@ -131,7 +131,7 @@ var oDebugger = {
 	_g_registedVariables:[],
 	_g_registedEventHandlers:[],
 
-	debuggerStr : "Debugger(Version:" + 0.6 + ' beta 1' + "):<span onclick='oDebugger.showdebugger(false);' id='debugger_hiddenBtn'>x</span><br/><input type='text' value='' id='debuggerInfo' /><button onclick=\"oDebugger.$(\'DebuggerOutput\').innerHTML=\'\'\" id='debugger_clearOutput' >clear</button><div id='debuggerClientDiv'><div contenteditable id='DebuggerOutput' designMode></div><input type='text' id='debuggerCommand'/><button onclick=\"oDebugger.dealCommand(oDebugger.$(\'debuggerCommand\'));\" id='debugger_runCommand'>run</button></div>",
+	debuggerStr : "Debugger(Version:" + 0.6 + ' beta 2' + "):<span onclick='oDebugger.showdebugger(false);' id='debugger_hiddenBtn'>x</span><br/><input type='text' value='' id='debuggerInfo' /><button onclick=\"oDebugger.$(\'DebuggerOutput\').innerHTML=\'\'\" id='debugger_clearOutput' >clear</button><div id='debuggerClientDiv'><div contenteditable id='DebuggerOutput' designMode></div><input type='text' id='debuggerCommand'/><button onclick=\"oDebugger.dealCommand(oDebugger.$(\'debuggerCommand\'));\" id='debugger_runCommand'>run</button></div>",
 	menuStr : '<li>' +
 		'<ul onclick="javascript:oDebugger.showCurPageSource();">View Page Source</ul>' +
 		'<ul onclick="javascript:oDebugger.showHelp();">Help</ul>' +
@@ -256,11 +256,19 @@ var oDebugger = {
 				var str = "obj." + x;
 				var pattern = /[^a-z\_A-Z0-9\.]/ig;
 				var arr = str.match(pattern);
-				if(!arr){ 
-					if(typeof(oDebugger._g_eval("obj." + x)) == 'function'){
-						tmp = "obj." + x +  "   =   " + String(oDebugger._g_eval("obj." + x)).substring(0, String(oDebugger._g_eval(objid + "." + x)).indexOf('{'));
+				if(!arr){
+					if(oDebugger._g_isIE){
+						if(typeof(oDebugger._g_eval("obj." + x)) == 'function'){
+							tmp = "obj." + x +  "   =   " + String(oDebugger._g_eval("obj." + x)).substring(0, String(oDebugger._g_eval(objid + "." + x)).indexOf('{'));
+						}else{
+							tmp = "obj." + x + "   =   " + oDebugger._g_eval("obj." + x);
+						}
 					}else{
-						tmp = "obj." + x + "   =   " + oDebugger._g_eval("obj." + x);
+						if(typeof(window.eval("obj." + x)) == 'function'){
+							tmp = "obj." + x +  "   =   " + String(window.eval("obj." + x)).substring(0, String(window.eval(objid + "." + x)).indexOf('{'));
+						}else{
+							tmp = "obj." + x + "   =   " + window.eval("obj." + x);
+						}
 					}
 					oDebugger.showoutput(tmp, false);
 				}
@@ -292,10 +300,19 @@ var oDebugger = {
 				//oDebugger.showoutput('----arr-----------');
 				//oDebugger.showoutput(arr);
 				if(!arr){
-					if(typeof(this._g_eval(objid + "." + x)) == 'function'){
-						tmp = objid + "." + x +  "   =   " + String(this._g_eval(objid + "." + x)).substring(0, String(this._g_eval(objid + "." + x)).indexOf('{'));
+					if(this._g_isIE){
+						if(typeof(this._g_eval(objid + "." + x)) == 'function'){
+							tmp = objid + "." + x +  "   =   " + String(this._g_eval(objid + "." + x)).substring(0, String(this._g_eval(objid + "." + x)).indexOf('{'));
+						}else{
+							tmp = objid + "." + x + "   =   " + this._g_eval(objid + "." + x);
+						}
 					}else{
-						tmp = objid + "." + x + "   =   " + this._g_eval(objid + "." + x);
+						if(typeof(window.eval(objid + "." + x)) == 'function'){
+							tmp = objid + "." + x +  "   =   " + String(window.eval(objid + "." + x)).substring(0, String(window.eval(objid + "." + x)).indexOf('{'));
+						}else{
+							tmp = objid + "." + x + "   =   " + window.eval(objid + "." + x);
+						}
+
 					}
 					this.showoutput(tmp);
 				}
@@ -328,22 +345,44 @@ var oDebugger = {
 				//oDebugger.showoutput('----arr-----------');
 				//oDebugger.showoutput(arr);
 				if(!arr){
-					if(typeof(this._g_eval(objid + "." + x)) == 'function'){
-						tmp = tmp = objid + "." + x +  "   =   " + String(this._g_eval(objid + "." + x)).substring(0, String(this._g_eval(objid + "." + x)).indexOf('{'));
+					if(this._g_isIE){
+						if(typeof(this._g_eval(objid + "." + x)) == 'function'){
+							tmp = tmp = objid + "." + x +  "   =   " + String(this._g_eval(objid + "." + x)).substring(0, String(this._g_eval(objid + "." + x)).indexOf('{'));
+						}else{
+							tmp = objid + "." + x + "   =   " + this._g_eval(objid + "." + x);
+						}
+						this.showoutput(tmp);
+						if((this._g_eval(objid + "." + x ) == "[object]") ){
+							var   objsub;
+							objsub = this._g_eval(objid + "." + x);
+							objsubid = objid + "." + x;
+							if(objsubid.search(/document/i) == -1 )
+							{
+								if(objsubid.search(/(parent)/i) == -1){
+									this._getSTree(objsub, objid);
+									//oDebugger.showoutput(tmp);
+									i++;
+								}
+							}
+						}
 					}else{
-						tmp = objid + "." + x + "   =   " + this._g_eval(objid + "." + x);
-					}
-					this.showoutput(tmp);
-					if((this._g_eval(objid + "." + x ) == "[object]") ){
-						var   objsub;
-						objsub = this._g_eval(objid + "." + x);
-						objsubid = objid + "." + x;
-						if(objsubid.search(/document/i) == -1 )
-						{
-							if(objsubid.search(/(parent)/i) == -1){
-								this._getSTree(objsub, objid);
-								//oDebugger.showoutput(tmp);
-								i++;
+						if(typeof(window.eval(objid + "." + x)) == 'function'){
+							tmp = tmp = objid + "." + x +  "   =   " + String(window.eval(objid + "." + x)).substring(0, String(window.eval(objid + "." + x)).indexOf('{'));
+						}else{
+							tmp = objid + "." + x + "   =   " + window.eval(objid + "." + x);
+						}
+						this.showoutput(tmp);
+						if((window.eval(objid + "." + x ) == "[object]") ){
+							var   objsub;
+							objsub = window.eval(objid + "." + x);
+							objsubid = objid + "." + x;
+							if(objsubid.search(/document/i) == -1 )
+							{
+								if(objsubid.search(/(parent)/i) == -1){
+									this._getSTree(objsub, objid);
+									//oDebugger.showoutput(tmp);
+									i++;
+								}
 							}
 						}
 					}
@@ -382,18 +421,36 @@ var oDebugger = {
 				//oDebugger.showoutput('----arr-----------');
 				//oDebugger.showoutput(arr);
 				if(!arr){
-					tmp = objid + "." + x + "   =   " + this._g_eval(objid + "." + x) ;
-					this.showoutput(tmp);
-					if((this._g_eval(objid + "." + x ) == "[object]") ){
-						var   objsub;
-						objsub = this._g_eval(objid + "." + x);
-						objsubid = objid + "." + x;
-						if(objsubid.search(/document/i) == -1 )
-						{
-							if(objsubid.search(/(parent)/i) == -1){
-								this._getprop(objsub,objsubid);
-								//oDebugger.showoutput(tmp);
-								i++;
+					if(this._g_isIE){
+						tmp = objid + "." + x + "   =   " + this._g_eval(objid + "." + x) ;
+						this.showoutput(tmp);
+						if((this._g_eval(objid + "." + x ) == "[object]") ){
+							var   objsub;
+							objsub = this._g_eval(objid + "." + x);
+							objsubid = objid + "." + x;
+							if(objsubid.search(/document/i) == -1 )
+							{
+								if(objsubid.search(/(parent)/i) == -1){
+									this._getprop(objsub,objsubid);
+									//oDebugger.showoutput(tmp);
+									i++;
+								}
+							}
+						}
+					}else{
+						tmp = objid + "." + x + "   =   " + window.eval(objid + "." + x) ;
+						this.showoutput(tmp);
+						if((window.eval(objid + "." + x ) == "[object]") ){
+							var   objsub;
+							objsub = window.eval(objid + "." + x);
+							objsubid = objid + "." + x;
+							if(objsubid.search(/document/i) == -1 )
+							{
+								if(objsubid.search(/(parent)/i) == -1){
+									this._getprop(objsub,objsubid);
+									//oDebugger.showoutput(tmp);
+									i++;
+								}
 							}
 						}
 					}
@@ -418,7 +475,11 @@ var oDebugger = {
 			if(x == 0){
 				break;
 			}else{//if(eval(objid+"."+x)=="[object]")
-				this.showoutput( objid + "." + x + "   =   " + this._g_eval(objid + "." + x) );
+				if(this._g_isIE){
+					this.showoutput( objid + "." + x + "   =   " + this._g_eval(objid + "." + x) );
+				}else{
+					this.showoutput( objid + "." + x + "   =   " + window.eval(objid + "." + x) );
+				}
 			}
 		}
 		this.showoutput('========showprop End=========');
@@ -428,7 +489,11 @@ var oDebugger = {
 	{
 		oDebugger.showoutput('========showvalue Begin=======', false);
 		oDebugger.showoutput(' ');
-		oDebugger.showoutput( oDebugger._g_eval('obj'));
+		if(oDebugger._g_isIE){
+			oDebugger.showoutput( oDebugger._g_eval('obj'));
+		}else{
+			oDebugger.showoutput( window.eval('obj'));
+		}
 		oDebugger.showoutput('========showvalue End=========', false);
 	},
 
@@ -437,7 +502,11 @@ var oDebugger = {
 		{
 			oDebugger.showoutput('' + i , true, oDebugger.colors.TIP);
 			oDebugger.showoutput(' = ', true);
-			oDebugger.showoutput((typeof(oDebugger._g_eval('obj.' + i)) == 'function')?String(oDebugger._g_eval("obj." + i)).substring(0, String(oDebugger._g_eval("obj." + i)).indexOf('{')):oDebugger.htmlEncode(String(oDebugger._g_eval('obj.' + i))), false);
+			if(oDebugger._g_isIE){
+				oDebugger.showoutput((typeof(oDebugger._g_eval('obj.' + i)) == 'function')?String(oDebugger._g_eval("obj." + i)).substring(0, String(oDebugger._g_eval("obj." + i)).indexOf('{')):oDebugger.htmlEncode(String(oDebugger._g_eval('obj.' + i))), false);
+			}else{
+				oDebugger.showoutput((typeof(window.eval('obj.' + i)) == 'function')?String(window.eval("obj." + i)).substring(0, String(window.eval("obj." + i)).indexOf('{')):oDebugger.htmlEncode(String(window.eval('obj.' + i))), false);
+			}
 		}
 	},
 
@@ -446,7 +515,11 @@ var oDebugger = {
 		{
 			oDebugger.showoutput('' + i , true, oDebugger.colors.TIP);
 			oDebugger.showoutput(' = ', true);
-			oDebugger.showoutput(oDebugger.htmlEncode(String(oDebugger._g_eval('obj.' + i))), false);
+			if(oDebugger._g_isIE){
+				oDebugger.showoutput(oDebugger.htmlEncode(String(oDebugger._g_eval('obj.' + i))), false);
+			}else{
+				oDebugger.showoutput(oDebugger.htmlEncode(String(window.eval('obj.' + i))), false);
+			}
 		}
 	},
 
@@ -782,7 +855,11 @@ var oDebugger = {
 			if(obj == undefine);
 			this.showoutput('Warnning: ' + objName + ' is defined!', false, this.colors.ERROR);
 		}catch(e){
-			obj = this._g_eval('oDebugger.' + objName);
+			if(this._g_isIE){
+				obj = this._g_eval('oDebugger.' + objName);
+			}else{
+				obj = window.eval('oDebugger.' + objName);
+			}
 		}
 	},
 	registerPublicVariables:function(){
@@ -890,8 +967,13 @@ var oDebugger = {
 	},
 	onExit:function(){
 		for(var i = 0; i < this._g_registedVariables.length; i++){
-			this._g_eval(this._g_registedVariables[i] + ' = null');
-			this._g_eval('delete ' + this._g_registedVariables[i]);
+			if(this._g_isIE){
+				this._g_eval(this._g_registedVariables[i] + ' = null');
+				this._g_eval('delete ' + this._g_registedVariables[i]);
+			}else{
+				window.eval(this._g_registedVariables[i] + ' = null');
+				window.eval('delete ' + this._g_registedVariables[i]);
+			}
 		}
 		for(var i = 0; i < this._g_registedEventHandlers.length; i++){
 			this.releaseEventListner(this._g_registedEventHandlers[i][0], this._g_registedEventHandlers[i][1], this._g_registedEventHandlers[i][2]);
@@ -903,7 +985,7 @@ var oDebugger = {
 		this.unloadDebuggerJS();
 		
 		oDebugger = null;
-		//delete oDebugger;
+		delete oDebugger;
 	},
 	onActive:function(){
 		oDebugger.Debugger.style.backgroundColor = oDebugger.colors.BACKGROUNDCOLOR;
@@ -1678,9 +1760,16 @@ var oDebugger = {
 				this.father.showoutput('arguments ' + args + ' looks not like a function name', false, this.father.colors.ERROR);
 				return false;
 			}
-			if(!this.father._g_eval('typeof(' + args + ') == \'function\'')){
-				this.father.showoutput('arguments ' + args + ' looks not like a function', false, this.father.colors.ERROR);
-				return false;
+			if(this.father._g_isIE){
+				if(!this.father._g_eval('typeof(' + args + ') == \'function\'')){
+					this.father.showoutput('arguments ' + args + ' looks not like a function', false, this.father.colors.ERROR);
+					return false;
+				}
+			}else{
+				if(!window.eval('typeof(' + args + ') == \'function\'')){
+					this.father.showoutput('arguments ' + args + ' looks not like a function', false, this.father.colors.ERROR);
+					return false;
+				}
 			}
 			//if(this.father._g_breakpoints.search(args) >= 0){
 			if(this.searchBP(args)){
@@ -1695,7 +1784,11 @@ var oDebugger = {
 		setBreakPoint:function(cmdSource, args){
 			//this.father.showoutput(cmdSource);
 			try {
-				this.father._g_eval('window.' + args.replace(/\./g, '_') + '_bak = ' + args + ';' + cmdSource);
+				if(this.father._g_isIE){
+					this.father._g_eval('window.' + args.replace(/\./g, '_') + '_bak = ' + args + ';' + cmdSource);
+				}else{
+					window.eval('window.' + args.replace(/\./g, '_') + '_bak = ' + args + ';' + cmdSource);
+				}
 				this.father._g_breakpoints.push(args);
 				this.registereSuccess(args);
 				return true;
@@ -1724,9 +1817,13 @@ var oDebugger = {
 
 			' was called, execute it?arguments:\" + args +\"' +
 
-			' caller:\" + ' + args[1] + '.caller)) {' +
-			'        oDebugger._g_eval(cmd);' +
-			'    }' +
+			' caller:\" + ' + args[1] + '.caller)) {';
+			if(this.father._g_isIE){
+				cmdSource += '        oDebugger._g_eval(cmd);';
+			}else{
+				cmdSource += '        window.eval(cmd);';
+			}
+			cmdSource += '    }' +
 			'};';
 			return this.setBreakPoint(cmdSource, args[1]);
 		},
@@ -1750,9 +1847,13 @@ var oDebugger = {
 			' was called,arguments:\" + args +\"' +
 
 			' caller:\" + ' + args[1] + '.caller, false, oDebugger.colors.TIP); ' +
-			' debugger;' +
-			' oDebugger._g_eval(cmd);' +
-			'};';
+			' debugger;';
+			if(this.father._g_isIE){
+				cmdSource += ' oDebugger._g_eval(cmd);';
+			}else{
+				cmdSource += ' window.eval(cmd);';
+			}
+			cmdSource += '};';
 			return  this.setBreakPoint(cmdSource, args[1]);
 		},
 		bl:function(){
@@ -1771,7 +1872,15 @@ var oDebugger = {
 		},
 		bc:function(args){
 			try {
+				if(args.length < 2){
+					this.father.showoutput('ERROR: bc command requires a numeric argument.', false, this.father.colors.ERROR);
+					return;
+				}
 				args = parseInt(args[1]);
+				if(!args && args != 0){
+					this.father.showoutput('ERROR: bc command requires a numeric argument.', false, this.father.colors.ERROR);
+					return;
+				}
 			} catch (e) {
 				this.father.showoutput('ERROR: bc command requires a numeric argument.', false, this.father.colors.ERROR);
 				return;
@@ -1791,7 +1900,11 @@ var oDebugger = {
 			this.father._g_breakpoints.length --;
 
 			try {
-				this.father._g_eval(funcName + " = window." + funcName.replace(/\./g, '_') + '_bak');
+				if(this.father._g_isIE){
+					this.father._g_eval(funcName + " = window." + funcName.replace(/\./g, '_') + '_bak');
+				}else{
+					window.eval(funcName + " = window." + funcName.replace(/\./g, '_') + '_bak');
+				}
 				this.father.showoutput('* ', true, this.father.colors.TIP);
 				return this.father.showoutput('breakpoint on function ' + funcName + ' deleted successfully.', false);
 			} catch (e) {
