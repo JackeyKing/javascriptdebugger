@@ -477,10 +477,16 @@ var oDebugger = {
 		}
 		return curObj.outerHTML;
 	},
-	cloneCurPageSource:function(){
+	cloneCurPageSource:function(obj){
 		var srcwin = window.open('', '', '');
 		srcwin.opener = null;
-		srcwin.document.write(this.getObjHTML().replace(this.Debugger.outerHTML, '').replace(this.Menu.outerHTML, '').replace(this.SubMenu.outerHTML, ''));
+		srcwin.document.write(this.getObjHTML(obj).replace(this.Debugger.outerHTML, '').replace(this.Menu.outerHTML, '').replace(this.SubMenu.outerHTML, ''));
+		srcwin.document.close();
+	},
+	cloneObjSourceById:function(objId){
+		var srcwin = window.open('', '', '');
+		srcwin.opener = null;
+		srcwin.document.write(this.getObjHTML(this.$(objId)).replace(this.Debugger.outerHTML, '').replace(this.Menu.outerHTML, '').replace(this.SubMenu.outerHTML, ''));
 		srcwin.document.close();
 	},
 	removeODebuggerCode:function(args){
