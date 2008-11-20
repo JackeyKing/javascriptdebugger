@@ -27,8 +27,8 @@
 *################################################################################################################################################
 */
 /* for IE
-javascript:var head = document.getElementsByTagName("head")[0];var js = document.createElement("script");js.type="text/javascript";js.language="javascript";js.src = "file://C:/javascriptdebugger/debugger.js";head.appendChild(js);alert('inject success!');
-javascript:var head = main.document.getElementsByTagName("head")[0];var js = main.document.createElement("script");js.type="text/javascript";js.language="javascript";js.src = "file://C:/javascriptdebugger/debugger.js";head.appendChild(js);alert('inject success!');
+javascript:var head = document.getElementsByTagName("head")[0];var js = document.createElement("script");js.type="text/javascript";js.language="javascript";js.src = "file:///javascriptdebugger/debugger.js";head.appendChild(js);alert('inject success!');
+javascript:var head = main.document.getElementsByTagName("head")[0];var js = main.document.createElement("script");js.type="text/javascript";js.language="javascript";js.src = "file:///javascriptdebugger/debugger.js";head.appendChild(js);alert('inject success!');
 
 for Firefox:
 
@@ -127,6 +127,9 @@ var oDebugger = {
 	_g_cmdFocus:true,
 
 	_g_isIE:((document.all)?true:false),
+
+	_g_registedVariables:[],
+	_g_registedEventHandlers:[],
 
 	debuggerStr : "Debugger(Version:" + 0.6 + ' beta 1' + "):<span onclick='oDebugger.showdebugger(false);' id='debugger_hiddenBtn'>x</span><br/><input type='text' value='' id='debuggerInfo' /><button onclick=\"oDebugger.$(\'DebuggerOutput\').innerHTML=\'\'\" id='debugger_clearOutput' >clear</button><div id='debuggerClientDiv'><div contenteditable id='DebuggerOutput' designMode></div><input type='text' id='debuggerCommand'/><button onclick=\"oDebugger.dealCommand(oDebugger.$(\'debuggerCommand\'));\" id='debugger_runCommand'>run</button></div>",
 	menuStr : '<li>' +
@@ -465,7 +468,7 @@ var oDebugger = {
 					evt = (evt) ? evt : ((window.event) ? window.event : "");
 			//obj.attachEvent('onpropertychange', function(evt){
 					this.showoutput('Object property changed!');
-				});
+				}, true);
 		}else{
 			watchVariable(obj, timerCount);
 		}
@@ -524,30 +527,36 @@ var oDebugger = {
 		this.Debugger = this.appendElement('DIV', this.debuggerStr, '', 'position:absolute;overflow-x:auto;overflow-y:auto;top:0;left:0;float:left;width:320px;background-color:#FFFF00;filter: Alpha(Opacity = 75);scrollbar-3dlight-color: #959CBB;scrollbar-arrow-color: #666666;scrollbar-base-color: #445289;scrollbar-darkshadow-color: #959CBB;scrollbar-face-color: #D6DDF3;scrollbar-highlight-color: #959CBB;scrollbar-shadow-color: #959CBB;cursor:move;cursor:move;');
 		this.Menu = this.appendElement('DIV', this.menuStr, '', 'position:absolute;display:none;overflow:hidden;top:0;left:0;width:240px;background-color:#CCCCCC;filter: Alpha(Opacity = 75);cursor:hand;cursor:pointer;');
 		this.SubMenu = this.appendElement('DIV', this.subMenuStr, '', 'position:absolute;display:none;overflow:hidden;top:0;left:0;width:240px;background-color:#CCCCCC;filter: Alpha(Opacity = 75);cursor:hand;cursor:pointer;');
-		document.getElementsByTagName("body").item(0).appendChild(this.Debugger);
-		document.getElementsByTagName('body').item(0).appendChild(this.Menu);
-		document.getElementsByTagName('body').item(0).appendChild(this.SubMenu);
-		this.pBody = document.getElementsByTagName("body").item(0);
-		this._g_lastpos_y = Number(document.getElementsByTagName("body").item(0).offsetHeight)/2;
+		this.pBody = window.document.getElementsByTagName("body")[0];
+		if(this.pBody){
+		}else{
+			alert('no body exist, It\'s may be a frame. create a new...');
+			this.pBody = window.document.createElement('BODY');
+			window.document.appendChild(this.pBody);
+		}
+		this.pBody.appendChild(this.Debugger);
+		this.pBody.appendChild(this.Menu);
+		this.pBody.appendChild(this.SubMenu);
+		this._g_lastpos_y = Number(window.document.getElementsByTagName("body").item(0).offsetHeight)/2;
 		this._g_lastpos_y = 100;
-		this._g_lastpos_x = Number(document.getElementsByTagName("body").item(0).offsetWidth)/2;
+		this._g_lastpos_x = Number(window.document.getElementsByTagName("body").item(0).offsetWidth)/2;
 		//this.Debugger.attachEvent('onmousedown', function(evt){oDebugger.DownMouse(evt.srcElement, evt);});
 		//this.Debugger.attachEvent('onmousemove', function(evt){oDebugger.MoveLayer(evt.srcElement, evt);});
 		//this.Debugger.attachEvent('onmouseup', function(evt){oDebugger.UpMouse(evt.srcElement, evt);});
 		this.bindEventListner(this.Debugger, 'onmousedown', function(evt){
 				evt = (evt) ? evt : ((window.event) ? window.event : "");
 				var elem = (evt.target) ? evt.target : evt.srcElement;
-				oDebugger.DownMouse(elem, evt);});
+				oDebugger.DownMouse(elem, evt);}, true);
 		this.bindEventListner(this.Debugger, 'onmousemove', function(evt){
 				evt = (evt) ? evt : ((window.event) ? window.event : "");
 				var elem = (evt.target) ? evt.target : evt.srcElement;
-				oDebugger.MoveLayer(elem, evt);});
+				oDebugger.MoveLayer(elem, evt);}, true);
 		this.bindEventListner(this.Debugger, 'onmouseup', function(evt){
 				evt = (evt) ? evt : ((window.event) ? window.event : "");
 				var elem = (evt.target) ? evt.target : evt.srcElement;
-				oDebugger.UpMouse(elem, evt);});
+				oDebugger.UpMouse(elem, evt);}, true);
 		this.bindEventListner(
-			(this._g_isIE)?document.getElementsByTagName("body").item(0):window, 'onmousemove',
+			(this._g_isIE)?window.document.getElementsByTagName("body").item(0):window, 'onmousemove',
 			function(evt){
 				evt = (evt) ? evt : ((window.event) ? window.event : "");
 				oDebugger._g_targetObj = (evt.target) ? evt.target : evt.srcElement;
@@ -560,7 +569,7 @@ var oDebugger = {
 					oDebugger.showMouseObject(evt, oDebugger._g_targetObj);
 				}
 			}
-		);
+		, true);
 		this.bindEventListner(
 			this.Debugger, 'oncontextmenu',
 			function(evt){
@@ -570,7 +579,7 @@ var oDebugger = {
 				oDebugger.showMenu(evt, oDebugger.Menu, true);
 				oDebugger.stopBubble(evt);
 			}
-		);
+		, true);
 		this.bindEventListner(
 			this.$('DebuggerOutput'), 'oncontextmenu',
 			function(evt){
@@ -580,43 +589,43 @@ var oDebugger = {
 				oDebugger.showMenu(evt, oDebugger.SubMenu, true);
 				oDebugger.stopBubble(evt);
 			}
-		);
+		, true);
 		this.bindEventListner(this.Menu, 'onmouseout', function(evt){
 				evt = (evt) ? evt : ((window.event) ? window.event : "");
 				var elem = (evt.target) ? evt.target : evt.srcElement;
-				oDebugger.showMenu(evt, oDebugger.Menu, false);});
+				oDebugger.showMenu(evt, oDebugger.Menu, false);}, true);
 		this.bindEventListner(this.Menu, 'onclick', function(evt){
 				evt = (evt) ? evt : ((window.event) ? window.event : "");
 				var elem = (evt.target) ? evt.target : evt.srcElement;
-				oDebugger.showMenu(evt, oDebugger.Menu, false);});
+				oDebugger.showMenu(evt, oDebugger.Menu, false);}, true);
 		this.bindEventListner(this.SubMenu, 'onmouseout', function(evt){
 				evt = (evt) ? evt : ((window.event) ? window.event : "");
 				var elem = (evt.target) ? evt.target : evt.srcElement;
-				oDebugger.showMenu(evt, oDebugger.SubMenu, false);});
+				oDebugger.showMenu(evt, oDebugger.SubMenu, false);}, true);
 		this.bindEventListner(this.SubMenu, 'onclick', function(evt){
 				evt = (evt) ? evt : ((window.event) ? window.event : "");
 				var elem = (evt.target) ? evt.target : evt.srcElement;
-				oDebugger.showMenu(evt, oDebugger.SubMenu, false);});
+				oDebugger.showMenu(evt, oDebugger.SubMenu, false);}, true);
 		this.bindEventListner(
 			this.Menu, 'oncontextmenu',	function(evt){
 				evt = (evt) ? evt : ((window.event) ? window.event : "");
 				var elem = (evt.target) ? evt.target : evt.srcElement;
 				oDebugger.showMenu(evt, oDebugger.Menu, false);
-				oDebugger.stopBubble(evt);});
+				oDebugger.stopBubble(evt);}, true);
 		this.bindEventListner(
 			this.SubMenu, 'oncontextmenu', function(evt){
 				evt = (evt) ? evt : ((window.event) ? window.event : "");
 				var elem = (evt.target) ? evt.target : evt.srcElement;
 				oDebugger.showMenu(evt, oDebugger.SubMenu, false);
-				oDebugger.stopBubble(evt);});
+				oDebugger.stopBubble(evt);}, true);
 		this.bindEventListner(this.Menu, 'onmouseover', function(evt){
 				evt = (evt) ? evt : ((window.event) ? window.event : "");
 				var elem = (evt.target) ? evt.target : evt.srcElement;
-				oDebugger.Menu.style.display = 'block';});
+				oDebugger.Menu.style.display = 'block';}, true);
 		this.bindEventListner(this.SubMenu, 'onmouseover', function(evt){
 				evt = (evt) ? evt : ((window.event) ? window.event : "");
 				var elem = (evt.target) ? evt.target : evt.srcElement;
-				oDebugger.SubMenu.style.display = 'block';});
+				oDebugger.SubMenu.style.display = 'block';}, true);
 		/*document.getElementsByTagName("body").item(0).attachEvent('onmousemove',
 			function(evt){
 				oDebugger._g_targetObj = evt.srcElement;
@@ -640,7 +649,7 @@ var oDebugger = {
 		//keyCode 123 = F12
 		//keyCode 118 , 119 = F7, F8
 		this.bindEventListner(
-			(this._g_isIE)?document.getElementsByTagName("body").item(0):window, 'onkeydown',
+			(this._g_isIE)?window.document.getElementsByTagName("body").item(0):window, 'onkeydown',
 			function(evt){
 				evt = (evt) ? evt : ((window.event) ? window.event : "");
 				var keycode = evt.keyCode || evt.which;
@@ -648,7 +657,7 @@ var oDebugger = {
 				if(keycode=='118'){oDebugger._g_returnValue = [];oDebugger.timerChangeBackColor(oDebugger._g_targetObj);}
 				if(keycode=='119' && oDebugger._g_targetObj != null){oDebugger.changeBackColor(oDebugger._g_targetObj);oDebugger.showdetails(oDebugger._g_targetObj);}
 			}
-		);
+		, true);
 		/*
 		document.getElementsByTagName("body").item(0).attachEvent('onkeydown',
 			function(evt){
@@ -731,7 +740,7 @@ var oDebugger = {
 				}
 				if(keycode == '27'){oDebugger.$('debuggerCommand').value = '';} //ESC pressed
 			}
-		);
+		, true);
 		this.bindEventListner(
 			this.$('debuggerCommand'), 'onkeyup',
 		//this.$('debuggerCommand').attachEvent('onkeyup',
@@ -742,7 +751,7 @@ var oDebugger = {
 					oDebugger.$('debuggerCommand')._curCommandHistoryIndex = 0;
 				}
 			}
-		);
+		, true);
 		
 		this.setDebuggerStyle();
 		this.$('debuggerCommand').focus();
@@ -765,6 +774,8 @@ var oDebugger = {
 		 if(t==-1)return -1;
 		 return str.slice(0,t).replace(/[^\0]/g,'').length;
 		};
+
+		this.unloadDebuggerJS();
 	},
 	registerPublicSingleVariable:function(obj, objName){
 		try{
@@ -782,6 +793,7 @@ var oDebugger = {
 			errorStr = errorStr + 'Warnning: $ is defined!<br/>';
 		}catch(e){
 			$ = oDebugger.$;
+			this._g_registedVariables.push('$');
 		}
 
 		try{
@@ -790,6 +802,7 @@ var oDebugger = {
 			errorStr = errorStr + 'Warnning: S is defined!' + '<br/>';
 		}catch(e){
 			S = oDebugger.S;
+			this._g_registedVariables.push('S');
 		}
 
 		try{
@@ -798,6 +811,7 @@ var oDebugger = {
 			errorStr = errorStr + 'Warnning: M is defined!' + '<br/>';
 		}catch(e){
 			M = oDebugger.M;
+			this._g_registedVariables.push('M');
 		}
 
 		try{
@@ -806,6 +820,7 @@ var oDebugger = {
 			errorStr = errorStr + 'Warnning: P is defined!' + '<br/>';
 		}catch(e){
 			P = oDebugger.P;
+			this._g_registedVariables.push('P');
 		}
 
 		try{
@@ -814,6 +829,7 @@ var oDebugger = {
 			errorStr = errorStr + 'Warnning: V is defined!' + '<br/>';
 		}catch(e){
 			V = oDebugger.V;
+			this._g_registedVariables.push('V');
 		}
 
 		try{
@@ -822,6 +838,7 @@ var oDebugger = {
 			errorStr = errorStr + 'Warnning: L is defined!' + '<br/>';
 		}catch(e){
 			L = oDebugger.L;
+			this._g_registedVariables.push('L');
 		}
 
 		try{
@@ -830,6 +847,7 @@ var oDebugger = {
 			errorStr = errorStr + 'Warnning: $R is defined!' + '<br/>';
 		}catch(e){
 			$R = oDebugger.$R;
+			this._g_registedVariables.push('$R');
 		}
 
 		try{
@@ -838,6 +856,7 @@ var oDebugger = {
 			errorStr = errorStr + 'Warnning: O is defined!' + '<br/>';
 		}catch(e){
 			O = oDebugger.O;
+			this._g_registedVariables.push('O');
 		}
 
 		try{
@@ -846,6 +865,7 @@ var oDebugger = {
 			errorStr = errorStr + 'Warnning: oD is defined!' + '<br/>';
 		}catch(e){
 			oD = oDebugger;
+			this._g_registedVariables.push('oD');
 		}
 		
 		try{
@@ -854,6 +874,7 @@ var oDebugger = {
 			errorStr = errorStr + 'Warnning: od is defined!' + '<br/>';
 		}catch(e){
 			od = oDebugger;
+			this._g_registedVariables.push('od');
 		}
 
 		this.showoutput(errorStr, false, this.colors.ERROR);
@@ -868,8 +889,21 @@ var oDebugger = {
 		}
 	},
 	onExit:function(){
+		for(var i = 0; i < this._g_registedVariables.length; i++){
+			this._g_eval(this._g_registedVariables[i] + ' = null');
+			this._g_eval('delete ' + this._g_registedVariables[i]);
+		}
+		for(var i = 0; i < this._g_registedEventHandlers.length; i++){
+			this.releaseEventListner(this._g_registedEventHandlers[i][0], this._g_registedEventHandlers[i][1], this._g_registedEventHandlers[i][2]);
+		}
 		this.showdebugger(false);
+		this.pBody.removeChild(this.Menu);
+		this.pBody.removeChild(this.SubMenu);
+		this.pBody.removeChild(this.Debugger);
 		this.unloadDebuggerJS();
+		
+		oDebugger = null;
+		//delete oDebugger;
 	},
 	onActive:function(){
 		oDebugger.Debugger.style.backgroundColor = oDebugger.colors.BACKGROUNDCOLOR;
@@ -1090,12 +1124,12 @@ var oDebugger = {
 				evt = (evt) ? evt : ((window.event) ? window.event : "");
 				var elem = (evt.target) ? evt.target : evt.srcElement;
 				elem.style.backgroundColor = oDebugger.colors.MENUOVER;
-				});
+				}, true);
 			this.bindEventListner(objs[i], 'onmouseout', function(evt){
 				evt = (evt) ? evt : ((window.event) ? window.event : "");
 				var elem = (evt.target) ? evt.target : evt.srcElement;
 				elem.style.backgroundColor = oDebugger.colors.MENUBACKGROUNDCOLOR;
-				});
+				}, true);
 		}
 		objs = obj.getElementsByTagName('LI');
 		for( var i = 0; i < objs.length; i++){
@@ -1236,7 +1270,7 @@ var oDebugger = {
 			fileref.setAttribute("href",filename);
 		}
 		if (typeof fileref != "undefined")
-			document.getElementsByTagName("head")[0].appendChild(fileref)
+			window.document.getElementsByTagName("head")[0].appendChild(fileref)
 	},
 
 	/*
@@ -1268,7 +1302,7 @@ var oDebugger = {
 
 	loadJs:function (file){
 		 var scriptTag = document.getElementById('loadScript');
-		 var head = document.getElementsByTagName('head').item(0);
+		 var head = window.document.getElementsByTagName('head').item(0);
 		 if(scriptTag) {
 		 head.removeChild(scriptTag);
 		 }
@@ -1280,8 +1314,8 @@ var oDebugger = {
 	},
 
 	unloadJs:function (file, obj){
-		 var scriptTags = document.getElementsByTagName('script');
-		 var head = obj || document.getElementsByTagName('head').item(0);
+		 var scriptTags = window.document.getElementsByTagName('script');
+		 var head = obj || window.document.getElementsByTagName('head').item(0);
 		 var retVal = false;
 		 for(var i = 0; i < scriptTags.length; i++){
 			 if(scriptTags[i].src == file){
@@ -1294,7 +1328,7 @@ var oDebugger = {
 
 	loadCss:function (file){
 		 var cssTag = document.getElementById('loadCss');
-		 var head = document.getElementsByTagName('head').item(0);
+		 var head = window.document.getElementsByTagName('head').item(0);
 		 if(cssTag){
 		   head.removeChild(cssTag);
 		 }
@@ -1307,8 +1341,8 @@ var oDebugger = {
 	},
 
 	unloadCss:function (file, obj){
-		var styleTags = document.getElementsByTagName('link');
-		var head = obj || document.getElementsByTagName('head').item(0);
+		var styleTags = window.document.getElementsByTagName('link');
+		var head = obj || window.document.getElementsByTagName('head').item(0);
 		var retVal = false;
 		for( var i = 0; i < styleTags.length; i++){
 			if(styleTags[i].href == file){
@@ -1320,8 +1354,8 @@ var oDebugger = {
 	},
 
 	unloadDebuggerJS:function (obj){
-		 var scriptTags = document.getElementsByTagName('script');
-		 var head = obj || document.getElementsByTagName('head').item(0);
+		 var scriptTags = window.document.getElementsByTagName('script');
+		 var head = obj || window.document.getElementsByTagName('head').item(0);
 		 var retVal = false;
 		 for(var i = 0; i < scriptTags.length; i++){
 			 //alert(scriptTags[i].src + '    ' + scriptTags[i].src.substring((scriptTags[i].src.length - 11), 11));
@@ -1570,14 +1604,17 @@ var oDebugger = {
 	trim:function(args) {
 		return args.replace( /^\s+|\s+$/, '');
 	},
-	bindEventListner:function(obj, evt, funcName){
+	bindEventListner:function(obj, evt, funcName, isDebuggerEventHandler){
+		if(isDebuggerEventHandler){
+			this._g_registedEventHandlers.push([obj, evt, funcName]);
+		}
 		if(window.addEventListener){ // Mozilla, Netscape, Firefox
 			obj.addEventListener(evt.substring(2), funcName, false);
 		} else { // IE
 			obj.attachEvent(evt, funcName);
 		}
 	},
-	relaseEventListner:function(obj, evt, funcName){
+	releaseEventListner:function(obj, evt, funcName){
 		if(window.addEventListener){ // Mozilla, Netscape, Firefox
 			obj.removeEventListener(evt.substring(2), funcName, false);
 		} else { // IE
@@ -1815,7 +1852,7 @@ var oDebugger = {
 
 		this.showoutput('COMMAND:', true, this.colors.COMMAND);
 		this.showoutput(obj.value, false);
-		if(this.userDefineCommand(obj.value)){this.$('debuggerCommand').value = '';return;}
+		if(this.userDefineCommand(obj.value)){try{this.$('debuggerCommand').value = '';return;}catch(e){return;}}
 		try{
 			this.showoutput('RETURN: ', true, this.colors.COMMAND);
 			//this._g_returnValue = this._g_eval(obj.value);
