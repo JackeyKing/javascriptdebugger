@@ -596,23 +596,44 @@ var oDebugger = {
 		this._g_eval = window.eval;
 		//load css Style for debugger
 		//LoadJsCssFile('debugger.css', 'css');
+		
+		var framesetCheck = window.document.getElementsByTagName('FRAMESET');
+		var frameCheck = window.document.getElementsByTagName('FRAME');
+		this.pBody = window.document.getElementsByTagName('body')[0];
+		this.frame = null;
+		//debugger;
+		if(framesetCheck.length > 0 && frameCheck.length > 0){
+			var promptTip = '';
+			for(var i = 0; i < frameCheck.length; i++){
+				promptTip += '[' + i + ':id=' + frameCheck[i].id + ',name=' + frameCheck[i].name + ']\n';
+			}
+			//var retVal = prompt('There exist more than one frame, please select one(Input number):' + promptTip, '0');
+			var retVal = prompt('pls sel a frame(need Num):' + promptTip, '0');
+			if(retVal != ''){
+				this.frame = frameCheck[parseInt(retVal)];
+				this.unloadDebuggerJS();
+				this.loadDebuggerJs(this.frame);
+				return;
+			}else{
+				//return;
+			}
+		}
+		if(this.pBody){
+		}else{
+			alert('no body exist, create a new...');
+			this.pBody = window.document.createElement('BODY');
+			window.document.appendChild(this.pBody);
+		}
 		//create debugger's UI
 		this.Debugger = this.appendElement('DIV', this.debuggerStr, '', 'position:absolute;overflow-x:auto;overflow-y:auto;top:0;left:0;float:left;width:320px;background-color:#FFFF00;filter: Alpha(Opacity = 75);scrollbar-3dlight-color: #959CBB;scrollbar-arrow-color: #666666;scrollbar-base-color: #445289;scrollbar-darkshadow-color: #959CBB;scrollbar-face-color: #D6DDF3;scrollbar-highlight-color: #959CBB;scrollbar-shadow-color: #959CBB;cursor:move;cursor:move;');
 		this.Menu = this.appendElement('DIV', this.menuStr, '', 'position:absolute;display:none;overflow:hidden;top:0;left:0;width:240px;background-color:#CCCCCC;filter: Alpha(Opacity = 75);cursor:hand;cursor:pointer;');
 		this.SubMenu = this.appendElement('DIV', this.subMenuStr, '', 'position:absolute;display:none;overflow:hidden;top:0;left:0;width:240px;background-color:#CCCCCC;filter: Alpha(Opacity = 75);cursor:hand;cursor:pointer;');
-		this.pBody = window.document.getElementsByTagName("body")[0];
-		if(this.pBody){
-		}else{
-			alert('no body exist, It\'s may be a frame. create a new...');
-			this.pBody = window.document.createElement('BODY');
-			window.document.appendChild(this.pBody);
-		}
 		this.pBody.appendChild(this.Debugger);
 		this.pBody.appendChild(this.Menu);
 		this.pBody.appendChild(this.SubMenu);
-		this._g_lastpos_y = Number(window.document.getElementsByTagName("body").item(0).offsetHeight)/2;
+		this._g_lastpos_y = Number(this.pBody.offsetHeight)/2;
 		this._g_lastpos_y = 100;
-		this._g_lastpos_x = Number(window.document.getElementsByTagName("body").item(0).offsetWidth)/2;
+		this._g_lastpos_x = Number(this.pBody.offsetWidth)/2;
 		//this.Debugger.attachEvent('onmousedown', function(evt){oDebugger.DownMouse(evt.srcElement, evt);});
 		//this.Debugger.attachEvent('onmousemove', function(evt){oDebugger.MoveLayer(evt.srcElement, evt);});
 		//this.Debugger.attachEvent('onmouseup', function(evt){oDebugger.UpMouse(evt.srcElement, evt);});
@@ -629,7 +650,7 @@ var oDebugger = {
 				var elem = (evt.target) ? evt.target : evt.srcElement;
 				oDebugger.UpMouse(elem, evt);}, true);
 		this.bindEventListner(
-			(this._g_isIE)?window.document.getElementsByTagName("body").item(0):window, 'onmousemove',
+			(this._g_isIE)?this.pBody:window, 'onmousemove',
 			function(evt){
 				evt = (evt) ? evt : ((window.event) ? window.event : "");
 				oDebugger._g_targetObj = (evt.target) ? evt.target : evt.srcElement;
@@ -722,7 +743,7 @@ var oDebugger = {
 		//keyCode 123 = F12
 		//keyCode 118 , 119 = F7, F8
 		this.bindEventListner(
-			(this._g_isIE)?window.document.getElementsByTagName("body").item(0):window, 'onkeydown',
+			(this._g_isIE)?this.pBody:window, 'onkeydown',
 			function(evt){
 				evt = (evt) ? evt : ((window.event) ? window.event : "");
 				var keycode = evt.keyCode || evt.which;
@@ -1381,12 +1402,28 @@ var oDebugger = {
 	}
 	head.appendChild(js);
 	*/
-
+	loadDebuggerJs:function (obj){
+		var head = obj.document.getElementsByTagName('head')[0];
+		if(!head){
+			head = obj.document.createElement('HEAD');
+			obj.document.appendChild(head);
+			alert('oDebugger created a new head!');
+		}
+		this.unloadDebuggerJS();
+		script = obj.document.createElement('script');
+		if(this._g_isIE){
+			script.src = 'file:///javascriptdebugger/debugger.js'; 
+		}else{
+			script.src = 'file://C:/javascriptdebugger/debugger.js'; 
+		}
+		script.type = 'text/javascript';
+		head.appendChild(script);
+	},
 	loadJs:function (file){
 		 var scriptTag = document.getElementById('loadScript');
 		 var head = window.document.getElementsByTagName('head').item(0);
 		 if(scriptTag) {
-		 head.removeChild(scriptTag);
+			head.removeChild(scriptTag);
 		 }
 		 script = document.createElement('script');
 		 script.src = ""+file; 
