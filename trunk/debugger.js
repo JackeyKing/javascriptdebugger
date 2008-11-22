@@ -604,7 +604,6 @@ var oDebugger = {
 		var frameCheck = window.document.getElementsByTagName('FRAME');
 		this.pBody = window.document.getElementsByTagName('body')[0];
 		this.frame = null;
-		//debugger;
 		if(framesetCheck.length > 0 && frameCheck.length > 0){
 			var promptTip = '';
 			for(var i = 0; i < frameCheck.length; i++){
