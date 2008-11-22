@@ -26,14 +26,13 @@
 * Dynamic load debugger
 *################################################################################################################################################
 */
-/* for IE
+/* for IE6 or IE7
 javascript:var head = document.getElementsByTagName("head")[0];var js = document.createElement("script");js.type="text/javascript";js.language="javascript";js.src = "file:///javascriptdebugger/debugger.js";head.appendChild(js);alert('inject success!');
 javascript:var head = main.document.getElementsByTagName("head")[0];var js = main.document.createElement("script");js.type="text/javascript";js.language="javascript";js.src = "file:///javascriptdebugger/debugger.js";head.appendChild(js);alert('inject success!');
 
-for Firefox:
+for Firefox or IE7:
 
 javascript:var head = document.getElementsByTagName("head")[0];var js = document.createElement("script");js.type="text/javascript";js.language="javascript";js.src = "file://C:/javascriptdebugger/debugger.js";head.appendChild(js);js.onload=function(){oDebugger.showdebugger(true)};alert('inject success!');
-javascript:var head = main.document.getElementsByTagName("head")[0];var js = main.document.createElement("script");js.type="text/javascript";js.language="javascript";js.src = "file://C:/javascriptdebugger/debugger.js";head.appendChild(js);alert('inject success!');
 */
 /*
 *################################################################################################################################################
@@ -81,8 +80,9 @@ javascript:var head = main.document.getElementsByTagName("head")[0];var js = mai
 *v0.6 beta 1
 *fix bugs
 *firefox can be injected           //2008-11-18
+*v0.6 beta 2
+*fix bugs                          //2008-11-21
 */
-
 
 var oDebugger = {
 	Version: '0.6 beta 2',
@@ -596,6 +596,9 @@ var oDebugger = {
 		this._g_eval = window.eval;
 		//load css Style for debugger
 		//LoadJsCssFile('debugger.css', 'css');
+		this._g_isIE7 = /msie\s+7/i.test(navigator.userAgent);
+		this._g_isIE6 = /msie\s+6/i.test(navigator.userAgent);
+		this._g_isFirefox = /firefox/i.test(navigator.userAgent);
 		
 		var framesetCheck = window.document.getElementsByTagName('FRAMESET');
 		var frameCheck = window.document.getElementsByTagName('FRAME');
@@ -609,13 +612,22 @@ var oDebugger = {
 			}
 			//var retVal = prompt('There exist more than one frame, please select one(Input number):' + promptTip, '0');
 			var retVal = prompt('pls sel a frame(need Num):' + promptTip, '0');
-			if(retVal != ''){
+			if(retVal == null){
+				return false;
+			}else if(/^\d+$/.test(retVal)){
 				this.frame = frameCheck[parseInt(retVal)];
 				this.unloadDebuggerJS();
-				this.loadDebuggerJs(this.frame);
-				return;
+				//if(this._g_isIE){
+					this.loadDebuggerJs(this.frame.contentWindow);
+				//}else{
+				//	this.loadDebuggerJs(this.frame.contentWindow);
+				//}
+				return false;
+			}else if(/\D+/g.test(retVal)){
+				this.loadDebuggerJs(window.document.getElementById(retVal).contentWindow);
+				return false;
 			}else{
-				//return;
+				return false;
 			}
 		}
 		if(this.pBody){
@@ -870,6 +882,7 @@ var oDebugger = {
 		};
 
 		this.unloadDebuggerJS();
+		return true;
 	},
 	registerPublicSingleVariable:function(obj, objName){
 		try{
@@ -980,7 +993,9 @@ var oDebugger = {
 
 	showdebugger:function (args){
 		if(!this._g_isDR){
-			this.initdebugger();
+			if(!this.initdebugger()){
+				return;
+			}
 		}
 		if(this.Debugger){
 			this.Debugger.style.display=args?'block':'none';
@@ -1409,9 +1424,11 @@ var oDebugger = {
 			obj.document.appendChild(head);
 			alert('oDebugger created a new head!');
 		}
-		this.unloadDebuggerJS();
+		this.unloadDebuggerJS(head);
 		script = obj.document.createElement('script');
-		if(this._g_isIE){
+		if(this._g_isIE7){
+			script.src = 'file://C:/javascriptdebugger/debugger.js'; 
+		}else if(this._g_isIE6){
 			script.src = 'file:///javascriptdebugger/debugger.js'; 
 		}else{
 			script.src = 'file://C:/javascriptdebugger/debugger.js'; 
@@ -1473,8 +1490,8 @@ var oDebugger = {
 	},
 
 	unloadDebuggerJS:function (obj){
-		 var scriptTags = window.document.getElementsByTagName('script');
 		 var head = obj || window.document.getElementsByTagName('head').item(0);
+		 var scriptTags = head.getElementsByTagName('script');
 		 var retVal = false;
 		 for(var i = 0; i < scriptTags.length; i++){
 			 //alert(scriptTags[i].src + '    ' + scriptTags[i].src.substring((scriptTags[i].src.length - 11), 11));
