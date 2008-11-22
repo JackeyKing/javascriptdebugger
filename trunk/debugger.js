@@ -470,19 +470,19 @@ var oDebugger = {
 
 	_showprop:function (obj, objid)
 	{
-		this.showoutput('========showprop Begin=======');
+		this.showoutput('========showprop Begin=======', false);
 		for(x in obj){
 			if(x == 0){
 				break;
 			}else{//if(eval(objid+"."+x)=="[object]")
 				if(this._g_isIE){
-					this.showoutput( objid + "." + x + "   =   " + this._g_eval(objid + "." + x) );
+					this.showoutput( objid + "." + x + "   =   " + this._g_eval(objid + "." + x) , false);
 				}else{
-					this.showoutput( objid + "." + x + "   =   " + window.eval(objid + "." + x) );
+					this.showoutput( objid + "." + x + "   =   " + window.eval(objid + "." + x) , false);
 				}
 			}
 		}
-		this.showoutput('========showprop End=========');
+		this.showoutput('========showprop End=========', false);
 	},
 
 	_showvalue:function (obj)
@@ -490,9 +490,9 @@ var oDebugger = {
 		oDebugger.showoutput('========showvalue Begin=======', false);
 		oDebugger.showoutput(' ');
 		if(oDebugger._g_isIE){
-			oDebugger.showoutput( oDebugger._g_eval('obj'));
+			oDebugger.showoutput( oDebugger._g_eval('obj'), false);
 		}else{
-			oDebugger.showoutput( window.eval('obj'));
+			oDebugger.showoutput( window.eval('obj'), false);
 		}
 		oDebugger.showoutput('========showvalue End=========', false);
 	},
@@ -506,6 +506,19 @@ var oDebugger = {
 				oDebugger.showoutput((typeof(oDebugger._g_eval('obj.' + i)) == 'function')?String(oDebugger._g_eval("obj." + i)).substring(0, String(oDebugger._g_eval("obj." + i)).indexOf('{')):oDebugger.htmlEncode(String(oDebugger._g_eval('obj.' + i))), false);
 			}else{
 				oDebugger.showoutput((typeof(window.eval('obj.' + i)) == 'function')?String(window.eval("obj." + i)).substring(0, String(window.eval("obj." + i)).indexOf('{')):oDebugger.htmlEncode(String(window.eval('obj.' + i))), false);
+			}
+		}
+	},
+
+	listArrays:function (obj){
+		oDebugger.showoutput('length:' + obj.length , false);
+		for(var i = 0; i < obj.length; i++){
+			oDebugger.showoutput('' + i , true, oDebugger.colors.TIP);
+			oDebugger.showoutput(' = ', true);
+			if(oDebugger._g_isIE){
+				oDebugger.showoutput( oDebugger._g_eval('obj[i]'), false);
+			}else{
+				oDebugger.showoutput( window.eval('obj[i]'), false);
 			}
 		}
 	},
@@ -748,6 +761,7 @@ var oDebugger = {
 		this.P = this._showvalue;
 		this.V = this._showvalue;
 		this.L = this.listObject;
+		this.l = this.listArrays;
 		this.$R = this._g_returnValue; //return value's shortcut
 		this.O = this._g_oDList;
 		//Attach EVENTs
@@ -949,6 +963,15 @@ var oDebugger = {
 		}catch(e){
 			L = oDebugger.L;
 			this._g_registedVariables.push('L');
+		}
+		
+		try{
+			if(l == 'undefine');
+			//this.showoutput('Warnning: L is defined!', false, 'red');
+			errorStr = errorStr + 'Warnning: l is defined!' + '<br/>';
+		}catch(e){
+			l = oDebugger.l;
+			this._g_registedVariables.push('l');
 		}
 
 		try{
@@ -2153,9 +2176,10 @@ var oDebugger = {
 			'bl to list breakpoints.<br/>' +
 			'bc &lt;Number&gt; to remove a breakpoint which listed in bl.<br/>' +
 			'S(obj) show obj in output<br/>' +
-			'M(obj,\'obj\') show methods or properties in obj<br/>' +
+			'M(obj) show methods or properties in obj<br/>' +
 			'P(obj) or V(obj) to view obj property or value<br/>' +
-			'L(obj, [args...]) to list ListObject property(args...) value<br/>' +
+			'L(obj) to list ListObject property value<br/>' +
+			'l(Arrays) to list Arrays contents value<br/>' +
 			'mode keycode to toget show keyCode status<br/>' +
 			'mode mousepos to toget show mouse (x,y) pos<br/>' +
 			'mode select to toget onoff focus inputCommand<br/>' +
