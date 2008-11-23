@@ -130,6 +130,7 @@ var oDebugger = {
 
 	_g_registedVariables:[],
 	_g_registedEventHandlers:[],
+	_g_registedGarbage:[],
 
 	debuggerStr : "Debugger(Version:" + 0.6 + ' beta 2' + "):<span onclick='oDebugger.showdebugger(false);' id='debugger_hiddenBtn'>x</span><br/><input type='text' value='' id='debuggerInfo' /><button onclick=\"oDebugger.$(\'DebuggerOutput\').innerHTML=\'\'\" id='debugger_clearOutput' >clear</button><div id='debuggerClientDiv'><div contenteditable id='DebuggerOutput' designMode></div><input type='text' id='debuggerCommand'/><button onclick=\"oDebugger.dealCommand(oDebugger.$(\'debuggerCommand\'));\" id='debugger_runCommand'>run</button></div>",
 	menuStr : '<li>' +
