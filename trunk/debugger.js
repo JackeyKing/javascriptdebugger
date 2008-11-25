@@ -82,10 +82,12 @@ javascript:var head = document.getElementsByTagName("head")[0];var js = document
 *firefox can be injected           //2008-11-18
 *v0.6 beta 2
 *fix bugs                          //2008-11-21
+*v0.7 under relase
+*multi mode support                //2008-11-25
 */
 
 var oDebugger = {
-	Version: '0.6 beta 2',
+	Version: '0.7 under relase',
 /*
 *################################################################################################################################################
 *Public variables
@@ -123,7 +125,6 @@ var oDebugger = {
 	_g_breakpoints : new Array(),
 	_g_eval: null,
 	funcName : /^[a-zA-Z0-9_.]+$/i,
-	_g_runCommandOrgetInput: true,
 	_g_cmdFocus:true,
 
 	_g_isIE:((document.all)?true:false),
@@ -131,8 +132,18 @@ var oDebugger = {
 	_g_registedVariables:[],
 	_g_registedEventHandlers:[],
 	_g_registedGarbage:[],
+	_g_ids:{
+		debugger_id:'id_g_oDebugger',
+		debugger_css:'id_g_debugger_css'
+	},
+	_g_specialMode:{
+		debug:false,
+		inject:false,
+		execMode:true,
+		getInput:false
+	},
 
-	debuggerStr : "Debugger(Version:" + 0.6 + ' beta 2' + "):<span onclick='oDebugger.showdebugger(false);' id='debugger_hiddenBtn'>x</span><br/><input type='text' value='' id='debuggerInfo' /><button onclick=\"oDebugger.$(\'DebuggerOutput\').innerHTML=\'\'\" id='debugger_clearOutput' >clear</button><div id='debuggerClientDiv'><div contenteditable id='DebuggerOutput' designMode></div><input type='text' id='debuggerCommand'/><button onclick=\"oDebugger.dealCommand(oDebugger.$(\'debuggerCommand\'));\" id='debugger_runCommand'>run</button></div>",
+	debuggerStr : "Debugger(Version:" + 0.7 + ' under relase' + "):<span onclick='oDebugger.showdebugger(false);' id='debugger_hiddenBtn'>x</span><br/><input type='text' value='' id='debuggerInfo' /><button onclick=\"oDebugger.$(\'DebuggerOutput\').innerHTML=\'\'\" id='debugger_clearOutput' >clear</button><div id='debuggerClientDiv'><div id='debugger_contentTopDiv' contenteditable designMode></div><div contenteditable id='DebuggerOutput' designMode></div><input type='text' id='debuggerCommand'/><button onclick=\"oDebugger.runCommand(oDebugger.$(\'debuggerCommand\'));\" id='debugger_runCommand'>run</button></div>",
 	menuStr : '<li>' +
 		'<ul onclick="javascript:oDebugger.showCurPageSource();">View Page Source</ul>' +
 		'<ul onclick="javascript:oDebugger.showHelp();">Help</ul>' +
@@ -584,6 +595,7 @@ var oDebugger = {
 		//return args;
 		if(this._g_isIE){
 			return args.replace(String(this.Debugger.outerHTML), '').replace(String(this.Menu.outerHTML), '').replace(String(this.SubMenu.outerHTML), '');
+			//return args.replace(/<div([a-z0-9\'\"\=]??)startX(?:[^(<div)])<\/div>/img, '');
 		}else{
 			return args.replace(String(this.Debugger.outerHTML), '').replace(String(this.Menu.innerHTML), '').replace(String(this.SubMenu.innerHTML), '');
 		}
@@ -617,6 +629,7 @@ var oDebugger = {
 		var framesetCheck = window.document.getElementsByTagName('FRAMESET');
 		var frameCheck = window.document.getElementsByTagName('FRAME');
 		this.pBody = window.document.getElementsByTagName('body')[0];
+		this.pHead = window.document.getElementsByTagName('head')[0];
 		this.frame = null;
 		if(framesetCheck.length > 0 && frameCheck.length > 0){
 			var promptTip = '';
@@ -643,6 +656,7 @@ var oDebugger = {
 				return false;
 			}
 		}
+		//this.loadDebuggerCss();
 		if(this.pBody){
 		}else{
 			alert('no body exist, create a new...');
@@ -651,6 +665,7 @@ var oDebugger = {
 		}
 		//create debugger's UI
 		this.Debugger = this.appendElement('DIV', this.debuggerStr, '', 'position:absolute;overflow-x:auto;overflow-y:auto;top:0;left:0;float:left;width:320px;background-color:#FFFF00;filter: Alpha(Opacity = 75);scrollbar-3dlight-color: #959CBB;scrollbar-arrow-color: #666666;scrollbar-base-color: #445289;scrollbar-darkshadow-color: #959CBB;scrollbar-face-color: #D6DDF3;scrollbar-highlight-color: #959CBB;scrollbar-shadow-color: #959CBB;cursor:move;cursor:move;');
+		this.Debugger.id = this._g_debugger_id;
 		this.Menu = this.appendElement('DIV', this.menuStr, '', 'position:absolute;display:none;overflow:hidden;top:0;left:0;width:240px;background-color:#CCCCCC;filter: Alpha(Opacity = 75);cursor:hand;cursor:pointer;');
 		this.SubMenu = this.appendElement('DIV', this.subMenuStr, '', 'position:absolute;display:none;overflow:hidden;top:0;left:0;width:240px;background-color:#CCCCCC;filter: Alpha(Opacity = 75);cursor:hand;cursor:pointer;');
 		this.pBody.appendChild(this.Debugger);
@@ -856,7 +871,7 @@ var oDebugger = {
 					}
 				}
 				if(keycode == '13'){
-					oDebugger.dealCommand(oDebugger.$('debuggerCommand'));
+					oDebugger.runCommand(oDebugger.$('debuggerCommand'));
 				}
 				if(keycode == '27'){oDebugger.$('debuggerCommand').value = '';} //ESC pressed
 			}
@@ -879,7 +894,7 @@ var oDebugger = {
 		this.$('debuggerCommand').onblur = this.onDeActive;
 		
 		if(this.debug.isEvalBeHooked()){
-			this.showoutput("ERROR: eval function was hooked by other codes in the front.n", false, this.color.ERROR);
+			this.showoutput("ERROR: eval function was hooked by other codes in the front.", false, this.color.ERROR);
 		}
 		this.registerPublicVariables();
 		this.debug.father = this;
@@ -1042,6 +1057,7 @@ var oDebugger = {
 		this.pBody.removeChild(this.SubMenu);
 		this.pBody.removeChild(this.Debugger);
 		this.unloadDebuggerJS();
+		//this.unloadDebuggerCss();
 		
 		oDebugger = null;
 		delete oDebugger;
@@ -1124,6 +1140,21 @@ var oDebugger = {
 		obj.startX = mouseX - obj.offsetLeft;
 		obj.startY = mouseY - obj.offsetTop;
 	},
+	DebuggerCssStr:'.debugger_contentTopDiv{' + 
+		'	display:block;' +
+		'	background-color:#FF0000;' +
+		'	position:relative;' +
+		'	' +
+		'	' +
+		'} ' +
+		'DIV{' + 
+		'	display:block;' +
+		'	background-color:#FF00FF;' +
+		'	position:relative;' +
+		'	width:10px;' +
+		'	' +
+		'} '
+	,
 	setDebuggerStyle:function (){
 		this.Debugger.style.position = 'absolute';
 		this.Debugger.style.width = '320px';
@@ -1249,6 +1280,28 @@ var oDebugger = {
 		this.$('debugger_hiddenBtn').style.backgroundColor='#F2F3F9';
 		this.$('debugger_hiddenBtn').style.cursor='default';
 		this.$('debugger_hiddenBtn').style.cursor='default';
+		
+		this.$('debugger_contentTopDiv').style.fontFamily='Arial, Verdana, Times New Roman';
+		this.$('debugger_contentTopDiv').style.borderWidth='1px';
+		this.$('debugger_contentTopDiv').style.borderColor='#abb9df';
+		this.$('debugger_contentTopDiv').style.borderStyle='solid';
+		this.$('debugger_contentTopDiv').style.backgroundColor='#F2F3F9';
+		this.$('debugger_contentTopDiv').style.width='316px';
+		this.$('debugger_contentTopDiv').style.height='178px';//359px
+		this.$('debugger_contentTopDiv').style.overflowX='auto';
+		this.$('debugger_contentTopDiv').style.overflowY='auto';
+		this.$('debugger_contentTopDiv').style.scrollbar3dlightColor='#959CBB';
+		this.$('debugger_contentTopDiv').style.scrollbarArrowColor='#666666';
+		this.$('debugger_contentTopDiv').style.scrollbarBaseColor='#445289';
+		this.$('debugger_contentTopDiv').style.scrollbarDarkshadowColor='#959CBB';
+		this.$('debugger_contentTopDiv').style.scrollbarFaceColor='#D6DDF3';
+		this.$('debugger_contentTopDiv').style.scrollbarHighlightColor='#959CBB';
+		this.$('debugger_contentTopDiv').style.scrollbarShadowColor='#959CBB';
+		this.$('debugger_contentTopDiv').style.fontSize='12px';
+		this.$('debugger_contentTopDiv').style.cursor='pointer';
+		this.$('debugger_contentTopDiv').style.display = 'none';
+		//this.$('debugger_contentTopDiv').style.position = 'relative';
+
 		this.setDebuggerMenuStyle(this.Menu);
 		this.setDebuggerMenuStyle(this.SubMenu);
 	},
@@ -1524,6 +1577,31 @@ var oDebugger = {
 			 }
 		 }
 		 return retVal;
+	},
+	loadDebuggerCss:function(){
+		var cssTag = document.getElementById(this._g_ids.debugger_css);
+		var head = document.getElementsByTagName('head')[0];
+		if(cssTag){
+		   head.removeChild(cssTag);
+		}
+		css = document.createElement('style');
+		if(this._g_isIE){
+			css.cssText = this.DebuggerCssStr; 
+		}else{
+			css.innerHTML = this.DebuggerCssStr; 
+		}
+		css.type = 'text/css';
+		css.id = this._g_ids.debugger_css;
+		head.appendChild(css);
+		if(this._g_isIE){
+			;
+		}
+	},
+	unloadDebuggerCss:function(){
+		var styleTags = document.getElementById(this._g_ids.debugger_css);
+		var head = document.getElementsByTagName('head')[0];
+		head.removeChild(styleTags);
+		delete styleTags;
 	},
 
 	//create color text
@@ -2023,19 +2101,62 @@ var oDebugger = {
 			this.showoutput('ERROR:' + e.description + '.', false, this.colors.ERROR);
 		}
 	},
+	showTopContent:function(args){
+		if(args){
+			this.$('debugger_contentTopDiv').style.display = 'block';
+			this.$('DebuggerOutput').style.height = '179px';
+			if(this._g_specialMode.debug){
+				if(this._g_isIE){
+					this.$('debugger_contentTopDiv').designMode = false;
+				}else{
+					this.$('debugger_contentTopDiv').contenteditable = false;
+				}
+			}
+			if(this._g_specialMode.inject){
+				if(this._g_isIE){
+					this.$('debugger_contentTopDiv').designMode = true;
+				}else{
+					this.$('debugger_contentTopDiv').contenteditable = true;
+				}
+				this.$('debugger_contentTopDiv').focus();
+			}
+		}else{
+			this.$('debugger_contentTopDiv').style.display = 'none';
+			this.$('DebuggerOutput').style.height = '359px';
+		}
+	},
+	injectSth:function(args){
+		switch(args){
+			case 'js':
+				var script = document.createElement('script');
+				if(this._g_isIE){
+					script.text = this.$('debugger_contentTopDiv').innerText; 
+				}else{
+					script.innerHTML = this.$('debugger_contentTopDiv').textContent
+				}
+				script.type = 'text/javascript';
+				script.id = 'injectedScripts';
+				this.pHead.appendChild(script);
+				break;
+			default:
+				return false;
+				break;
+		}
+		return true;
+	},
 	/*
 	*################################################################################################################################################
 	*Run debugger commands
 	*################################################################################################################################################
 	*/
-	dealCommand:function(obj){
-		if(this._g_runCommandOrgetInput){
-			return this.runCommand(obj);
-		}else{
+	dealOtherMode:function(obj){
+		if(this._g_specialMode.getInput){
 			return this.getInput(obj);
+		}else{
+			
 		}
 	},
-	//run debugger commands
+	//run debugger commands // deal commands
 	runCommand:function (obj){
 		this.$('debuggerCommand')._commandHistory.pop();
 		this.$('debuggerCommand')._commandHistory.unshift(this.$('debuggerCommand').value);
@@ -2043,6 +2164,12 @@ var oDebugger = {
 		this.showoutput('COMMAND:', true, this.colors.COMMAND);
 		this.showoutput(obj.value, false);
 		if(this.userDefineCommand(obj.value)){try{this.$('debuggerCommand').value = '';return;}catch(e){return;}}
+		if(this._g_specialMode.inject){
+			if(this.dealInjectSth(obj.value)){
+				return;
+			}
+		}
+		if(!this._g_specialMode.execMode){return this.dealOtherMode();}
 		try{
 			this.showoutput('RETURN: ', true, this.colors.COMMAND);
 			//this._g_returnValue = this._g_eval(obj.value);
@@ -2071,6 +2198,18 @@ var oDebugger = {
 		this._g_returnValue = obj.value;
 		this.$('debuggerCommand').value = '';
 		return this._g_returnValue;
+	},
+	dealInjectSth:function(args){
+		var _args = args.split(" ");
+		switch(_args[0]){
+			case 'inject':
+				this.injectSth(_args[1]);
+				break;
+			default:
+				return false;
+				break;
+		}
+		return true;
 	},
 	/*
 	*################################################################################################################################################
@@ -2128,9 +2267,6 @@ var oDebugger = {
 			case 'select':
 				this._g_cmdFocus = ! this._g_cmdFocus;
 				break;
-			case 'inject':
-				this.showoutput('not yet been achieved', false, this.colors.TIP);
-				break;
 			case 'keycode':
 				this._g_enableShowKeyCode = ! this._g_enableShowKeyCode;
 				break;
@@ -2147,6 +2283,15 @@ var oDebugger = {
 			case 'bgcolor':
 				this.colors.BACKGROUNDCOLOR = (args[2] || this.colors.BACKGROUNDCOLOR);
 				this.Debugger.style.backgroundColor = this.colors.BACKGROUNDCOLOR;
+				break;
+			case 'debug':
+				this._g_specialMode.debug = !this._g_specialMode.debug;
+				this.showTopContent(this._g_specialMode.debug);
+				break;
+			case 'inject':
+				this._g_specialMode.inject = !this._g_specialMode.inject;
+				this._g_cmdFocus = !this._g_specialMode.inject;
+				this.showTopContent(this._g_specialMode.inject);
 				break;
 			default:
 				return false;
@@ -2181,10 +2326,11 @@ var oDebugger = {
 			'P(obj) or V(obj) to view obj property or value<br/>' +
 			'L(obj) to list ListObject property value<br/>' +
 			'l(Arrays) to list Arrays contents value<br/>' +
-			'mode keycode to toget show keyCode status<br/>' +
-			'mode mousepos to toget show mouse (x,y) pos<br/>' +
-			'mode select to toget onoff focus inputCommand<br/>' +
-			'mode inspect to toget onoff the inspect of object which under mouse<br/>' +
+			'mode keycode to toggle show keyCode status<br/>' +
+			'mode mousepos to toggle show mouse (x,y) pos<br/>' +
+			'mode select to toggle onoff focus inputCommand<br/>' +
+			'mode inspect to toggle status to inspect object which under mouse<br/>' +
+			'mode inject to toggle status of inject mode<br/>' +
 			'exit to exit debugger<br/>' +
 			'$toHex to convert number to Hex datas<br/>' +
 			'Move your mouse on some area, and press F8 or F7 to see what happend ;=) It\'s not just fan, there\'s some details in output<br/>' +
