@@ -515,9 +515,17 @@ var oDebugger = {
 			oDebugger.showoutput('' + i , true, oDebugger.colors.TIP);
 			oDebugger.showoutput(' = ', true);
 			if(oDebugger._g_isIE){
-				oDebugger.showoutput((typeof(oDebugger._g_eval('obj.' + i)) == 'function')?String(oDebugger._g_eval("obj." + i)).substring(0, String(oDebugger._g_eval("obj." + i)).indexOf('{')):oDebugger.htmlEncode(String(oDebugger._g_eval('obj.' + i))), false);
+				try{
+					oDebugger.showoutput((typeof(oDebugger._g_eval('obj.' + i)) == 'function')?String(oDebugger._g_eval("obj." + i)).substring(0, String(oDebugger._g_eval("obj." + i)).indexOf('{')):oDebugger.htmlEncode(String(oDebugger._g_eval('obj.' + i))), false);
+				}catch(e){
+					oDebugger.showoutput(e.description, false, oDebugger.colors.ERROR);
+				}
 			}else{
-				oDebugger.showoutput((typeof(window.eval('obj.' + i)) == 'function')?String(window.eval("obj." + i)).substring(0, String(window.eval("obj." + i)).indexOf('{')):oDebugger.htmlEncode(String(window.eval('obj.' + i))), false);
+				try{
+					oDebugger.showoutput((typeof(window.eval('obj.' + i)) == 'function')?String(window.eval("obj." + i)).substring(0, String(window.eval("obj." + i)).indexOf('{')):oDebugger.htmlEncode(String(window.eval('obj.' + i))), false);
+				}catch(e){
+					oDebugger.showoutput(e, false, oDebugger.colors.ERROR);
+				}
 			}
 		}
 	},
@@ -884,6 +892,27 @@ var oDebugger = {
 				var keycode = evt.keyCode || evt.which;
 				if(keycode == 17){	//ctrl key up
 					oDebugger.$('debuggerCommand')._curCommandHistoryIndex = 0;
+				}
+			}
+		, true);
+
+		this.bindEventListner(
+			this.$('debugger_contentTopDiv'), 'onkeydown',
+			function(evt){
+				evt = (evt) ? evt : ((window.event) ? window.event : "");
+				var keycode = evt.keyCode || evt.which;
+				if(keycode == 13){	//Enter key down
+					if(oDebugger._g_isIE){
+						var txtobj = document.selection.createRange();
+						txtobj.text == ""?txtobj.text="\n":(document.selection.clear())&(txtobj.text="\n");
+						document.selection.createRange().select();
+						oDebugger.stopBubble(evt);
+						return false;
+					}else{
+						//var txt = document.getSelection();
+						//txt == ""?txt = "\n":(document.getSelection().clear())&(txt = "\n");
+						//document.getSelection().select();
+					}
 				}
 			}
 		, true);
@@ -1808,14 +1837,19 @@ var oDebugger = {
 		return retVal.toString(tmp);
 	},
 	copy:function(obj){
-		var trng = document.body.createTextRange();
-		trng.moveToElementText(obj);
-		trng.scrollIntoView();
-		trng.select();
-		trng.execCommand("Copy");
-		//window.status="Contents highlighted and copied to clipboard!"
-		//setTimeout("window.status=''",1800)
-		trng.collapse(false);
+		if(this._g_isIE){
+			var trng = document.body.createTextRange();
+			trng.moveToElementText(obj);
+			trng.scrollIntoView();
+			trng.select();
+			trng.execCommand("Copy");
+			//window.status="Contents highlighted and copied to clipboard!"
+			//setTimeout("window.status=''",1800)
+			trng.collapse(false);
+			//window.clipboardData.setData('Text','something');
+		}else{
+			var trng = document.getSelection();
+		}
 	},
 	svhtml:function(obj) {
 		var srcwin = window.open('', null, 'top=10000');
@@ -1825,11 +1859,15 @@ var oDebugger = {
 		srcwin.close();
 	},
 	selectAll:function(obj){
-		var trng = document.body.createTextRange();
-		trng.moveToElementText(obj);
-		trng.scrollIntoView();
-		trng.select();
-		trng.collapse(false);
+		if(this._g_isIE){
+			var trng = document.body.createTextRange();
+			trng.moveToElementText(obj);
+			trng.scrollIntoView();
+			trng.select();
+			trng.collapse(false);
+		}else{
+			
+		}
 	},
 	removeClassName:function(elem, className){
 		elem.className = trim(elem.className.replace(className, ''));
