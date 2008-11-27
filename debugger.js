@@ -674,8 +674,8 @@ var oDebugger = {
 		//create debugger's UI
 		this.Debugger = this.appendElement('DIV', this.debuggerStr, '', 'position:absolute;overflow-x:auto;overflow-y:auto;top:0;left:0;float:left;width:320px;background-color:#FFFF00;filter: Alpha(Opacity = 75);scrollbar-3dlight-color: #959CBB;scrollbar-arrow-color: #666666;scrollbar-base-color: #445289;scrollbar-darkshadow-color: #959CBB;scrollbar-face-color: #D6DDF3;scrollbar-highlight-color: #959CBB;scrollbar-shadow-color: #959CBB;cursor:move;cursor:move;');
 		this.Debugger.id = this._g_debugger_id;
-		this.Menu = this.appendElement('DIV', this.menuStr, '', 'position:absolute;display:none;overflow:hidden;top:0;left:0;width:240px;background-color:#CCCCCC;filter: Alpha(Opacity = 75);cursor:hand;cursor:pointer;');
-		this.SubMenu = this.appendElement('DIV', this.subMenuStr, '', 'position:absolute;display:none;overflow:hidden;top:0;left:0;width:240px;background-color:#CCCCCC;filter: Alpha(Opacity = 75);cursor:hand;cursor:pointer;');
+		this.Menu = this.appendElement('DIV', this.menuStr, '', 'position:absolute;display:none;overflow:hidden;top:0;left:0;width:240px;background-color:#CCCCCC;filter: Alpha(Opacity = 75);cursor:pointer;');
+		this.SubMenu = this.appendElement('DIV', this.subMenuStr, '', 'position:absolute;display:none;overflow:hidden;top:0;left:0;width:240px;background-color:#CCCCCC;filter: Alpha(Opacity = 75);cursor:pointer;');
 		this.pBody.appendChild(this.Debugger);
 		this.pBody.appendChild(this.Menu);
 		this.pBody.appendChild(this.SubMenu);
@@ -1153,6 +1153,11 @@ var oDebugger = {
 		var mouseX = (evt.pageX)?evt.pageX:evt.x;//clientX;
 		var mouseY = (evt.pageY)?evt.pageY:evt.y;//clientY;
 		if (obj.downStatus){
+			if(mouseX < obj.style.left || obj.startY > obj.style.top || 
+				mouseX > (obj.offsetLeft + obj.offsetWidth) ||
+				mouseY > (obj.offsetTop + obj.offsetHeight) ){
+				obj.downStatus = false;
+			}
 			obj.style.left = mouseX - obj.startX; //obj.startLeft+
 			obj.style.top = mouseY - obj.startY; //obj.startTop+
 			//obj.viewpos.value = " X:"+event.clientX+" Y:"+event.clientY+"
@@ -1222,7 +1227,7 @@ var oDebugger = {
 		this.SubMenu.style.overflow='hidden';
 		this.SubMenu.style.cursor='pointer';
 		this.SubMenu.style.fontSize='12px';
-		this.$('debugger_runCommand').STYLE='border-right:#2c59aa 1px solid;padding-right: 2px;border-top: #2c59aa 1px solid;padding-left: 2px;font-size: 12px;filter: progid:dximagetransform.microsoft.gradient(gradienttype=0, startcolorstr=#ffffff, endcolorstr=#c3daf5); border-left: #2c59aa 1px solid;color:#445289;padding-top: 2px;border-bottom: #2c59aa 1px solid;cursor: hand;cursor:pointer;';
+		this.$('debugger_runCommand').STYLE='border-right:#2c59aa 1px solid;padding-right: 2px;border-top: #2c59aa 1px solid;padding-left: 2px;font-size: 12px;filter: progid:dximagetransform.microsoft.gradient(gradienttype=0, startcolorstr=#ffffff, endcolorstr=#c3daf5); border-left: #2c59aa 1px solid;color:#445289;padding-top: 2px;border-bottom: #2c59aa 1px solid;cursor:pointer;';
 		this.$('debugger_runCommand').style.borderRight='#2c59aa 1px solid';
 		this.$('debugger_runCommand').style.paddingRight='2px';
 		this.$('debugger_runCommand').style.borderTop='#2c59aa 1px solid';
@@ -1233,7 +1238,6 @@ var oDebugger = {
 		this.$('debugger_runCommand').style.color='#445289';
 		this.$('debugger_runCommand').style.paddingTop='2px';
 		this.$('debugger_runCommand').style.borderBottom='#2c59aa 1px solid';
-		this.$('debugger_runCommand').style.cursor='hand';
 		this.$('debugger_runCommand').style.cursor='pointer';
 		this.$('debuggerCommand').STYLE='font-family: Arial, Verdana, Times New Roman;border-width: 1px;border-color: #abb9df;border-style:solid;background-color: #F2F3F9;width:285px;';
 		this.$('debuggerCommand').style.fontFamily='Arial, Verdana, Times New Roman';
@@ -1274,7 +1278,7 @@ var oDebugger = {
 		this.$('DebuggerOutput').style.scrollbarShadowColor='#959CBB';
 		this.$('DebuggerOutput').style.fontSize='12px';
 		this.$('DebuggerOutput').style.cursor='text';
-		this.$('debugger_clearOutput').STYLE='border-right:#2c59aa 1px solid;padding-right: 2px;border-top: #2c59aa 1px solid;padding-left: 2px;font-size: 12px;color:#000000;filter: progid:dximagetransform.microsoft.gradient(gradienttype=0, startcolorstr=#DDDDDD, endcolorstr=#c3daf5); border-left: #2c59aa 1px solid;color:#445289;padding-top: 2px;border-bottom: #2c59aa 1px solid;cursor: hand;cursor:pointer;';
+		this.$('debugger_clearOutput').STYLE='border-right:#2c59aa 1px solid;padding-right: 2px;border-top: #2c59aa 1px solid;padding-left: 2px;font-size: 12px;color:#000000;filter: progid:dximagetransform.microsoft.gradient(gradienttype=0, startcolorstr=#DDDDDD, endcolorstr=#c3daf5); border-left: #2c59aa 1px solid;color:#445289;padding-top: 2px;border-bottom: #2c59aa 1px solid;cursor:pointer;';
 		this.$('debugger_clearOutput').style.borderRight='#2c59aa 1px solid';
 		this.$('debugger_clearOutput').style.paddingRight='2px';
 		this.$('debugger_clearOutput').style.borderTop='#2c59aa 1px solid';
@@ -1286,7 +1290,6 @@ var oDebugger = {
 		this.$('debugger_clearOutput').style.color='#445289';
 		this.$('debugger_clearOutput').style.paddingTop='2px';
 		this.$('debugger_clearOutput').style.borderBottom='#2c59aa 1px solid';
-		this.$('debugger_clearOutput').style.cursor='hand';
 		this.$('debugger_clearOutput').style.cursor='pointer';
 		this.$('debuggerInfo').STYLE='font-family: Arial, Verdana, Times New Roman;width:200px;border-width: 1px;border-color: #abb9df;border-style:solid;background-color: #F2F3F9;';
 		this.$('debuggerInfo').style.fontFamily='Arial, Verdana, Times New Roman';
@@ -1295,7 +1298,7 @@ var oDebugger = {
 		this.$('debuggerInfo').style.borderColor='#abb9df';
 		this.$('debuggerInfo').style.borderStyle='solid';
 		this.$('debuggerInfo').style.backgroundColor='#F2F3F9';
-		this.$('debugger_hiddenBtn').STYLE='top:0;right:0;position:relative;float:right;width:10px;height:10px;border-width: 1px;border-color: #abb9df;border-style:solid;background-color: #F2F3F9;cursor:default;cursor:default;';
+		this.$('debugger_hiddenBtn').STYLE='top:0;right:0;position:relative;float:right;width:10px;height:10px;border-width: 1px;border-color: #abb9df;border-style:solid;background-color: #F2F3F9;cursor:default;';
 		this.$('debugger_hiddenBtn').style.top='0';
 		this.$('debugger_hiddenBtn').style.right='0';
 		this.$('debugger_hiddenBtn').style.position='relative';
@@ -1307,7 +1310,6 @@ var oDebugger = {
 		this.$('debugger_hiddenBtn').style.borderColor='#abb9df';
 		this.$('debugger_hiddenBtn').style.borderStyle='solid';
 		this.$('debugger_hiddenBtn').style.backgroundColor='#F2F3F9';
-		this.$('debugger_hiddenBtn').style.cursor='default';
 		this.$('debugger_hiddenBtn').style.cursor='default';
 		
 		this.$('debugger_contentTopDiv').style.fontFamily='Arial, Verdana, Times New Roman';
@@ -2373,7 +2375,7 @@ var oDebugger = {
 			'$toHex to convert number to Hex datas<br/>' +
 			'Move your mouse on some area, and press F8 or F7 to see what happend ;=) It\'s not just fan, there\'s some details in output<br/>' +
 			'ps: If you like it, you can use it like a caculator, just input numbers like \"1+2\" and press RETURN to see what happend! ;=) <br/>' +
-			'If you like it, please let me know, my EMail:<a href="mailto:Jackey.King@gmail.com" style="cursor:hand;"><span color=blue>Jackey.King@gmail.com<span></a><br/>' +
+			'If you like it, please let me know, my EMail:<a href="mailto:Jackey.King@gmail.com" style="cursor:pointer;"><span color=blue>Jackey.King@gmail.com<span></a><br/>' +
 			'Javascript debugger ' + this.Version + '\nauthor:Jackey\nCopyRight (C) Jackey.King 2008\n'
 			,false, this.colors.HELP);
 	}
