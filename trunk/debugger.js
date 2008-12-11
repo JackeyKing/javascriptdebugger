@@ -2139,6 +2139,7 @@ var oDebugger = {
 			}
 		}catch(e){
 			this.showoutput('ERROR:' + e.description + '.', false, this.colors.ERROR);
+			this._g_lastMouseObject = null;
 		}
 	},
 	showTopContent:function(args){
