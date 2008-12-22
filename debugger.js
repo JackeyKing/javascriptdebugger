@@ -84,10 +84,12 @@ javascript:var head = document.getElementsByTagName("head")[0];var js = document
 *fix bugs                          //2008-11-21
 *v0.7 under relase
 *multi mode support                //2008-11-25
+*v0.7 beta 1
+*after a long time in stable status //2008-12-22
 */
 
 var oDebugger = {
-	Version: '0.7 under relase',
+	Version: '0.7 beta 1',
 /*
 *################################################################################################################################################
 *Public variables
@@ -143,7 +145,7 @@ var oDebugger = {
 		getInput:false
 	},
 
-	debuggerStr : "Debugger(Version:" + 0.7 + ' under relase' + "):<span onclick='oDebugger.showdebugger(false);' id='debugger_hiddenBtn'>x</span><br/><input type='text' value='' id='debuggerInfo' /><button onclick=\"oDebugger.$(\'DebuggerOutput\').innerHTML=\'\'\" id='debugger_clearOutput' >clear</button><div id='debuggerClientDiv'><div id='debugger_contentTopDiv' contenteditable designMode></div><div contenteditable id='DebuggerOutput' designMode></div><input type='text' id='debuggerCommand'/><button onclick=\"oDebugger.runCommand(oDebugger.$(\'debuggerCommand\'));\" id='debugger_runCommand'>run</button></div>",
+	debuggerStr : "Debugger(Version:" + 0.7 + ' beta 1' + "):<span onclick='oDebugger.showdebugger(false);' id='debugger_hiddenBtn'>x</span><br/><input type='text' value='' id='debuggerInfo' /><button onclick=\"oDebugger.$(\'DebuggerOutput\').innerHTML=\'\'\" id='debugger_clearOutput' >clear</button><div id='debuggerClientDiv'><div id='debugger_contentTopDiv' contenteditable designMode></div><div contenteditable id='DebuggerOutput' designMode></div><input type='text' id='debuggerCommand'/><button onclick=\"oDebugger.runCommand(oDebugger.$(\'debuggerCommand\'));\" id='debugger_runCommand'>run</button></div>",
 	menuStr : '<li>' +
 		'<ul onclick="javascript:oDebugger.showCurPageSource();">View Page Source</ul>' +
 		'<ul onclick="javascript:oDebugger.showHelp();">Help</ul>' +
@@ -619,6 +621,14 @@ var oDebugger = {
 		}
 		srcwin.document.close();
 		
+	},
+	injectDebugger:function(obj){
+		var head = obj.document.getElementsByTagName("head")[0];
+		var js = obj.document.createElement("script");
+		js.type="text/javascript";
+		js.language="javascript";
+		js.src = "file:///javascriptdebugger/debugger.js";
+		head.appendChild(js);alert('inject success!');
 	},
 	/*
 	*################################################################################################################################################
