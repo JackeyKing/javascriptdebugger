@@ -1,0 +1,58 @@
+@charset "UTF-8";
+
+*{
+	font-family: Sim Sun, Sim Hei, Arial, Helvetica, sans-serif, Times New Roman;
+	font-size: 12px;
+	color: #022;
+}
+
+BODY{
+	margin:0;
+	padding:0;
+	cellSpacing:0;
+	cellPadding:0;
+	background-color: #CCC;
+}
+
+DIV{
+	position: relative;
+}
+
+#title{
+	background-color: #CFF;
+	left: 5%;
+	width: 90%;
+	padding: 5px;
+	line-height: 150%;
+	letter-spacing:1px;
+	word-spacing:5pt;
+	margin-top: 5px;
+	margin-bottom: -4px;
+}
+
+#content{
+	background-color: #EFF;
+	left: 5%;
+	width: 90%;
+	padding: 5px;
+	padding-top: 15px;
+	padding-bottom: 10px;
+	line-height: 150%;
+	letter-spacing:1px;
+	word-spacing:5pt;
+	text-indent:24px;
+	margin-top: 5px;
+	margin-bottom: 15px;
+}
+
+#tips{
+	background-color: #FEF;
+	left: 5%;
+	width: 90%;
+	padding: 5px;
+	line-height: 150%;
+	letter-spacing:1px;
+	word-spacing:5pt;
+	margin-top: -14px;
+	margin-bottom: 15px;
+}
