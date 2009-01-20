@@ -2,7 +2,7 @@
 
 *{
 	font-family: Sim Sun, Sim Hei, Arial, Helvetica, sans-serif, Times New Roman;
-	font-size: 12px;
+	font-size: 9pt;
 	color: #022;
 }
 
@@ -40,7 +40,7 @@ DIV{
 	line-height: 150%;
 	letter-spacing:1px;
 	word-spacing:5pt;
-	text-indent:24px;
+	text-indent:2em;
 	margin-top: 5px;
 	margin-bottom: 15px;
 }

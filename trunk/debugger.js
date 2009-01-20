@@ -100,6 +100,7 @@ var oDebugger = {
 	pBody:null,
 	_g_isDR:false,
 	_g_targetObj: null,
+	T: null,
 	_g_lasttargetObj : null,
 	_g_cssloaded : false,
 	_g_jsloaded : false,
@@ -712,6 +713,7 @@ var oDebugger = {
 			function(evt){
 				evt = (evt) ? evt : ((window.event) ? window.event : "");
 				oDebugger._g_targetObj = (evt.target) ? evt.target : evt.srcElement;
+				oDebugger.T = oDebugger._g_targetObj;
 				var mouseX = (evt.pageX)?evt.pageX:evt.x;//evt.clientX:evt.x;//evt.pageX;
 				var mouseY = (evt.pageY)?evt.pageY:evt.y;//evt.clientY:evt.y;//pageY;
 				if(oDebugger._g_enableShowMousePos){
@@ -798,6 +800,7 @@ var oDebugger = {
 		this.l = this.listArrays;
 		this.$R = this._g_returnValue; //return value's shortcut
 		this.O = this._g_oDList;
+		//this.T = this._g_targetObj; //T -> target
 		//Attach EVENTs
 		//keyCode 123 = F12
 		//keyCode 118 , 119 = F7, F8
