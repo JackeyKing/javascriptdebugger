@@ -86,10 +86,16 @@ javascript:var head = document.getElementsByTagName("head")[0];var js = document
 *multi mode support                //2008-11-25
 *v0.7 beta 1
 *after a long time in stable status //2008-12-22
+*v0.7
+*make a short cut to od._g_targetObj --> od.T 2009-01-20
+*after a long time in stable status //2009-01-21
+*
+*the next...
+*will make a complex real debugger by open a modal window...
 */
 
 var oDebugger = {
-	Version: '0.7 beta 1',
+	Version: '0.7',
 /*
 *################################################################################################################################################
 *Public variables
@@ -146,7 +152,7 @@ var oDebugger = {
 		getInput:false
 	},
 
-	debuggerStr : "Debugger(Version:" + 0.7 + ' beta 1' + "):<span onclick='oDebugger.showdebugger(false);' id='debugger_hiddenBtn'>x</span><br/><input type='text' value='' id='debuggerInfo' /><button onclick=\"oDebugger.$(\'DebuggerOutput\').innerHTML=\'\'\" id='debugger_clearOutput' >clear</button><div id='debuggerClientDiv'><div id='debugger_contentTopDiv' contenteditable designMode></div><div contenteditable id='DebuggerOutput' designMode></div><input type='text' id='debuggerCommand'/><button onclick=\"oDebugger.runCommand(oDebugger.$(\'debuggerCommand\'));\" id='debugger_runCommand'>run</button></div>",
+	debuggerStr : "Debugger(Version:" + 0.7 + '' + "):<span onclick='oDebugger.showdebugger(false);' id='debugger_hiddenBtn'>x</span><br/><input type='text' value='' id='debuggerInfo' /><button onclick=\"oDebugger.$(\'DebuggerOutput\').innerHTML=\'\'\" id='debugger_clearOutput' >clear</button><div id='debuggerClientDiv'><div id='debugger_contentTopDiv' contenteditable designMode></div><div contenteditable id='DebuggerOutput' designMode></div><input type='text' id='debuggerCommand'/><button onclick=\"oDebugger.runCommand(oDebugger.$(\'debuggerCommand\'));\" id='debugger_runCommand'>run</button></div>",
 	menuStr : '<li>' +
 		'<ul onclick="javascript:oDebugger.showCurPageSource();">View Page Source</ul>' +
 		'<ul onclick="javascript:oDebugger.showHelp();">Help</ul>' +
