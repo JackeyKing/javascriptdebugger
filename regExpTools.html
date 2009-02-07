@@ -1,0 +1,46 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+ <HEAD>
+  <TITLE> New Document </TITLE>
+  <META NAME="Generator" CONTENT="EditPlus">
+  <META NAME="Author" CONTENT="Jackey.King">
+  <META NAME="Mail" CONTENT="Jackey.King@gmail.com">
+  <META NAME="Keywords" CONTENT="">
+  <META NAME="Description" CONTENT="">
+  <META NAME="Create Date" CONTENT="">
+  <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <link href="" rel="stylesheet" type="text/css" />
+  <style type='text/css'>
+  </style>
+  <script type='text/javascript' language='javascript'>
+  <!--
+  function $(objId){
+	return document.getElementById(objId);
+  }
+  function regFunc(){
+	var regStr = null;
+	try{
+		regStr = new RegExp($('regText').value, 'ig');
+	}catch(e){
+		alert('reg error');
+		return;
+	}
+	$('desText').value = ($('srcText').value).replace(regStr, '');
+  }
+  function onRegTextKeyDown(evt){
+	evt = evt || event;
+	if(evt.keyCode == 13){
+		regFunc();
+	}
+  }
+  //-->
+  </script>
+ </HEAD>
+
+ <BODY>
+  <textarea id='srcText' style='width:100%;height:30%;'></textarea>
+  <textarea id='desText' style='width:100%;height:30%;'></textarea>
+  <input type='text' value='' id='regText' style='width:94.5%;' onkeydown='onRegTextKeyDown()'/>
+  <input type='button' onclick='regFunc();' style='width:5%' value='Test'/>
+ </BODY>
+</HTML>
