@@ -694,6 +694,8 @@ var oDebugger = {
 		this.Debugger = document.createElement('IFRAME');
 		this.Debugger.frameBorder = '0';
 		this.Debugger.style.position = 'absolute';
+		this.Debugger.style.width = '0';
+		this.Debugger.style.height = '0';
 		this.Debugger.id = 'id_g_oDebugger';
 		this.Debugger.name = 'id_g_oDebugger';
 		this.Menu = this.appendElement('DIV', this.menuStr, '', 'position:absolute;display:none;overflow:hidden;top:0;left:0;width:240px;background-color:#CCCCCC;filter: Alpha(Opacity = 75);cursor:pointer;');
