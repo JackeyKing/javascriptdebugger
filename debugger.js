@@ -704,6 +704,9 @@ var oDebugger = {
 		this.pBody.appendChild(this.Menu);
 		this.pBody.appendChild(this.SubMenu);
 		this.DebuggerWin = window.frames.id_g_oDebugger;
+		window.frames.id_g_oDebugger.parentDebugger = oDebugger;
+		window.frames.id_g_oDebugger.parentWin = window;
+		window.frames.id_g_oDebugger.Debugger = this.Debugger;
 		this._g_lastpos_y = Number(this.pBody.offsetHeight)/2;
 		this._g_lastpos_y = 100;
 		this._g_lastpos_x = Number(this.pBody.offsetWidth)/2;
