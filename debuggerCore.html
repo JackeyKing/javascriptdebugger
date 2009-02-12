@@ -146,6 +146,9 @@ var _g_lastpos_x = 0;
 var _g_lastpos_y = 0;
 var _g_cmdFocus = true;
 
+var lastMouseX = 0;
+var lastMouseY = 0;
+
 var colors = {
 	ERROR: 'red',
 	COMMAND:'blue',
@@ -272,10 +275,10 @@ function debuggerContentTopDivOnKeyDown(evt){
 function debuggerOnMouseDown(evt){
 	_g_mouseDownStatus = true;
 	evt = evt || event;
-	var mouseX = (evt.pageX)?evt.pageX:evt.x;
-	var mouseY = (evt.pageY)?evt.pageY:evt.y;
-	Debugger.startX = mouseX - Debugger.offsetLeft;
-	Debugger.startY = mouseY - Debugger.offsetTop;
+	var mouseX = (evt.pageX)?evt.pageX:evt.clientX;
+	var mouseY = (evt.pageY)?evt.pageY:evt.clientY;
+	lastMouseX = mouseX;
+	lastMouseY = mouseY;
 }
 
 function debuggerOnMouseUp(){
@@ -285,20 +288,21 @@ function debuggerOnMouseUp(){
 	}
 }
 
-function debuggerOnMouseMove(evt){
+function document.onmousemove(evt){
 	if(_g_mouseDownStatus){
 		evt = evt || event;
-		var mouseX = (evt.pageX)?evt.pageX:evt.x;
-		var mouseY = (evt.pageY)?evt.pageY:evt.y;
-		if(mouseX < parseInt(Debugger.style.left.replace('px')) || Debugger.startY > parsetInt(Debugger.style.top.replace('px')) || 
-			mouseX > (Debugger.offsetLeft + Debugger.offsetWidth) ||
-			mouseY > (Debugger.offsetTop + Debugger.offsetHeight) ){
-			_g_mouseDownStatus = false;
-		}
-		Debugger.style.left = mouseX - Debugger.startX;
-		Debugger.style.top = mouseY - Debugger.startY;
+		var mouseX = (evt.pageX)?evt.pageX:evt.clientX;
+		var mouseY = (evt.pageY)?evt.pageY:evt.clientY;
+		
 		_g_lastpos_x = Debugger.style.left;
 		_g_lastpos_y = Debugger.style.top;
+		
+		mouseX -= lastMouseX;
+		mouseY -= lastMouseY;
+		mouseX += parseInt(Debugger.style.left.replace('px',\'\'));
+		mouseY += parseInt(Debugger.style.top.replace('px',\'\'));
+		Debugger.style.left = mouseX;
+		Debugger.style.top = mouseY;
 	}
 }
 
@@ -316,7 +320,7 @@ function setDebuggerStyle(){
 
 </script>
 </HEAD>
-<BODY onmousedown='debuggerOnMouseDown()' onmouseup='debuggerOnMouseUp()' onmousemove='debuggerOnMouseMove()'>
+<BODY onmousedown='debuggerOnMouseDown()' onmouseup='debuggerOnMouseUp()'>
 <span onclick='parentDebugger.showdebugger(false);' id='debugger_hiddenBtn'>x</span>
 <table cellpading='0' cellspacing='0' id='layoutTable'><tr><td colspan='2' style='height:16px;'>
 Debugger(Version:0.8Preview):
