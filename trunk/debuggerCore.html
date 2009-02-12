@@ -21,6 +21,7 @@ BODY{
 	/*filter: Alpha(Opacity = 50);*/
 	overflow: hidden;
 	cursor: move;
+	background-color: #F7F8FE;
 }
 #debugger_runCommand{
 	border-right: #2c59aa 1px solid;
@@ -35,6 +36,7 @@ BODY{
 	height: 15px;
 	width:49px;
 	line-height: 5px;
+	background-color: #E2E3E9;
 }
 
 #debuggerCommand{
@@ -63,6 +65,15 @@ BODY{
 	position: relative;
 	overflow-x: auto;
 	overflow-y: auto;
+	scrollbar-3dlight-color: #AEB4CD;
+    scrollbar-arrow-color: #45423c;
+    scrollbar-base-color: #AEB4CD;
+    scrollbar-darkshadow-color: #AEB4CD;
+    scrollbar-face-color: #D9E0F6;
+    scrollbar-highlight-color: #AEB4CD;
+    scrollbar-shadow-color: #AEB4CD;
+    scrollbar-track-color: #445289;
+    scrollbar-arrow-color:#38342C;
 }
 
 #debugger_clearOutput{
@@ -80,6 +91,7 @@ BODY{
 	height: 15px;
 	width:49px;
 	line-height: 5px;
+	background-color: #E2E3E9;
 }
 
 #debuggerInfo{
@@ -104,20 +116,42 @@ BODY{
 	cursor: default;
 }
 
-#debugger_contentTopDiv{
+#debugger_contentTopDivContainer{
+	top: 0px;
+	left: 0px;
 	border-width: 1px;
 	border-color: #abb9df;
 	border-style: solid;
 	background-color: #F2F3F9;
 	width: 100%;
 	height: 50%;
-	cursor: pointer;
 	display: none;
 	position: relative;
+	overflow: hidden;
+}
+
+#debugger_contentTopText{
+	top: 0px;
+	left: 0px;
+	border-width: 0px;
+	background-color: #F2F3F9;
+	width: 100%;
+	height: 100%;
+	position: relative;
+	overflow-x: auto;
+	overflow-y: auto;
+	scrollbar-3dlight-color: #AEB4CD;
+    scrollbar-arrow-color: #45423c;
+    scrollbar-base-color: #AEB4CD;
+    scrollbar-darkshadow-color: #AEB4CD;
+    scrollbar-face-color: #D9E0F6;
+    scrollbar-highlight-color: #AEB4CD;
+    scrollbar-shadow-color: #AEB4CD;
+    scrollbar-track-color: #445289;
+    scrollbar-arrow-color:#38342C;
 }
 
 #layoutTable{
-	table-layout: fixed;
 	width: 100%;
 	height:100%;
 	border:0;
@@ -184,10 +218,15 @@ function prerunCommand(){
 }
 
 function debuggerCommandOnKeyDown(evt){
-	evt = evt || event;
-	var keycode = evt.keyCode || evt.which;
+	evt = evt || window.event;
+	var keyCode = evt.keyCode || evt.which;
+	try{
+		if(keyCode){
+			keycode = keyCode;
+		}
+	}catch(e){}
 	if(parentDebugger._g_enableShowKeyCode){
-		showoutput(keycode, false, colors.ERROR);
+		parentDebugger.showoutput(keycode, false, colors.ERROR);
 	}
 	if(evt.ctrlKey){
 		switch(keycode){
@@ -246,11 +285,11 @@ function debuggerCommandOnKeyDown(evt){
 	if(keycode == '13'){
 		prerunCommand();
 	}
-	if(keycode == '27'){$('debuggerCommand').value = \'\';} /*ESC pressed*/
+	if(keycode == '27'){setTimeout(function(){$('debuggerCommand').value = \'\';},1);} /*ESC pressed*/
 }
 
 function debuggerCommandOnKeyUp(evt){
-	evt = evt || event;
+	evt = evt || window.event;
 	var keycode = evt.keyCode || evt.which;
 	if(keycode == 17){	/*ctrl key up*/
 		_curCommandHistoryIndex = 0;
@@ -258,10 +297,10 @@ function debuggerCommandOnKeyUp(evt){
 }
 
 function debuggerContentTopDivOnKeyDown(evt){
-	evt = evt || event;
+	evt = evt || window.event;
 	var keycode = evt.keyCode || evt.which;
 	if(keycode == 13){	/*Enter key down*/
-		if(_g_isIE){
+		if(parentDebugger._g_isIE){
 			var txtobj = document.selection.createRange();
 			txtobj.text == \'\'?txtobj.text='\\n':(document.selection.clear())&(txtobj.text='\\n');
 			document.selection.createRange().select();
@@ -274,7 +313,7 @@ function debuggerContentTopDivOnKeyDown(evt){
 
 function debuggerOnMouseDown(evt){
 	_g_mouseDownStatus = true;
-	evt = evt || event;
+	evt = evt || window.event;
 	var mouseX = (evt.pageX)?evt.pageX:evt.clientX;
 	var mouseY = (evt.pageY)?evt.pageY:evt.clientY;
 	lastMouseX = mouseX;
@@ -288,9 +327,9 @@ function debuggerOnMouseUp(){
 	}
 }
 
-function document.onmousemove(evt){
+function debuggerOnMouseMove(evt){
 	if(_g_mouseDownStatus){
-		evt = evt || event;
+		evt = evt || window.event;
 		var mouseX = (evt.pageX)?evt.pageX:evt.clientX;
 		var mouseY = (evt.pageY)?evt.pageY:evt.clientY;
 		
@@ -306,6 +345,29 @@ function document.onmousemove(evt){
 	}
 }
 
+function debuggerOnKeyDown(evt){
+	evt = evt || window.event;
+	if(evt.keyCode == 123){
+		parentDebugger.showdebugger(parentDebugger.Debugger.style.display == 'none'?true:false);
+	}
+}
+
+function debuggerOnContextMenu(evt){
+	evt = evt || window.event;
+	var elem = (evt.target) ? evt.target : evt.srcElement;
+	parentDebugger._g_menuTarget = parentDebugger;
+	parentDebugger.showMenu(evt, parentDebugger.Menu, true);
+	stopBubble(evt);
+}
+
+function debuggerOutputOnContextMenu(evt){
+	evt = evt || window.event;
+	var elem = (evt.target) ? evt.target : evt.srcElement;
+	parentDebugger._g_menuTarget = $('DebuggerOutput');
+	parentDebugger.showMenu(evt, parentDebugger.SubMenu, true);
+	stopBubble(evt);
+}
+
 function setDebuggerStyle(){
 	try{
 		Debugger.style.position = 'absolute';
@@ -318,21 +380,35 @@ function setDebuggerStyle(){
 	}catch(e){}
 }
 
+function stopBubble(e) {
+	e = e || window.event;
+	if ( e && e.stopPropagation ){
+		e.stopPropagation();
+	}else{
+		window.event.cancelBubble = true;
+		window.event.returnValue = false;
+	}
+}
+
+function bindEventListner(obj, evt, funcName){
+	if(window.addEventListener){
+		obj.addEventListener(evt.substring(2), funcName, false);
+	} else {
+		obj.attachEvent(evt, funcName);
+	}
+}
 </script>
 </HEAD>
-<BODY onmousedown='debuggerOnMouseDown()' onmouseup='debuggerOnMouseUp()'>
+<BODY onmousedown='debuggerOnMouseDown(event)' onmouseup='debuggerOnMouseUp(event)' onmousemove='debuggerOnMouseMove(event)' onkeydown='debuggerOnKeyDown(event)' oncontextmenu='debuggerOnContextMenu(event)'>
 <span onclick='parentDebugger.showdebugger(false);' id='debugger_hiddenBtn'>x</span>
 <table cellpading='0' cellspacing='0' id='layoutTable'><tr><td colspan='2' style='height:16px;'>
 Debugger(Version:0.8Preview):
 </td></tr><tr><td style='height:16px;width:100%;'>
 <input type='text' id='debuggerInfo' />
 </td><td style='height:16px;width:49px;'>
-<button onclick='clearOutput();' id='debugger_clearOutput' >clear</button>
-</td></tr><tr><td colspan='2'>
-<div id='debuggerClientDiv'><div id='debugger_contentTopDiv' contenteditable designMode onkeydown='debuggerContentTopDivOnKeyDown()'></div><div contenteditable id='DebuggerOutput' designMode></div>
-</div> 
-</td></tr><tr><td style='height:16px;'>
-<input type='text' id='debuggerCommand' onkeydown='debuggerCommandOnKeyDown()' onkeyup='debuggerCommandOnKeyUp()'/>
+<button onclick='clearOutput(event);' id='debugger_clearOutput' >clear</button>
+</td></tr><tr><td colspan='2'><div id='debuggerClientDiv' onmousedown='stopBubble(event)'><div id='debugger_contentTopDivContainer'><textarea id='debugger_contentTopText'></textarea></div><div id='DebuggerOutput' oncontextmenu='debuggerOutputOnContextMenu(event)'></div></div></td></tr><tr><td style='height:16px;'>
+<input type='text' id='debuggerCommand' onkeydown='debuggerCommandOnKeyDown(event)' onkeyup='debuggerCommandOnKeyUp(event)' onmousedown='stopBubble(event)'/>
 </td><td style='height:16px;width:49px;'>
 <button onclick='prerunCommand();' id='debugger_runCommand'>run</button>
 </td></tr></table>
