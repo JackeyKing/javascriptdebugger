@@ -850,7 +850,7 @@ var oDebugger = {
 		this.$('debuggerCommand').onfocus = this.onActive;
 		this.$('debuggerCommand').onblur = this.onDeActive;
 		*/
-		debugger;
+		
 		if(this.debug.isEvalBeHooked()){
 			this.showoutput("ERROR: eval function was hooked by other codes in the front.", false, this.color.ERROR);
 		}
