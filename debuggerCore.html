@@ -1,0 +1,337 @@
+<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.0 Transitional//EN'><HTML><HEAD><TITLE>oDebugger</TITLE><META NAME='Generator' CONTENT='EditPlus'><META NAME='Author' CONTENT='Jackey.King'><META NAME='Mail' CONTENT='Jackey.King@gmail.com'><META http-equiv='Content-Type' content='text/html; charset=UTF-8'>
+<style type='text/css'>
+*{
+	font-family: 宋体, simsun, Arial, Verdana, Times New Roman;
+	font-size: 12px;
+	margin:0;
+	padding:0;
+	scrollbar-3dlight-color: #AEB4CD;
+    scrollbar-arrow-color: #45423c;
+    scrollbar-base-color: #AEB4CD;
+    scrollbar-darkshadow-color: #AEB4CD;
+    scrollbar-face-color: #D9E0F6;
+    scrollbar-highlight-color: #AEB4CD;
+    scrollbar-shadow-color: #AEB4CD;
+    scrollbar-track-color: #445289;
+    scrollbar-arrow-color:#38342C;
+}
+BODY{
+	position: relative;
+	background-color: white;
+	/*filter: Alpha(Opacity = 50);*/
+	overflow: hidden;
+	cursor: move;
+}
+#debugger_runCommand{
+	border-right: #2c59aa 1px solid;
+	padding-right: 2px;
+	border-top: #2c59aa 1px solid;
+	padding-left: 2px;
+	border-left: #2c59aa 1px solid;
+	color: #445289;
+	padding-top: 2px;
+	border-bottom: #2c59aa 1px solid;
+	cursor: pointer;
+	height: 15px;
+	width:49px;
+	line-height: 5px;
+}
+
+#debuggerCommand{
+	border-width: 1px;
+	border-color: #abb9df;
+	border-style: solid;
+	background-color: #F2F3F9;
+	width: 100%;
+}
+
+#debuggerClientDiv{
+	border-width: 0px;
+	width: 100%;
+	height: 100%;
+	position: relative;
+}
+
+#DebuggerOutput{
+	border-width: 1px;
+	border-color: #abb9df;
+	border-style: solid;
+	background-color: #F2F3F9;
+	width: 100%;
+	height: 100%;
+	cursor: text;
+	position: relative;
+	overflow-x: auto;
+	overflow-y: auto;
+}
+
+#debugger_clearOutput{
+	border-right: #2c59aa 1px solid;
+	padding-right: 2px;
+	border-top: #2c59aa 1px solid;
+	padding-left: 2px;
+	font-size: 12px;
+	color: #000000;
+	border-left: #2c59aa 1px solid;
+	color: #445289;
+	padding-top: 2px;
+	border-bottom: #2c59aa 1px solid;
+	cursor: pointer;
+	height: 15px;
+	width:49px;
+	line-height: 5px;
+}
+
+#debuggerInfo{
+	width: 100%;
+	border-width: 1px;
+	border-color: #abb9df;
+	border-style: solid;
+	background-color: #F2F3F9;
+}
+
+#debugger_hiddenBtn{
+	top: 0;
+	right: 0;
+	position: absolute;
+	float: right;
+	width: 10px;
+	height: 10px;
+	border-width: 1px;
+	border-color: #abb9df;
+	border-style: solid;
+	background-color: #F2F3F9;
+	cursor: default;
+}
+
+#debugger_contentTopDiv{
+	border-width: 1px;
+	border-color: #abb9df;
+	border-style: solid;
+	background-color: #F2F3F9;
+	width: 100%;
+	height: 50%;
+	cursor: pointer;
+	display: none;
+	position: relative;
+}
+
+#layoutTable{
+	table-layout: fixed;
+	width: 100%;
+	height:100%;
+	border:0;
+	margin: 0;
+	padding: 0;
+}
+</style>
+<script type='text/javascript' language='javascript'>
+var Version = '0.8 Preview';
+var parentWin = window;
+var parentDebugger = window;
+var Debugger = window.document.body;
+var pBody = null;
+try{
+	if(top){
+		parentWin = top;
+		parentDebugger = top.oDebugger;
+		pBody = top.document.body;
+		Debugger = top.document.getElementById('id_g_oDebugger');/*top.frames.id_g_oDebugger;*/
+	}
+}catch(e){}
+var _g_mouseDownStatus = false;
+var _g_maxCommandHistory = 10;
+var _g_maxCommandStore = 10;
+var _g_lastpos_x = 0;
+var _g_lastpos_y = 0;
+var _g_cmdFocus = true;
+
+var colors = {
+	ERROR: 'red',
+	COMMAND:'blue',
+	HELP:'#FF00FF',
+	BACKGROUNDCOLOR:'#FFFF00',
+	BACKGROUNDCOLOR_DEACTIVE:'#CCCCCC',
+	TIP: 'red',
+	MOUSETIP: 'blue',
+	MENUBACKGROUNDCOLOR:'#FFFFFF',
+	MENUCOLOR:'#CCCCCC',
+	MENUOVER: '#E8E8E8'
+};
+var alpha = {
+	MENU: '75',
+	BODY: '75'
+};
+
+var _commandHistory = new Array(_g_maxCommandHistory);
+var _commandStore = new Array(_g_maxCommandStore);
+var _curCommandHistoryIndex = 0;
+
+function $(objId){
+	return document.getElementById(objId);
+}
+
+function clearOutput(){
+	$('DebuggerOutput').innerHTML=\'\';
+}
+function prerunCommand(){
+	_commandHistory.pop();
+	_commandHistory.unshift(this.$('debuggerCommand').value);
+	parentDebugger.runCommand($('debuggerCommand').value);
+}
+
+function debuggerCommandOnKeyDown(evt){
+	evt = evt || event;
+	var keycode = evt.keyCode || evt.which;
+	if(parentDebugger._g_enableShowKeyCode){
+		showoutput(keycode, false, colors.ERROR);
+	}
+	if(evt.ctrlKey){
+		switch(keycode){
+			case 48: /*0*/
+			case 49: /*1*/
+			case 50: /*2*/
+			case 51: /*3*/
+			case 52: /*4*/
+			case 53: /*5*/
+			case 54: /*6*/
+			case 55: /*7*/
+			case 56: /*8*/
+			case 57: /*9*/
+				$('debuggerCommand').value = _commandHistory[Number(keycode) - 48];
+				break;
+			case 38: /*up arrow*/
+				$('debuggerCommand').value = _commandHistory[_curCommandHistoryIndex];
+				_curCommandHistoryIndex += 1;
+				if(_curCommandHistoryIndex > (_g_maxCommandHistory - 1)){
+					_curCommandHistoryIndex = 0;
+				}
+				break;
+			case 40: /*down arrow*/
+				$('debuggerCommand').value = _commandHistory[_curCommandHistoryIndex];
+				_curCommandHistoryIndex -= 1;
+				if(_curCommandHistoryIndex < 0){
+					_curCommandHistoryIndex = _g_maxCommandHistory - 1;
+				}
+				break;
+			default:
+				break;
+		}
+	}
+	if(evt.altKey){
+		switch(keycode){
+			case 48: /*0*/
+			case 49: /*1*/
+			case 50: /*2*/
+			case 51: /*3*/
+			case 52: /*4*/
+			case 53: /*5*/
+			case 54: /*6*/
+			case 55: /*7*/
+			case 56: /*8*/
+			case 57: /*9*/
+				if(evt.altLeft){
+					$('debuggerCommand').value = _commandStore[Number(keycode) - 48];
+				}else{
+					_commandStore[Number(keycode) - 48] = oDebugger.$('debuggerCommand').value;
+				}
+				break;
+			default:
+				break;
+		}
+	}
+	if(keycode == '13'){
+		prerunCommand();
+	}
+	if(keycode == '27'){$('debuggerCommand').value = \'\';} /*ESC pressed*/
+}
+
+function debuggerCommandOnKeyUp(evt){
+	evt = evt || event;
+	var keycode = evt.keyCode || evt.which;
+	if(keycode == 17){	/*ctrl key up*/
+		_curCommandHistoryIndex = 0;
+	}
+}
+
+function debuggerContentTopDivOnKeyDown(evt){
+	evt = evt || event;
+	var keycode = evt.keyCode || evt.which;
+	if(keycode == 13){	/*Enter key down*/
+		if(_g_isIE){
+			var txtobj = document.selection.createRange();
+			txtobj.text == \'\'?txtobj.text='\\n':(document.selection.clear())&(txtobj.text='\\n');
+			document.selection.createRange().select();
+			stopBubble(evt);
+			return false;
+		}else{
+		}
+	}
+}
+
+function debuggerOnMouseDown(evt){
+	_g_mouseDownStatus = true;
+	evt = evt || event;
+	var mouseX = (evt.pageX)?evt.pageX:evt.x;
+	var mouseY = (evt.pageY)?evt.pageY:evt.y;
+	Debugger.startX = mouseX - Debugger.offsetLeft;
+	Debugger.startY = mouseY - Debugger.offsetTop;
+}
+
+function debuggerOnMouseUp(){
+	_g_mouseDownStatus = false;
+	if(_g_cmdFocus){
+		$('debuggerCommand').focus();
+	}
+}
+
+function debuggerOnMouseMove(evt){
+	if(_g_mouseDownStatus){
+		evt = evt || event;
+		var mouseX = (evt.pageX)?evt.pageX:evt.x;
+		var mouseY = (evt.pageY)?evt.pageY:evt.y;
+		if(mouseX < parseInt(Debugger.style.left.replace('px')) || Debugger.startY > parsetInt(Debugger.style.top.replace('px')) || 
+			mouseX > (Debugger.offsetLeft + Debugger.offsetWidth) ||
+			mouseY > (Debugger.offsetTop + Debugger.offsetHeight) ){
+			_g_mouseDownStatus = false;
+		}
+		Debugger.style.left = mouseX - Debugger.startX;
+		Debugger.style.top = mouseY - Debugger.startY;
+		_g_lastpos_x = Debugger.style.left;
+		_g_lastpos_y = Debugger.style.top;
+	}
+}
+
+function setDebuggerStyle(){
+	try{
+		Debugger.style.position = 'absolute';
+		Debugger.style.width = '320px';
+		Debugger.style.height = '425px';
+		Debugger.style.filter = 'Alpha(Opacity = ' + alpha.BODY + ')';
+		Debugger.style.backgroundColor = color.BACKGROUNDCOLOR + ' ';
+		Debugger.style.left = _g_lastpos_x;
+		Debugger.style.top = _g_lastpos_y;
+	}catch(e){}
+}
+
+</script>
+</HEAD>
+<BODY onmousedown='debuggerOnMouseDown()' onmouseup='debuggerOnMouseUp()' onmousemove='debuggerOnMouseMove()'>
+<span onclick='parentDebugger.showdebugger(false);' id='debugger_hiddenBtn'>x</span>
+<table cellpading='0' cellspacing='0' id='layoutTable'><tr><td colspan='2' style='height:16px;'>
+Debugger(Version:0.8Preview):
+</td></tr><tr><td style='height:16px;width:100%;'>
+<input type='text' id='debuggerInfo' />
+</td><td style='height:16px;width:49px;'>
+<button onclick='clearOutput();' id='debugger_clearOutput' >clear</button>
+</td></tr><tr><td colspan='2'>
+<div id='debuggerClientDiv'><div id='debugger_contentTopDiv' contenteditable designMode onkeydown='debuggerContentTopDivOnKeyDown()'></div><div contenteditable id='DebuggerOutput' designMode></div>
+</div> 
+</td></tr><tr><td style='height:16px;'>
+<input type='text' id='debuggerCommand' onkeydown='debuggerCommandOnKeyDown()' onkeyup='debuggerCommandOnKeyUp()'/>
+</td><td style='height:16px;width:49px;'>
+<button onclick='prerunCommand();' id='debugger_runCommand'>run</button>
+</td></tr></table>
+<script language='javascript' type='text/script'>
+</script>
+</BODY></HTML>
