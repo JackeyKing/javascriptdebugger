@@ -158,6 +158,50 @@ BODY{
 	margin: 0;
 	padding: 0;
 }
+
+.MainMenu{
+	position: absolute;
+	width: 160px;
+	height: auto;
+	display: none;
+	background-color: #FFFFFF;
+	filter: Alpha(Opacity = 75);
+	overflow: hidden;
+	cursor: pointer;
+	font-size: 12px;
+}
+
+.MainMenu UL{
+	padding: 0;
+	margin: 0px 1px 1px 10px;
+	width: 100%;
+	height: 24px;
+	line-height: 24px;
+	background-color: #FFFFFF;
+}
+
+.MainMenu LI{
+	padding: 0;
+	margin: 0px 0px 0px 0px;
+	border-top: 1px solid ' + oDebugger.colors.MENUCOLOR;
+	border-bottom: 1px solid ' + oDebugger.colors.MENUCOLOR;
+	list-style-type: none;
+	height: auto;
+	background-color: #CCCCCC;
+	width: 100%;
+}
+
+.MainMenu A{
+	padding: 0;
+	margin: 0;
+	text-decoration: none;
+	display: block;
+	width: 100%;
+}
+
+.MainMenu A:hover{
+	background-color: #E8E8E8;
+}
 </style>
 <script type='text/javascript' language='javascript'>
 var Version = '0.8 Preview';
@@ -182,6 +226,9 @@ var _g_cmdFocus = true;
 
 var lastMouseX = 0;
 var lastMouseY = 0;
+
+var Menu = null;
+var SubMenu = null;
 
 var colors = {
 	ERROR: 'red',
@@ -355,16 +402,14 @@ function debuggerOnKeyDown(evt){
 function debuggerOnContextMenu(evt){
 	evt = evt || window.event;
 	var elem = (evt.target) ? evt.target : evt.srcElement;
-	parentDebugger._g_menuTarget = parentDebugger;
-	parentDebugger.showMenu(evt, parentDebugger.Menu, true);
+	showMenu(evt, $('MainMenu'), true);
 	stopBubble(evt);
 }
 
 function debuggerOutputOnContextMenu(evt){
 	evt = evt || window.event;
 	var elem = (evt.target) ? evt.target : evt.srcElement;
-	parentDebugger._g_menuTarget = $('DebuggerOutput');
-	parentDebugger.showMenu(evt, parentDebugger.SubMenu, true);
+	showMenu(evt, $('SubMenu'), true);
 	stopBubble(evt);
 }
 
@@ -397,6 +442,16 @@ function bindEventListner(obj, evt, funcName){
 		obj.attachEvent(evt, funcName);
 	}
 }
+
+function showMenu(evt, obj, show){
+	if(show){
+		obj.style.top = (evt.pageY)?evt.pageY:evt.y;
+		obj.style.left = (evt.pageX)?evt.pageX:evt.x;;
+		obj.style.display = 'block';
+	}else{
+		obj.style.display = 'none';
+	}
+}
 </script>
 </HEAD>
 <BODY onmousedown='debuggerOnMouseDown(event)' onmouseup='debuggerOnMouseUp(event)' onmousemove='debuggerOnMouseMove(event)' onkeydown='debuggerOnKeyDown(event)' oncontextmenu='debuggerOnContextMenu(event)'>
@@ -412,6 +467,14 @@ Debugger(Version:0.8Preview):
 </td><td style='height:16px;width:49px;'>
 <button onclick='prerunCommand();' id='debugger_runCommand'>run</button>
 </td></tr></table>
+<div id='MainMenu' class='MainMenu' oncontextmenu='stopBubble(event)' onmouseover='showMenu(event, this, true)' onmouseout='showMenu(event, this, false)'></div>
+<div id='SubMenu' class='MainMenu' oncontextmenu='stopBubble(event)' onmouseover='showMenu(event, this, true)' onmouseout='showMenu(event, this, false)'></div>
 <script language='javascript' type='text/script'>
+if(parentDebugger.menuStr){
+	$('MainMenu').innerHTML = parentDebugger.menuStr;
+}
+if(parentDebugger.subMenuStr){
+	$('SubMenu').innerHTML = parentDebugger.subMenuStr;
+}
 </script>
 </BODY></HTML>
