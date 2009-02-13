@@ -181,12 +181,20 @@ var oDebugger = {
 	*Debug method You can add your debugger code below ;=)
 	*################################################################################################################################################
 	*/
+	t:function (){
+		var str = 'file:///c:/javascriptdebugger/t.html';
+		var ret1 = '';
+		var ret = showModalDialog(str, window, 'dialogWidth:800px;dialogHeight:600px;center:yes;resizable:yes;', ret1);
+		//var ret = showModalDialog('about:<iframe name=iframe1 width=100% height=100% scrollingyes frameborder=0 src="' + str + '" /></iframe>', window, 'dialogWidth:800px;dialogHeight:600px;center:yes;resizable:yes;', ret1);
+		//alert(ret);
+	},
 	tt:function (){
 		//var str = '\'<html><head><script language="javascript" type="text/javascript">function setRet(){window.returnValue="1";alert(window.returnValue);}</script></head><body><input type="button" value="setRet" onclick="setRet()"/><textarea id="text1" style="width:80%;height:100%;"></textarea><input type="button" value="eval" onclick="eval(document.getElementById(\\\'text1\\\').value)"/></body></html>\'';
 		//showModalDialog('javascript:document.write(\''+ document.documentElement.outerHTML.replace(document.getElementById('text1').innerHTML, '').replace(/\'/g, '\\\'') +'\')',window);
-		var str = '\'<script language="javascript" type="text/javascript">function setRet(){window.returnValue="1";alert(window.returnValue);}</script><input type="button" value="setRet" onclick="setRet()"/><textarea id="text1" style="width:80%;height:100%;"></textarea><input type="button" value="eval" onclick="eval(document.getElementById(\\\'text1\\\').value)"/>\'';
+		var str = '\'<script language="javascript" type="text/javascript">function setRet(){window.returnValue="1";alert(window.returnValue);}</script><input type="button" value="setRet" onclick="setRet()"/><textarea id="text1" style="width:80%;height:100%;">window.dialogArguments</textarea><input type="button" value="eval" onclick="eval(document.getElementById(\\\'text1\\\').value)"/>\'';
 		var ret1 = '';
-		var ret = showModalDialog("javascript:var body = window.document.createElement('BODY');body.innerHTML=" + str + ";window.document.appendChild(body);", window, 'dialogWidth:800px;dialogHeight:600px;center:yes;resizable:yes;', ret1);
+		//var ret = showModalDialog("javascript:var body = window.document.createElement('BODY');body.innerHTML=" + str + ";window.document.appendChild(body);", window, 'dialogWidth:800px;dialogHeight:600px;center:yes;resizable:yes;', ret1);
+		var ret = showModalessDialog("javascript:var body = window.document.createElement('BODY');body.innerHTML=" + str + ";window.document.appendChild(body);", window, 'dialogWidth:800px;dialogHeight:600px;center:yes;resizable:yes;', ret1);
 		alert(ret);
 		alert(ret1);
 	},
@@ -948,12 +956,13 @@ var oDebugger = {
 	showdebugger:function (args){
 		if(!this._g_isDR){
 			if(!this.initdebugger()){
-				return;
 			}
-		}
-		if(this.Debugger){
+		}else if(this.Debugger){
 			this.Debugger.style.display=args?'block':'none';
 		}
+		try{
+			this.DebuggerWin.$('debuggerCommand').focus();
+		}catch(e){}
 	},
 	onExit:function(){
 		this._g_isExiting = true;
