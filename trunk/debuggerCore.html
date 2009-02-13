@@ -414,6 +414,14 @@ function debuggerOutputOnContextMenu(evt){
 	stopBubble(evt);
 }
 
+function debuggerClientDivOnMouseDown(evt){
+	evt = evt || window.event;
+	if(evt.altKey){
+	}else{
+		stopBubble(evt);
+	}
+}
+
 function setDebuggerStyle(){
 	try{
 		Debugger.style.position = 'absolute';
@@ -476,7 +484,7 @@ Debugger(Version:0.8Preview):
 <input type='text' id='debuggerInfo' />
 </td><td style='height:16px;width:49px;'>
 <button onclick='clearOutput(event);' id='debugger_clearOutput' >clear</button>
-</td></tr><tr><td colspan='2'><div id='debuggerClientDiv' onmousedown='stopBubble(event)'><div id='debugger_contentTopDivContainer'><textarea id='debugger_contentTopText'></textarea></div><div id='DebuggerOutput' oncontextmenu='debuggerOutputOnContextMenu(event)'></div></div></td></tr><tr><td style='height:16px;'>
+</td></tr><tr><td colspan='2'><div id='debuggerClientDiv' onmousedown='debuggerClientDivOnMouseDown(event)'><div id='debugger_contentTopDivContainer'><textarea id='debugger_contentTopText'></textarea></div><div id='DebuggerOutput' oncontextmenu='debuggerOutputOnContextMenu(event)'></div></div></td></tr><tr><td style='height:16px;'>
 <input type='text' id='debuggerCommand' onkeydown='debuggerCommandOnKeyDown(event)' onkeyup='debuggerCommandOnKeyUp(event)' onmousedown='stopBubble(event)'/>
 </td><td style='height:16px;width:49px;'>
 <button onclick='prerunCommand();' id='debugger_runCommand'>run</button>
