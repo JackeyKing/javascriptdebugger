@@ -157,8 +157,8 @@ var oDebugger = {
 		'<ul onclick="javascript:parentDebugger.showHelp();"><a>Help</a></ul>' +
 		'</li>',
 	subMenuStr : '<li>' +
-		'<ul onclick="javascript:parentDebugger.selectAll(parentDebugger.DebuggerWin.$(\'DebuggerOutput\'));"><a>Select All</a></ul>' +
-		'<ul onclick="javascript:parentDebugger.copy(parentDebugger.DebuggerWin.$(\'DebuggerOutput\'));"><a>Copy</a></ul>' +
+		'<ul onclick="javascript:parentDebugger.selectAll($(\'DebuggerOutput\'));"><a>Select All</a></ul>' +
+		'<ul onclick="javascript:parentDebugger.copy($(\'DebuggerOutput\'));"><a>Copy</a></ul>' +
 		'</li>',
 
 	colors: {
