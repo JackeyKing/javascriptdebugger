@@ -205,7 +205,7 @@ BODY{
 }
 </style>
 <script type='text/javascript' language='javascript'>
-var Version = '0.8 Preview';
+var Version = '';
 var parentWin = window;
 var parentDebugger = window;
 var Debugger = window.document.body;
@@ -481,7 +481,7 @@ function initEnv(){
 	try{
 		$('MainMenu').innerHTML = parentDebugger.menuStr;
 		$('SubMenu').innerHTML = parentDebugger.subMenuStr;
-		$('Version').innerText = parentDebugger.Version;
+		$('Version').innerHTML = parentDebugger.Version;
 	}catch(e){}
 }
 
