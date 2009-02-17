@@ -225,6 +225,7 @@ var _g_lastpos_x = 0;
 var _g_lastpos_y = 0;
 var _g_cmdFocus = true;
 var _g_isExiting = false;
+var _g_isAltDown = false;
 
 var lastMouseX = 0;
 var lastMouseY = 0;
@@ -406,6 +407,29 @@ function debuggerOnKeyDown(evt){
 	if(evt.keyCode == 123){
 		parentDebugger.showdebugger(parentDebugger.Debugger.style.display == 'none'?true:false);
 	}
+	if(evt.altKey){
+		$('debugger_hiddenBtn').style.cursor = 'move';
+		$('debuggerInfo').style.cursor = 'move';
+		$('debugger_clearOutput').style.cursor = 'move';
+		$('debugger_contentTopText').style.cursor = 'move';
+		$('DebuggerOutput').style.cursor = 'move';
+		$('debugger_runCommand').style.cursor = 'move';
+		_g_isAltDown = true;
+	}
+}
+
+function debuggerOnKeyUp(evt){
+	if(parentDebugger._g_isExiting){return;}
+	evt = evt || window.event;
+	if(_g_isAltDown){
+		$('debugger_hiddenBtn').style.cursor = '';
+		$('debuggerInfo').style.cursor = '';
+		$('debugger_clearOutput').style.cursor = '';
+		$('debugger_contentTopText').style.cursor = '';
+		$('DebuggerOutput').style.cursor = '';
+		$('debugger_runCommand').style.cursor = '';
+		_g_isAltDown = false;
+	}
 }
 
 function debuggerOnContextMenu(evt){
@@ -488,7 +512,7 @@ function initEnv(){
 setTimeout(initEnv, 1);
 </script>
 </HEAD>
-<BODY onmousedown='debuggerOnMouseDown(event)' onmouseup='debuggerOnMouseUp(event)' onmousemove='debuggerOnMouseMove(event)' onkeydown='debuggerOnKeyDown(event)' oncontextmenu='debuggerOnContextMenu(event)'>
+<BODY onmousedown='debuggerOnMouseDown(event)' onmouseup='debuggerOnMouseUp(event)' onmousemove='debuggerOnMouseMove(event)' onkeydown='debuggerOnKeyDown(event)' onkeyup='debuggerOnKeyUp(event)' oncontextmenu='debuggerOnContextMenu(event)'>
 <span onclick='parentDebugger.showdebugger(false);' id='debugger_hiddenBtn'>x</span>
 <table cellpading='0' cellspacing='0' id='layoutTable'><tr><td colspan='2' style='height:16px;'>
 Debugger(Version:<span id='Version'></span>):
