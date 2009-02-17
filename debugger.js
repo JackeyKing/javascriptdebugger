@@ -90,8 +90,8 @@ javascript:var head = document.getElementsByTagName("head")[0];var js = document
 *make a short cut to od._g_targetObj --> od.T 2009-01-20
 *after a long time in stable status //2009-01-21
 *v0.8 change display from div to iframe //2009-02-12 deep night
-*v0.81 supporting iframe injection. //2009-02-13 deep night
-*v0.82 Unified error output. Add regular expression validation.
+*v0.81 supporting iframe injection. //2009-02-13 deep in the night
+*v0.82 Unified error output. Add regular expression validation. //2009-02-16
 *
 *the next...
 *will make a complex real debugger by open a modal window...
