@@ -113,7 +113,23 @@ BODY{
 	border-color: #abb9df;
 	border-style: solid;
 	background-color: #F2F3F9;
-	cursor: default;
+	cursor: pointer;
+	text-align: center;
+}
+
+#debugger_pinBtn{
+	top: 0;
+	right: 15px;
+	position: absolute;
+	float: right;
+	width: 10px;
+	height: 10px;
+	border-width: 1px;
+	border-color: #abb9df;
+	border-style: solid;
+	background-color: #F2F3F9;
+	cursor: pointer;
+	text-align: center;
 }
 
 #debugger_contentTopDivContainer{
@@ -211,11 +227,11 @@ var parentDebugger = window;
 var Debugger = window.document.body;
 var pBody = null;
 try{
-	if(top){
-		parentWin = top;
-		parentDebugger = top.oDebugger;
-		pBody = top.document.body;
-		Debugger = top.document.getElementById('id_g_oDebugger');/*top.frames.id_g_oDebugger;*/
+	if(top || window.dialogArguments){
+		parentWin = top || window.dialogArguments;
+		parentDebugger = parentWin.oDebugger;
+		pBody = parentWin.document.body;
+		Debugger = parentWin.document.getElementById('id_g_oDebugger');/*top.frames.id_g_oDebugger;*/
 	}
 }catch(e){}
 var _g_mouseDownStatus = false;
@@ -513,6 +529,7 @@ setTimeout(initEnv, 1);
 </script>
 </HEAD>
 <BODY onmousedown='debuggerOnMouseDown(event)' onmouseup='debuggerOnMouseUp(event)' onmousemove='debuggerOnMouseMove(event)' onkeydown='debuggerOnKeyDown(event)' onkeyup='debuggerOnKeyUp(event)' oncontextmenu='debuggerOnContextMenu(event)'>
+<span onclick='parentDebugger.dopin();' id='debugger_pinBtn'>un/pin</span>
 <span onclick='parentDebugger.showdebugger(false);' id='debugger_hiddenBtn'>x</span>
 <table cellpading='0' cellspacing='0' id='layoutTable'><tr><td colspan='2' style='height:16px;'>
 Debugger(Version:<span id='Version'></span>):
