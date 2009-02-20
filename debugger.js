@@ -92,13 +92,14 @@ javascript:var head = document.getElementsByTagName("head")[0];var js = document
 *v0.8 change display from div to iframe //2009-02-12 deep night
 *v0.81 supporting iframe injection. //2009-02-13 deep in the night
 *v0.82 Unified error output. Add regular expression validation. //2009-02-16
+*v0.85 pin/unpin support. //2009-02-20
 *
 *the next...
 *will make a complex real debugger by open a modal window...
 */
 
 var oDebugger = {
-	Version: '0.82',
+	Version: '0.85',
 /*
 *################################################################################################################################################
 *Public variables
@@ -117,6 +118,8 @@ var oDebugger = {
 	_g_maxCommandStore : 10,
 	_g_lastpos_x : 0,
 	_g_lastpos_y : 0,
+	_g_pinwinlastpos_x : -1,
+	_g_pinwinlastpos_y : -1,
 	_g_returnValue : null,
 	_g_oDList : new Array(),	//eval can't create variables, however, we can use _g_oDList to save functions or variables
 	//O : this.oDList, //make a shortcut ;=)
@@ -139,10 +142,14 @@ var oDebugger = {
 	funcName : /^[a-zA-Z0-9_.]+$/i,
 
 	_g_isIE:((document.all)?true:false),
+	_g_isZh:(/zh/ig.test(navigator.userLanguage)),
 
 	_g_registedVariables:[],
 	_g_registedEventHandlers:[],
 	_g_registedGarbage:[],
+	
+	_g_pinStatus: false,
+
 	_g_ids:{
 		debugger_id:'id_g_oDebugger',
 		debugger_css:'id_g_debugger_css'
@@ -155,7 +162,7 @@ var oDebugger = {
 		regex: false
 	},
 
-	debuggerStr : "<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.0 Transitional//EN'><HTML><HEAD><TITLE>oDebugger</TITLE><META NAME='Generator' CONTENT='EditPlus'><META NAME='Author' CONTENT='Jackey.King'><META NAME='Mail' CONTENT='Jackey.King@gmail.com'><META http-equiv='Content-Type' content='text/html; charset=UTF-8'>\n<style type='text/css'>\n*{\n	font-family: 宋体, simsun, Arial, Verdana, Times New Roman;\n	font-size: 12px;\n	margin:0;\n	padding:0;\n	scrollbar-3dlight-color: #AEB4CD;\n    scrollbar-arrow-color: #45423c;\n    scrollbar-base-color: #AEB4CD;\n    scrollbar-darkshadow-color: #AEB4CD;\n    scrollbar-face-color: #D9E0F6;\n    scrollbar-highlight-color: #AEB4CD;\n    scrollbar-shadow-color: #AEB4CD;\n    scrollbar-track-color: #445289;\n    scrollbar-arrow-color:#38342C;\n}\nBODY{\n	position: relative;\n	background-color: white;\n	/*filter: Alpha(Opacity = 50);*/\n	overflow: hidden;\n	cursor: move;\n	background-color: #F7F8FE;\n}\n#debugger_runCommand{\n	border-right: #2c59aa 1px solid;\n	padding-right: 2px;\n	border-top: #2c59aa 1px solid;\n	padding-left: 2px;\n	border-left: #2c59aa 1px solid;\n	color: #445289;\n	padding-top: 2px;\n	border-bottom: #2c59aa 1px solid;\n	cursor: pointer;\n	height: 15px;\n	width:49px;\n	line-height: 5px;\n	background-color: #E2E3E9;\n}\n\n#debuggerCommand{\n	border-width: 1px;\n	border-color: #abb9df;\n	border-style: solid;\n	background-color: #F2F3F9;\n	width: 100%;\n}\n\n#debuggerClientDiv{\n	border-width: 0px;\n	width: 100%;\n	height: 100%;\n	position: relative;\n}\n\n#DebuggerOutput{\n	border-width: 1px;\n	border-color: #abb9df;\n	border-style: solid;\n	background-color: #F2F3F9;\n	width: 100%;\n	height: 100%;\n	cursor: text;\n	position: relative;\n	overflow-x: auto;\n	overflow-y: auto;\n	scrollbar-3dlight-color: #AEB4CD;\n    scrollbar-arrow-color: #45423c;\n    scrollbar-base-color: #AEB4CD;\n    scrollbar-darkshadow-color: #AEB4CD;\n    scrollbar-face-color: #D9E0F6;\n    scrollbar-highlight-color: #AEB4CD;\n    scrollbar-shadow-color: #AEB4CD;\n    scrollbar-track-color: #445289;\n    scrollbar-arrow-color:#38342C;\n}\n\n#debugger_clearOutput{\n	border-right: #2c59aa 1px solid;\n	padding-right: 2px;\n	border-top: #2c59aa 1px solid;\n	padding-left: 2px;\n	font-size: 12px;\n	color: #000000;\n	border-left: #2c59aa 1px solid;\n	color: #445289;\n	padding-top: 2px;\n	border-bottom: #2c59aa 1px solid;\n	cursor: pointer;\n	height: 15px;\n	width:49px;\n	line-height: 5px;\n	background-color: #E2E3E9;\n}\n\n#debuggerInfo{\n	width: 100%;\n	border-width: 1px;\n	border-color: #abb9df;\n	border-style: solid;\n	background-color: #F2F3F9;\n}\n\n#debugger_hiddenBtn{\n	top: 0;\n	right: 0;\n	position: absolute;\n	float: right;\n	width: 10px;\n	height: 10px;\n	border-width: 1px;\n	border-color: #abb9df;\n	border-style: solid;\n	background-color: #F2F3F9;\n	cursor: default;\n}\n\n#debugger_contentTopDivContainer{\n	top: 0px;\n	left: 0px;\n	border-width: 1px;\n	border-color: #abb9df;\n	border-style: solid;\n	background-color: #F2F3F9;\n	width: 100%;\n	height: 50%;\n	display: none;\n	position: relative;\n	overflow: hidden;\n}\n\n#debugger_contentTopText{\n	top: 0px;\n	left: 0px;\n	border-width: 0px;\n	background-color: #F2F3F9;\n	width: 100%;\n	height: 100%;\n	position: relative;\n	overflow-x: auto;\n	overflow-y: auto;\n	scrollbar-3dlight-color: #AEB4CD;\n    scrollbar-arrow-color: #45423c;\n    scrollbar-base-color: #AEB4CD;\n    scrollbar-darkshadow-color: #AEB4CD;\n    scrollbar-face-color: #D9E0F6;\n    scrollbar-highlight-color: #AEB4CD;\n    scrollbar-shadow-color: #AEB4CD;\n    scrollbar-track-color: #445289;\n    scrollbar-arrow-color:#38342C;\n}\n\n#layoutTable{\n	width: 100%;\n	height:100%;\n	border:0;\n	margin: 0;\n	padding: 0;\n}\n\n.MainMenu{\n	position: absolute;\n	width: 160px;\n	height: auto;\n	display: none;\n	background-color: #FFFFFF;\n	filter: Alpha(Opacity = 75);\n	overflow: hidden;\n	cursor: pointer;\n	font-size: 12px;\n}\n\n.MainMenu LI{\n	padding: 0;\n	margin: 0px 0px 0px 0px;\n	border-top: 1px solid #CCCCCC;\n	border-bottom: 1px solid #CCCCCC;\n	list-style-type: none;\n	height: auto;\n	background-color: #CCCCCC;\n	width: 100%;\n}\n\n.MainMenu LI UL{\n	padding: 0;\n	margin: 0px 1px 1px 10px;\n	width: 100%;\n	height: 24px;\n	line-height: 24px;\n	background-color: #FFFFFF;\n}\n\n.MainMenu LI UL A{\n	padding: 0;\n	margin: 0;\n	text-decoration: none;\n	display: block;\n	width: 100%;\n	height: 100%;\n}\n\n.MainMenu LI UL A:hover{\n	background-color: #E8E8E8;\n}\n</style>\n<script type='text/javascript' language='javascript'>\nvar Version = '';\nvar parentWin = window;\nvar parentDebugger = window;\nvar Debugger = window.document.body;\nvar pBody = null;\ntry{\n	if(top){\n		parentWin = top;\n		parentDebugger = top.oDebugger;\n		pBody = top.document.body;\n		Debugger = top.document.getElementById('id_g_oDebugger');/*top.frames.id_g_oDebugger;*/\n	}\n}catch(e){}\nvar _g_mouseDownStatus = false;\nvar _g_maxCommandHistory = 10;\nvar _g_maxCommandStore = 10;\nvar _g_lastpos_x = 0;\nvar _g_lastpos_y = 0;\nvar _g_cmdFocus = true;\nvar _g_isExiting = false;\nvar _g_isAltDown = false;\n\nvar lastMouseX = 0;\nvar lastMouseY = 0;\n\nvar Menu = null;\nvar SubMenu = null;\n\nvar colors = {\n	ERROR: 'red',\n	COMMAND:'blue',\n	HELP:'#FF00FF',\n	BACKGROUNDCOLOR:'#FFFF00',\n	BACKGROUNDCOLOR_DEACTIVE:'#CCCCCC',\n	TIP: 'red',\n	MOUSETIP: 'blue',\n	MENUBACKGROUNDCOLOR:'#FFFFFF',\n	MENUCOLOR:'#CCCCCC',\n	MENUOVER: '#E8E8E8'\n};\nvar alpha = {\n	MENU: '75',\n	BODY: '75'\n};\n\nvar _commandHistory = new Array(_g_maxCommandHistory);\nvar _commandStore = new Array(_g_maxCommandStore);\nvar _curCommandHistoryIndex = 0;\n\nfunction $(objId){\n	return document.getElementById(objId);\n}\n\nfunction clearOutput(){\n	$('DebuggerOutput').innerHTML=\'\';\n}\nfunction prerunCommand(){\n	_commandHistory.pop();\n	_commandHistory.unshift(this.$('debuggerCommand').value);\n	parentDebugger.runCommand($('debuggerCommand').value);\n}\n\nfunction debuggerCommandOnKeyDown(evt){\n	if(parentDebugger._g_isExiting){return;}\n	evt = evt || window.event;\n	var keyCode = evt.keyCode || evt.which;\n	try{\n		if(keyCode){\n			keycode = keyCode;\n		}\n	}catch(e){}\n	if(parentDebugger._g_enableShowKeyCode){\n		parentDebugger.showoutput(keycode, false, colors.ERROR);\n	}\n	if(evt.ctrlKey){\n		switch(keycode){\n			case 48: /*0*/\n			case 49: /*1*/\n			case 50: /*2*/\n			case 51: /*3*/\n			case 52: /*4*/\n			case 53: /*5*/\n			case 54: /*6*/\n			case 55: /*7*/\n			case 56: /*8*/\n			case 57: /*9*/\n				$('debuggerCommand').value = _commandHistory[Number(keycode) - 48];\n				break;\n			case 38: /*up arrow*/\n				$('debuggerCommand').value = _commandHistory[_curCommandHistoryIndex];\n				_curCommandHistoryIndex += 1;\n				if(_curCommandHistoryIndex > (_g_maxCommandHistory - 1)){\n					_curCommandHistoryIndex = 0;\n				}\n				break;\n			case 40: /*down arrow*/\n				$('debuggerCommand').value = _commandHistory[_curCommandHistoryIndex];\n				_curCommandHistoryIndex -= 1;\n				if(_curCommandHistoryIndex < 0){\n					_curCommandHistoryIndex = _g_maxCommandHistory - 1;\n				}\n				break;\n			default:\n				break;\n		}\n	}\n	if(evt.altKey){\n		switch(keycode){\n			case 48: /*0*/\n			case 49: /*1*/\n			case 50: /*2*/\n			case 51: /*3*/\n			case 52: /*4*/\n			case 53: /*5*/\n			case 54: /*6*/\n			case 55: /*7*/\n			case 56: /*8*/\n			case 57: /*9*/\n				if(evt.altLeft){\n					$('debuggerCommand').value = _commandStore[Number(keycode) - 48];\n				}else{\n					_commandStore[Number(keycode) - 48] = oDebugger.$('debuggerCommand').value;\n				}\n				break;\n			default:\n				break;\n		}\n	}\n	if(keycode == '13'){\n		prerunCommand();\n	}\n	if(keycode == '27'){setTimeout(function(){$('debuggerCommand').value = \'\';},1);} /*ESC pressed*/\n}\n\nfunction debuggerCommandOnKeyUp(evt){\n	if(parentDebugger._g_isExiting){return;}\n	evt = evt || window.event;\n	var keycode = evt.keyCode || evt.which;\n	if(keycode == 17){	/*ctrl key up*/\n		_curCommandHistoryIndex = 0;\n	}\n}\n\nfunction debuggerContentTopDivOnKeyDown(evt){\n	if(parentDebugger._g_isExiting){return;}\n	evt = evt || window.event;\n	var keycode = evt.keyCode || evt.which;\n	if(keycode == 13){	/*Enter key down*/\n		if(parentDebugger._g_isIE){\n			var txtobj = document.selection.createRange();\n			txtobj.text == \'\'?txtobj.text='\\n':(document.selection.clear())&(txtobj.text='\\n');\n			document.selection.createRange().select();\n			stopBubble(evt);\n			return false;\n		}else{\n		}\n	}\n}\n\nfunction debuggerOnMouseDown(evt){\n	if(parentDebugger._g_isExiting){return;}\n	_g_mouseDownStatus = true;\n	evt = evt || window.event;\n	var mouseX = (evt.pageX)?evt.pageX:evt.clientX;\n	var mouseY = (evt.pageY)?evt.pageY:evt.clientY;\n	lastMouseX = mouseX;\n	lastMouseY = mouseY;\n}\n\nfunction debuggerOnMouseUp(){\n	if(parentDebugger._g_isExiting){return;}\n	_g_mouseDownStatus = false;\n	if(_g_cmdFocus){\n		$('debuggerCommand').focus();\n	}\n}\n\nfunction debuggerOnMouseMove(evt){\n	if(parentDebugger._g_isExiting){return;}\n	if(_g_mouseDownStatus){\n		evt = evt || window.event;\n		var mouseX = (evt.pageX)?evt.pageX:evt.clientX;\n		var mouseY = (evt.pageY)?evt.pageY:evt.clientY;\n		\n		_g_lastpos_x = Debugger.style.left;\n		_g_lastpos_y = Debugger.style.top;\n		\n		mouseX -= lastMouseX;\n		mouseY -= lastMouseY;\n		mouseX += parseInt(Debugger.style.left.replace('px',\'\'));\n		mouseY += parseInt(Debugger.style.top.replace('px',\'\'));\n		Debugger.style.left = mouseX;\n		Debugger.style.top = mouseY;\n	}\n}\n\nfunction debuggerOnKeyDown(evt){\n	if(parentDebugger._g_isExiting){return;}\n	evt = evt || window.event;\n	if(evt.keyCode == 123){\n		parentDebugger.showdebugger(parentDebugger.Debugger.style.display == 'none'?true:false);\n	}\n	if(evt.altKey){\n		$('debugger_hiddenBtn').style.cursor = 'move';\n		$('debuggerInfo').style.cursor = 'move';\n		$('debugger_clearOutput').style.cursor = 'move';\n		$('debugger_contentTopText').style.cursor = 'move';\n		$('DebuggerOutput').style.cursor = 'move';\n		$('debugger_runCommand').style.cursor = 'move';\n		_g_isAltDown = true;\n	}\n}\n\nfunction debuggerOnKeyUp(evt){\n	if(parentDebugger._g_isExiting){return;}\n	evt = evt || window.event;\n	if(_g_isAltDown){\n		$('debugger_hiddenBtn').style.cursor = '';\n		$('debuggerInfo').style.cursor = '';\n		$('debugger_clearOutput').style.cursor = '';\n		$('debugger_contentTopText').style.cursor = '';\n		$('DebuggerOutput').style.cursor = '';\n		$('debugger_runCommand').style.cursor = '';\n		_g_isAltDown = false;\n	}\n}\n\nfunction debuggerOnContextMenu(evt){\n	if(parentDebugger._g_isExiting){return;}\n	evt = evt || window.event;\n	var elem = (evt.target) ? evt.target : evt.srcElement;\n	showMenu(evt, $('MainMenu'), true);\n	stopBubble(evt);\n}\n\nfunction debuggerOutputOnContextMenu(evt){\n	if(parentDebugger._g_isExiting){return;}\n	evt = evt || window.event;\n	var elem = (evt.target) ? evt.target : evt.srcElement;\n	showMenu(evt, $('SubMenu'), true);\n	stopBubble(evt);\n}\n\nfunction debuggerClientDivOnMouseDown(evt){\n	if(parentDebugger._g_isExiting){return;}\n	evt = evt || window.event;\n	if(evt.altKey){\n	}else{\n		stopBubble(evt);\n	}\n}\n\nfunction setDebuggerStyle(){\n	try{\n		Debugger.style.position = 'absolute';\n		Debugger.style.width = '320px';\n		Debugger.style.height = '425px';\n		Debugger.style.filter = 'Alpha(Opacity = ' + alpha.BODY + ')';\n		Debugger.style.backgroundColor = color.BACKGROUNDCOLOR + ' ';\n		Debugger.style.left = _g_lastpos_x;\n		Debugger.style.top = _g_lastpos_y;\n	}catch(e){}\n}\n\nfunction stopBubble(e) {\n	e = e || window.event;\n	if ( e && e.stopPropagation ){\n		e.stopPropagation();\n	}else{\n		window.event.cancelBubble = true;\n		window.event.returnValue = false;\n	}\n}\n\nfunction bindEventListner(obj, evt, funcName){\n	if(window.addEventListener){\n		obj.addEventListener(evt.substring(2), funcName, false);\n	} else {\n		obj.attachEvent(evt, funcName);\n	}\n}\n\nfunction showMenu(evt, obj, show){\n	if(show){\n		obj.style.top = (evt.pageY)?evt.pageY:evt.clientY;\n		obj.style.left = (evt.pageX)?evt.pageX:evt.clientX;\n		obj.style.display = 'block';\n	}else{\n		obj.style.display = 'none';\n	}\n}\n\nfunction keepMenu(evt, obj, show){\n	obj.style.display = 'block';\n}\n\nfunction initEnv(){\n	try{\n		$('MainMenu').innerHTML = parentDebugger.menuStr;\n		$('SubMenu').innerHTML = parentDebugger.subMenuStr;\n		$('Version').innerHTML = parentDebugger.Version;\n	}catch(e){}\n}\n\nsetTimeout(initEnv, 1);\n</script>\n</HEAD>\n<BODY onmousedown='debuggerOnMouseDown(event)' onmouseup='debuggerOnMouseUp(event)' onmousemove='debuggerOnMouseMove(event)' onkeydown='debuggerOnKeyDown(event)' onkeyup='debuggerOnKeyUp(event)' oncontextmenu='debuggerOnContextMenu(event)'>\n<span onclick='parentDebugger.showdebugger(false);' id='debugger_hiddenBtn'>x</span>\n<table cellpading='0' cellspacing='0' id='layoutTable'><tr><td colspan='2' style='height:16px;'>\nDebugger(Version:<span id='Version'></span>):\n</td></tr><tr><td style='height:16px;width:100%;'>\n<input type='text' id='debuggerInfo' />\n</td><td style='height:16px;width:49px;'>\n<button onclick='clearOutput(event);' id='debugger_clearOutput' >clear</button>\n</td></tr><tr><td colspan='2'><div id='debuggerClientDiv' onmousedown='debuggerClientDivOnMouseDown(event)'><div id='debugger_contentTopDivContainer'><textarea id='debugger_contentTopText'></textarea></div><div id='DebuggerOutput' oncontextmenu='debuggerOutputOnContextMenu(event)'></div></div></td></tr><tr><td style='height:16px;'>\n<input type='text' id='debuggerCommand' onkeydown='debuggerCommandOnKeyDown(event)' onkeyup='debuggerCommandOnKeyUp(event)' onmousedown='stopBubble(event)'/>\n</td><td style='height:16px;width:49px;'>\n<button onclick='prerunCommand();' id='debugger_runCommand'>run</button>\n</td></tr></table>\n<div id='MainMenu' class='MainMenu' oncontextmenu='stopBubble(event)' onmouseover='keepMenu(event, this, true)' onmouseout='showMenu(event, this, false)' onclick='showMenu(event, this, false)'></div>\n<div id='SubMenu' class='MainMenu' oncontextmenu='stopBubble(event)' onmouseover='keepMenu(event, this, true)' onmouseout='showMenu(event, this, false)' onclick='showMenu(event, this, false)'></div>\n<script language='javascript' type='text/script'>\n</script>\n</BODY></HTML>",
+	debuggerStr : "<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.0 Transitional//EN'><HTML><HEAD><TITLE>oDebugger</TITLE><META NAME='Generator' CONTENT='EditPlus'><META NAME='Author' CONTENT='Jackey.King'><META NAME='Mail' CONTENT='Jackey.King@gmail.com'><META http-equiv='Content-Type' content='text/html; charset=UTF-8'>\n<style type='text/css'>\n*{\n	font-family: 宋体, simsun, Arial, Verdana, Times New Roman;\n	font-size: 12px;\n	margin:0;\n	padding:0;\n	scrollbar-3dlight-color: #AEB4CD;\n    scrollbar-arrow-color: #45423c;\n    scrollbar-base-color: #AEB4CD;\n    scrollbar-darkshadow-color: #AEB4CD;\n    scrollbar-face-color: #D9E0F6;\n    scrollbar-highlight-color: #AEB4CD;\n    scrollbar-shadow-color: #AEB4CD;\n    scrollbar-track-color: #445289;\n    scrollbar-arrow-color:#38342C;\n}\nBODY{\n	position: relative;\n	background-color: white;\n	/*filter: Alpha(Opacity = 50);*/\n	overflow: hidden;\n	cursor: move;\n	background-color: #F7F8FE;\n}\n#debugger_runCommand{\n	border-right: #2c59aa 1px solid;\n	padding-right: 2px;\n	border-top: #2c59aa 1px solid;\n	padding-left: 2px;\n	border-left: #2c59aa 1px solid;\n	color: #445289;\n	padding-top: 2px;\n	border-bottom: #2c59aa 1px solid;\n	cursor: pointer;\n	height: 15px;\n	width:49px;\n	line-height: 5px;\n	background-color: #E2E3E9;\n}\n\n#debuggerCommand{\n	border-width: 1px;\n	border-color: #abb9df;\n	border-style: solid;\n	background-color: #F2F3F9;\n	width: 100%;\n}\n\n#debuggerClientDiv{\n	border-width: 0px;\n	width: 100%;\n	height: 100%;\n	position: relative;\n}\n\n#DebuggerOutput{\n	border-width: 1px;\n	border-color: #abb9df;\n	border-style: solid;\n	background-color: #F2F3F9;\n	width: 100%;\n	height: 100%;\n	cursor: text;\n	position: relative;\n	overflow-x: auto;\n	overflow-y: auto;\n	scrollbar-3dlight-color: #AEB4CD;\n    scrollbar-arrow-color: #45423c;\n    scrollbar-base-color: #AEB4CD;\n    scrollbar-darkshadow-color: #AEB4CD;\n    scrollbar-face-color: #D9E0F6;\n    scrollbar-highlight-color: #AEB4CD;\n    scrollbar-shadow-color: #AEB4CD;\n    scrollbar-track-color: #445289;\n    scrollbar-arrow-color:#38342C;\n}\n\n#debugger_clearOutput{\n	border-right: #2c59aa 1px solid;\n	padding-right: 2px;\n	border-top: #2c59aa 1px solid;\n	padding-left: 2px;\n	font-size: 12px;\n	color: #000000;\n	border-left: #2c59aa 1px solid;\n	color: #445289;\n	padding-top: 2px;\n	border-bottom: #2c59aa 1px solid;\n	cursor: pointer;\n	height: 15px;\n	width:49px;\n	line-height: 5px;\n	background-color: #E2E3E9;\n}\n\n#debuggerInfo{\n	width: 100%;\n	border-width: 1px;\n	border-color: #abb9df;\n	border-style: solid;\n	background-color: #F2F3F9;\n}\n\n#debugger_hiddenBtn{\n	top: 0;\n	right: 0;\n	position: absolute;\n	float: right;\n	width: 10px;\n	height: 10px;\n	border-width: 1px;\n	border-color: #abb9df;\n	border-style: solid;\n	background-color: #F2F3F9;\n	cursor: pointer;\n	text-align: center;\n}\n\n#debugger_pinBtn{\n	top: 0;\n	right: 15px;\n	position: absolute;\n	float: right;\n	width: 10px;\n	height: 10px;\n	border-width: 1px;\n	border-color: #abb9df;\n	border-style: solid;\n	background-color: #F2F3F9;\n	cursor: pointer;\n	text-align: center;\n}\n\n#debugger_contentTopDivContainer{\n	top: 0px;\n	left: 0px;\n	border-width: 1px;\n	border-color: #abb9df;\n	border-style: solid;\n	background-color: #F2F3F9;\n	width: 100%;\n	height: 50%;\n	display: none;\n	position: relative;\n	overflow: hidden;\n}\n\n#debugger_contentTopText{\n	top: 0px;\n	left: 0px;\n	border-width: 0px;\n	background-color: #F2F3F9;\n	width: 100%;\n	height: 100%;\n	position: relative;\n	overflow-x: auto;\n	overflow-y: auto;\n	scrollbar-3dlight-color: #AEB4CD;\n    scrollbar-arrow-color: #45423c;\n    scrollbar-base-color: #AEB4CD;\n    scrollbar-darkshadow-color: #AEB4CD;\n    scrollbar-face-color: #D9E0F6;\n    scrollbar-highlight-color: #AEB4CD;\n    scrollbar-shadow-color: #AEB4CD;\n    scrollbar-track-color: #445289;\n    scrollbar-arrow-color:#38342C;\n}\n\n#layoutTable{\n	width: 100%;\n	height:100%;\n	border:0;\n	margin: 0;\n	padding: 0;\n}\n\n.MainMenu{\n	position: absolute;\n	width: 160px;\n	height: auto;\n	display: none;\n	background-color: #FFFFFF;\n	filter: Alpha(Opacity = 75);\n	overflow: hidden;\n	cursor: pointer;\n	font-size: 12px;\n}\n\n.MainMenu LI{\n	padding: 0;\n	margin: 0px 0px 0px 0px;\n	border-top: 1px solid #CCCCCC;\n	border-bottom: 1px solid #CCCCCC;\n	list-style-type: none;\n	height: auto;\n	background-color: #CCCCCC;\n	width: 100%;\n}\n\n.MainMenu LI UL{\n	padding: 0;\n	margin: 0px 1px 1px 10px;\n	width: 100%;\n	height: 24px;\n	line-height: 24px;\n	background-color: #FFFFFF;\n}\n\n.MainMenu LI UL A{\n	padding: 0;\n	margin: 0;\n	text-decoration: none;\n	display: block;\n	width: 100%;\n	height: 100%;\n}\n\n.MainMenu LI UL A:hover{\n	background-color: #E8E8E8;\n}\n</style>\n<script type='text/javascript' language='javascript'>\nvar Version = '';\nvar parentWin = window;\nvar parentDebugger = window;\nvar Debugger = window.document.body;\nvar pBody = null;\ntry{\n	if(top || window.dialogArguments){\n		parentWin = top || window.dialogArguments;\n		parentDebugger = parentWin.oDebugger;\n		pBody = parentWin.document.body;\n		Debugger = parentWin.document.getElementById('id_g_oDebugger');/*top.frames.id_g_oDebugger;*/\n	}\n}catch(e){}\nvar _g_mouseDownStatus = false;\nvar _g_maxCommandHistory = 10;\nvar _g_maxCommandStore = 10;\nvar _g_lastpos_x = 0;\nvar _g_lastpos_y = 0;\nvar _g_cmdFocus = true;\nvar _g_isExiting = false;\nvar _g_isAltDown = false;\n\nvar lastMouseX = 0;\nvar lastMouseY = 0;\n\nvar Menu = null;\nvar SubMenu = null;\n\nvar colors = {\n	ERROR: 'red',\n	COMMAND:'blue',\n	HELP:'#FF00FF',\n	BACKGROUNDCOLOR:'#FFFF00',\n	BACKGROUNDCOLOR_DEACTIVE:'#CCCCCC',\n	TIP: 'red',\n	MOUSETIP: 'blue',\n	MENUBACKGROUNDCOLOR:'#FFFFFF',\n	MENUCOLOR:'#CCCCCC',\n	MENUOVER: '#E8E8E8'\n};\nvar alpha = {\n	MENU: '75',\n	BODY: '75'\n};\n\nvar _commandHistory = new Array(_g_maxCommandHistory);\nvar _commandStore = new Array(_g_maxCommandStore);\nvar _curCommandHistoryIndex = 0;\n\nfunction $(objId){\n	return document.getElementById(objId);\n}\n\nfunction clearOutput(){\n	$('DebuggerOutput').innerHTML=\'\';\n}\nfunction prerunCommand(){\n	_commandHistory.pop();\n	_commandHistory.unshift(this.$('debuggerCommand').value);\n	parentDebugger.runCommand($('debuggerCommand').value);\n}\n\nfunction debuggerCommandOnKeyDown(evt){\n	if(parentDebugger._g_isExiting){return;}\n	evt = evt || window.event;\n	var keyCode = evt.keyCode || evt.which;\n	try{\n		if(keyCode){\n			keycode = keyCode;\n		}\n	}catch(e){}\n	if(parentDebugger._g_enableShowKeyCode){\n		parentDebugger.showoutput(keycode, false, colors.ERROR);\n	}\n	if(evt.ctrlKey){\n		switch(keycode){\n			case 48: /*0*/\n			case 49: /*1*/\n			case 50: /*2*/\n			case 51: /*3*/\n			case 52: /*4*/\n			case 53: /*5*/\n			case 54: /*6*/\n			case 55: /*7*/\n			case 56: /*8*/\n			case 57: /*9*/\n				$('debuggerCommand').value = _commandHistory[Number(keycode) - 48];\n				break;\n			case 38: /*up arrow*/\n				$('debuggerCommand').value = _commandHistory[_curCommandHistoryIndex];\n				_curCommandHistoryIndex += 1;\n				if(_curCommandHistoryIndex > (_g_maxCommandHistory - 1)){\n					_curCommandHistoryIndex = 0;\n				}\n				break;\n			case 40: /*down arrow*/\n				$('debuggerCommand').value = _commandHistory[_curCommandHistoryIndex];\n				_curCommandHistoryIndex -= 1;\n				if(_curCommandHistoryIndex < 0){\n					_curCommandHistoryIndex = _g_maxCommandHistory - 1;\n				}\n				break;\n			default:\n				break;\n		}\n	}\n	if(evt.altKey){\n		switch(keycode){\n			case 48: /*0*/\n			case 49: /*1*/\n			case 50: /*2*/\n			case 51: /*3*/\n			case 52: /*4*/\n			case 53: /*5*/\n			case 54: /*6*/\n			case 55: /*7*/\n			case 56: /*8*/\n			case 57: /*9*/\n				if(evt.altLeft){\n					$('debuggerCommand').value = _commandStore[Number(keycode) - 48];\n				}else{\n					_commandStore[Number(keycode) - 48] = oDebugger.$('debuggerCommand').value;\n				}\n				break;\n			default:\n				break;\n		}\n	}\n	if(keycode == '13'){\n		prerunCommand();\n	}\n	if(keycode == '27'){setTimeout(function(){$('debuggerCommand').value = \'\';},1);} /*ESC pressed*/\n}\n\nfunction debuggerCommandOnKeyUp(evt){\n	if(parentDebugger._g_isExiting){return;}\n	evt = evt || window.event;\n	var keycode = evt.keyCode || evt.which;\n	if(keycode == 17){	/*ctrl key up*/\n		_curCommandHistoryIndex = 0;\n	}\n}\n\nfunction debuggerContentTopDivOnKeyDown(evt){\n	if(parentDebugger._g_isExiting){return;}\n	evt = evt || window.event;\n	var keycode = evt.keyCode || evt.which;\n	if(keycode == 13){	/*Enter key down*/\n		if(parentDebugger._g_isIE){\n			var txtobj = document.selection.createRange();\n			txtobj.text == \'\'?txtobj.text='\\n':(document.selection.clear())&(txtobj.text='\\n');\n			document.selection.createRange().select();\n			stopBubble(evt);\n			return false;\n		}else{\n		}\n	}\n}\n\nfunction debuggerOnMouseDown(evt){\n	if(parentDebugger._g_isExiting){return;}\n	_g_mouseDownStatus = true;\n	evt = evt || window.event;\n	var mouseX = (evt.pageX)?evt.pageX:evt.clientX;\n	var mouseY = (evt.pageY)?evt.pageY:evt.clientY;\n	lastMouseX = mouseX;\n	lastMouseY = mouseY;\n}\n\nfunction debuggerOnMouseUp(){\n	if(parentDebugger._g_isExiting){return;}\n	_g_mouseDownStatus = false;\n	if(_g_cmdFocus){\n		$('debuggerCommand').focus();\n	}\n}\n\nfunction debuggerOnMouseMove(evt){\n	if(parentDebugger._g_isExiting){return;}\n	if(_g_mouseDownStatus){\n		evt = evt || window.event;\n		var mouseX = (evt.pageX)?evt.pageX:evt.clientX;\n		var mouseY = (evt.pageY)?evt.pageY:evt.clientY;\n		\n		_g_lastpos_x = Debugger.style.left;\n		_g_lastpos_y = Debugger.style.top;\n		\n		mouseX -= lastMouseX;\n		mouseY -= lastMouseY;\n		mouseX += parseInt(Debugger.style.left.replace('px',\'\'));\n		mouseY += parseInt(Debugger.style.top.replace('px',\'\'));\n		Debugger.style.left = mouseX;\n		Debugger.style.top = mouseY;\n	}\n}\n\nfunction debuggerOnKeyDown(evt){\n	if(parentDebugger._g_isExiting){return;}\n	evt = evt || window.event;\n	if(evt.keyCode == 123){\n		parentDebugger.showdebugger(parentDebugger.Debugger.style.display == 'none'?true:false);\n	}\n	if(evt.altKey){\n		$('debugger_hiddenBtn').style.cursor = 'move';\n		$('debuggerInfo').style.cursor = 'move';\n		$('debugger_clearOutput').style.cursor = 'move';\n		$('debugger_contentTopText').style.cursor = 'move';\n		$('DebuggerOutput').style.cursor = 'move';\n		$('debugger_runCommand').style.cursor = 'move';\n		_g_isAltDown = true;\n	}\n}\n\nfunction debuggerOnKeyUp(evt){\n	if(parentDebugger._g_isExiting){return;}\n	evt = evt || window.event;\n	if(_g_isAltDown){\n		$('debugger_hiddenBtn').style.cursor = '';\n		$('debuggerInfo').style.cursor = '';\n		$('debugger_clearOutput').style.cursor = '';\n		$('debugger_contentTopText').style.cursor = '';\n		$('DebuggerOutput').style.cursor = '';\n		$('debugger_runCommand').style.cursor = '';\n		_g_isAltDown = false;\n	}\n}\n\nfunction debuggerOnContextMenu(evt){\n	if(parentDebugger._g_isExiting){return;}\n	evt = evt || window.event;\n	var elem = (evt.target) ? evt.target : evt.srcElement;\n	showMenu(evt, $('MainMenu'), true);\n	stopBubble(evt);\n}\n\nfunction debuggerOutputOnContextMenu(evt){\n	if(parentDebugger._g_isExiting){return;}\n	evt = evt || window.event;\n	var elem = (evt.target) ? evt.target : evt.srcElement;\n	showMenu(evt, $('SubMenu'), true);\n	stopBubble(evt);\n}\n\nfunction debuggerClientDivOnMouseDown(evt){\n	if(parentDebugger._g_isExiting){return;}\n	evt = evt || window.event;\n	if(evt.altKey){\n	}else{\n		stopBubble(evt);\n	}\n}\n\nfunction setDebuggerStyle(){\n	try{\n		Debugger.style.position = 'absolute';\n		Debugger.style.width = '320px';\n		Debugger.style.height = '425px';\n		Debugger.style.filter = 'Alpha(Opacity = ' + alpha.BODY + ')';\n		Debugger.style.backgroundColor = color.BACKGROUNDCOLOR + ' ';\n		Debugger.style.left = _g_lastpos_x;\n		Debugger.style.top = _g_lastpos_y;\n	}catch(e){}\n}\n\nfunction stopBubble(e) {\n	e = e || window.event;\n	if ( e && e.stopPropagation ){\n		e.stopPropagation();\n	}else{\n		window.event.cancelBubble = true;\n		window.event.returnValue = false;\n	}\n}\n\nfunction bindEventListner(obj, evt, funcName){\n	if(window.addEventListener){\n		obj.addEventListener(evt.substring(2), funcName, false);\n	} else {\n		obj.attachEvent(evt, funcName);\n	}\n}\n\nfunction showMenu(evt, obj, show){\n	if(show){\n		obj.style.top = (evt.pageY)?evt.pageY:evt.clientY;\n		obj.style.left = (evt.pageX)?evt.pageX:evt.clientX;\n		obj.style.display = 'block';\n	}else{\n		obj.style.display = 'none';\n	}\n}\n\nfunction keepMenu(evt, obj, show){\n	obj.style.display = 'block';\n}\n\nfunction initEnv(){\n	try{\n		$('MainMenu').innerHTML = parentDebugger.menuStr;\n		$('SubMenu').innerHTML = parentDebugger.subMenuStr;\n		$('Version').innerHTML = parentDebugger.Version;\n	}catch(e){}\n}\n\nsetTimeout(initEnv, 1);\n</script>\n</HEAD>\n<BODY onmousedown='debuggerOnMouseDown(event)' onmouseup='debuggerOnMouseUp(event)' onmousemove='debuggerOnMouseMove(event)' onkeydown='debuggerOnKeyDown(event)' onkeyup='debuggerOnKeyUp(event)' oncontextmenu='debuggerOnContextMenu(event)'>\n<span onclick='parentDebugger.dopin();' id='debugger_pinBtn'>pin/unpin</span>\n<span onclick='parentDebugger.showdebugger(false);' id='debugger_hiddenBtn'>x</span>\n<table cellpading='0' cellspacing='0' id='layoutTable'><tr><td colspan='2' style='height:16px;'>\nDebugger(Version:<span id='Version'></span>):\n</td></tr><tr><td style='height:16px;width:100%;'>\n<input type='text' id='debuggerInfo' />\n</td><td style='height:16px;width:49px;'>\n<button onclick='clearOutput(event);' id='debugger_clearOutput' >clear</button>\n</td></tr><tr><td colspan='2'><div id='debuggerClientDiv' onmousedown='debuggerClientDivOnMouseDown(event)'><div id='debugger_contentTopDivContainer'><textarea id='debugger_contentTopText'></textarea></div><div id='DebuggerOutput' oncontextmenu='debuggerOutputOnContextMenu(event)'></div></div></td></tr><tr><td style='height:16px;'>\n<input type='text' id='debuggerCommand' onkeydown='debuggerCommandOnKeyDown(event)' onkeyup='debuggerCommandOnKeyUp(event)' onmousedown='stopBubble(event)'/>\n</td><td style='height:16px;width:49px;'>\n<button onclick='prerunCommand();' id='debugger_runCommand'>run</button>\n</td></tr></table>\n<div id='MainMenu' class='MainMenu' oncontextmenu='stopBubble(event)' onmouseover='keepMenu(event, this, true)' onmouseout='showMenu(event, this, false)' onclick='showMenu(event, this, false)'></div>\n<div id='SubMenu' class='MainMenu' oncontextmenu='stopBubble(event)' onmouseover='keepMenu(event, this, true)' onmouseout='showMenu(event, this, false)' onclick='showMenu(event, this, false)'></div>\n<script language='javascript' type='text/script'>\n</script>\n</BODY></HTML>",
 	menuStr : '<li>' +
 		'<ul onclick="javascript:parentDebugger.showCurPageSource();"><a>View Page Source</a></ul>' +
 		'<ul onclick="javascript:parentDebugger.inject2IFrame();"><a>Inject to IFrames</a></ul>' +
@@ -169,6 +176,7 @@ var oDebugger = {
 
 	colors: {
 		ERROR: 'red',
+		WARNNING: 'red',
 		COMMAND:'blue',
 		HELP:'#FF00FF',
 		BACKGROUNDCOLOR:'#FFFF00',
@@ -184,6 +192,27 @@ var oDebugger = {
 	*Debug method You can add your debugger code below ;=)
 	*################################################################################################################################################
 	*/
+	tm:function (evt){
+		var str = '<html><head><script language="javascript" type="text/javascript">function setRet(){window.returnValue="1";alert(window.returnValue);}</script></head><body><input type="button" value="setRet" onclick="setRet()"/><textarea id="text1" style="width:80%;height:100%;">window.dialogArguments</textarea><input type="button" value="eval" onclick="eval(document.getElementById(\'text1\').value)"/></body></html>';
+		var newWinP = null;
+		var newWin = null;
+		var x = -1;
+		var y = -1;
+		if(this._g_isIE){
+			if(x == -1 && y == -1){
+				x = parseInt(window.screen.availWidth) - 320;
+				y = parseInt(window.screen.availHeight) - 425;
+			}
+			newWin = showModelessDialog('about', window, 'dialogLeft:' + x + ';dialogTop:' + y + ';dialogWidth:320px;dialogHeight:425px;center:no;resizable:yes;status:no;scroll:no;help:no;edge:raised;', newWinP);
+			newWin = newWinP || newWin;
+		}else{
+			newWin = window.open('about');
+		}
+		newWin.document.writeln(str);
+		newWin.document.close();
+
+		return 'ok';
+	},
 	t:function (){
 		var str = 'file:///c:/javascriptdebugger/t.html';
 		var ret1 = '';
@@ -692,6 +721,8 @@ var oDebugger = {
 		this._g_isIE6 = /msie\s+6/i.test(navigator.userAgent);
 		this._g_isFirefox = /firefox/i.test(navigator.userAgent);
 		this._g_isChrome = /Chrome/i.test(navigator.userAgent);
+
+		window.onerror = this.catchError;
 		
 		var framesetCheck = window.document.getElementsByTagName('FRAMESET');
 		var frameCheck = window.document.getElementsByTagName('FRAME');
@@ -742,7 +773,9 @@ var oDebugger = {
 		this.pBody.appendChild(this.Debugger);
 		window.frames[this._g_ids.debugger_id].document.writeln(this.debuggerStr);
 		window.frames[this._g_ids.debugger_id].document.close();
-		this.DebuggerWin = window.frames[this._g_ids.debugger_id];
+		this.DebuggerPageWin = window.frames[this._g_ids.debugger_id];
+		this.DebuggerPinWin = null;
+		this.DebuggerWin = this.DebuggerPageWin;
 		window.frames[this._g_ids.debugger_id].parentDebugger = oDebugger;
 		window.frames[this._g_ids.debugger_id].parentWin = window;
 		window.frames[this._g_ids.debugger_id].Debugger = this.Debugger;
@@ -798,7 +831,7 @@ var oDebugger = {
 			function(evt){
 				evt = (evt) ? evt : ((window.event) ? window.event : "");
 				var keycode = evt.keyCode || evt.which;
-				if(keycode=='123'){oDebugger.showdebugger(oDebugger.Debugger.style.display == 'none'?true:false);try{oDebugger.DebuggerWin.$('debuggerCommand').focus();}catch(e){}}
+				if(keycode=='123'){if(oDebugger._g_pinStatus){oDebugger.dopin();return;};oDebugger.showdebugger(oDebugger.Debugger.style.display == 'none'?true:false);try{oDebugger.DebuggerWin.$('debuggerCommand').focus();}catch(e){}}
 				if(keycode=='118'){oDebugger._g_returnValue = [];oDebugger.timerChangeBackColor(oDebugger._g_targetObj);}
 				if(keycode=='119' && oDebugger._g_targetObj != null){oDebugger.changeBackColor(oDebugger._g_targetObj);oDebugger.showdetails(oDebugger._g_targetObj);}
 			}
@@ -846,7 +879,7 @@ var oDebugger = {
 	registerPublicSingleVariable:function(obj, objName){
 		try{
 			if(obj == undefine);
-			this.showoutput('Warnning: ' + objName + ' is defined!', false, this.colors.ERROR);
+			this.showoutput('Warnning: ' + objName + ' is defined!', false, this.colors.WARNNING);
 		}catch(e){
 			if(this._g_isIE){
 				obj = this._g_eval('oDebugger.' + objName);
@@ -859,7 +892,7 @@ var oDebugger = {
 		var errorStr = '';
 		try{
 			if($ == 'undefine');
-			//this.showoutput('Warnning: $ is defined!', false, this.colors.ERROR);
+			//this.showoutput('Warnning: $ is defined!', false, this.colors.WARNNING);
 			errorStr = errorStr + 'Warnning: $ is defined!<br/>';
 		}catch(e){
 			$ = oDebugger.$;
@@ -956,7 +989,7 @@ var oDebugger = {
 			this._g_registedVariables.push('od');
 		}
 
-		this.showoutput(errorStr, false, this.colors.ERROR);
+		this.showoutput(errorStr, false, this.colors.WARNNING);
 	},
 
 	showdebugger:function (args){
@@ -1615,6 +1648,73 @@ var oDebugger = {
 		s = s.replace(/\"/g, '&quot;');
 		return s;
 	},
+	dopin:function (evt){
+		if(this._g_pinStatus){
+			this.DebuggerWin = this.DebuggerPageWin;
+			this.showdebugger(true);
+			this.DebuggerPageWin.$('DebuggerOutput').innerHTML = this.DebuggerPinWin.$('DebuggerOutput').innerHTML;
+			this.DebuggerPageWin.$('debuggerCommand').value = this.DebuggerPinWin.$('debuggerCommand').value;
+			this.DebuggerPageWin._commandHistory = this.DebuggerPinWin._commandHistory;
+			this.DebuggerPageWin._commandStore = this.DebuggerPinWin._commandStore;
+			this.DebuggerPageWin._curCommandHistoryIndex = this.DebuggerPinWin._curCommandHistoryIndex;
+			if(this._g_isIE){
+				this._g_pinwinlastpos_x = this.DebuggerPinWin.screenLeft;
+				this._g_pinwinlastpos_y = this.DebuggerPinWin.screenTop;
+			}else{
+				this._g_pinwinlastpos_x = this.DebuggerPinWin.screenX;
+				this._g_pinwinlastpos_y = this.DebuggerPinWin.screenY;
+			}
+			this.DebuggerPinWin.close();
+			this.DebuggerPinWin = null;
+			this._g_pinStatus = false;
+			return 'unpin';
+		}
+		if(evt) return;
+		if(!this._g_isIE){
+			this.showoutput('Warnning:', true, this.colors.WARNNING);
+			//this.showoutput('The current function does not support browsers other than IE.', false);
+			this.showoutput('Apart from the current function of a browser other than IE support and not good enough.', false);
+			//return 'Not supported.';
+		}
+		this.showdebugger(false);
+		var newWinP = null;
+		var newWin = null;
+		var x = this._g_pinwinlastpos_x;
+		var y = this._g_pinwinlastpos_y;
+		if(x == -1 && y == -1){
+			x = parseInt(window.screen.availWidth) - 320;
+			y = parseInt(window.screen.availHeight) - 425;
+		}
+		if(this._g_isIE){
+			newWin = showModelessDialog('#', window, 'dialogLeft:' + x + 'px;dialogTop:' + y + 'px;dialogWidth:320px;dialogHeight:425px;center:no;resizable:yes;status:no;scroll:no;help:no;edge:raised;', newWinP);
+			newWin = newWinP || newWin;
+		}else{
+			newWin = window.open('#', '', 'left=' + x + 'px,top=' + y + 'px,width=320px,height=425px,menubar=no,resizable=yes,scrollbars=no,status=no,titlebar=no,toolbar=no');
+		}
+		newWin.document.writeln(this.debuggerStr);
+		newWin.document.close();
+
+		newWin.parentWin = window;
+		newWin.parentDebugger = newWin.parentWin.oDebugger;
+		newWin.pBody = newWin.parentWin.document.body;
+		newWin.Debugger = newWin.parentWin.document.getElementById('id_g_oDebugger');
+		this.bindEventListner(newWin, 'onunload', function(evt){evt = evt || window.event;oDebugger.dopin(evt);});
+		if(this._g_isIE){
+			newWin.initEnv();
+		}
+		this.DebuggerPinWin = newWin;
+		this.DebuggerPinWin.$('DebuggerOutput').innerHTML = this.DebuggerPageWin.$('DebuggerOutput').innerHTML;
+		this.DebuggerPinWin.$('debuggerCommand').value = this.DebuggerPageWin.$('debuggerCommand').value;
+		this.DebuggerPinWin._commandHistory = this.DebuggerPageWin._commandHistory;
+		this.DebuggerPinWin._commandStore = this.DebuggerPageWin._commandStore;
+		this.DebuggerPinWin._curCommandHistoryIndex = this.DebuggerPageWin._curCommandHistoryIndex;
+		this.DebuggerWin = this.DebuggerPinWin;
+		try{
+			this.DebuggerWin.$('debuggerCommand').focus();
+		}catch(e){}
+		this._g_pinStatus = true;
+		return 'pin';
+	},
 	/*
 	*################################################################################################################################################
 	*Debug Methods
@@ -1814,6 +1914,8 @@ var oDebugger = {
 		try{
 			if(this._g_lastMouseObject != null && obj && this._g_lastMouseObject != obj){
 				this._g_lastMouseObject.style.border = this._g_lastMouseObjectStyle.border;
+				if(this._g_lastMouseObjectStyle.border == ''){
+				}
 				//this._g_lastMouseObject.style.borderLeft = this._g_lastMouseObjectStyle.borderLeft;
 				//this._g_lastMouseObject.style.borderRight = this._g_lastMouseObjectStyle.borderRight;
 				//this._g_lastMouseObject.style.borderTop = this._g_lastMouseObjectStyle.borderTop;
@@ -1821,7 +1923,11 @@ var oDebugger = {
 			}
 			if(obj && (this._g_lastMouseObject == null || this._g_lastMouseObject  != obj)){
 				this._g_lastMouseObject = obj;
-				this._g_lastMouseObjectStyle.border = obj.style.border;
+				if(obj.style.border){
+					this._g_lastMouseObjectStyle.border = obj.style.border;
+				}else{
+					this._g_lastMouseObjectStyle.border = '';
+				}
 				//this._g_lastMouseObjectStyle.borderLeft = obj.style.borderLeft;
 				//this._g_lastMouseObjectStyle.borderRight = obj.style.borderRight;
 				//this._g_lastMouseObjectStyle.borderTop = obj.style.borderTop;
@@ -1881,6 +1987,21 @@ var oDebugger = {
 				break;
 		}
 		return true;
+	},
+	catchError:function(msg, url, line){
+		var tip = '';
+		if(oDebugger._g_isZh){
+			tip += '出错了！\n';
+			tip += '信息：' + msg + '\n';
+			tip += '地址：' + url + '\n';
+			tip += '行数：' + line;
+		}else{
+			tip += 'An error occur!\n';
+			tip += 'msg: ' + msg + '\n';
+			tip += 'address: ' + url + '\n';
+			tip += 'lines: ' + line;
+		}
+		alert(tip);
 	},
 	/*
 	*################################################################################################################################################
@@ -2115,7 +2236,7 @@ var oDebugger = {
 			'L(obj) to list ListObject property value<br/>' +
 			'l(Arrays) to list Arrays contents value<br/>' +
 			'mode keycode to toggle show keyCode status<br/>' +
-			'mode mousepos to toggle show mouse (x,y) pos<br/>' +
+			'mode mousepos to toggle show mouse (x,y) pos. works well in unpin mode.<br/>' +
 			'mode select to toggle onoff focus inputCommand<br/>' +
 			'mode inspect to toggle status to inspect object which under mouse<br/>' +
 			'mode inject to toggle status of inject mode<br/>' +
@@ -2140,5 +2261,5 @@ var oDebugger = {
 	}
 }
 
-setTimeout(function(evt){oDebugger.showdebugger(true)}, 1000);
+setTimeout(function(evt){oDebugger.showdebugger(true)}, 100);
 
