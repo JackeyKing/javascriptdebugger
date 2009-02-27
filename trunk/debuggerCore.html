@@ -342,7 +342,7 @@ function debuggerCommandOnKeyDown(evt){
 				if(evt.altLeft){
 					$('debuggerCommand').value = _commandStore[Number(keycode) - 48];
 				}else{
-					_commandStore[Number(keycode) - 48] = oDebugger.$('debuggerCommand').value;
+					_commandStore[Number(keycode) - 48] = $('debuggerCommand').value;
 				}
 				break;
 			default:
