@@ -1920,9 +1920,9 @@ var oDebugger = {
 			}
 			var cmdSource = args[1] + ' = ';
 			if(this.father._g_isIE){
-				cmdSource += (this.father._g_eval(args[1]) + '').replace(/\{/, '{debugger;').replace(/[a-z0-9_.\.]+\(/i, 'function(');
+				cmdSource += (this.father._g_eval(args[1]) + '').replace(/\{/, '{debugger;').replace(/[a-z0-9\ _.\.]+\(/i, 'function(');
 			}else{
-				cmdSource += (window.eval(args[1]) + '').replace(/\{/, '{debugger;').replace(/[a-z0-9_.\.]+\(/i, 'function(');
+				cmdSource += (window.eval(args[1]) + '').replace(/\{/, '{debugger;').replace(/[a-z0-9\ _.\.]+\(/i, 'function(');
 			};
 			return  this.setBreakPoint(cmdSource, args[1]);
 
