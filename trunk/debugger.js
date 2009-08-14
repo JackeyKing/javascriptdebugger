@@ -94,13 +94,15 @@ javascript:var head = document.getElementsByTagName("head")[0];var js = document
 *v0.82 Unified error output. Add regular expression validation. //2009-02-16
 *v0.85 pin/unpin support. //2009-02-20
 *v0.86 watch variables. //2009-02-23
+*v0.861 add clone functions. //2009-08-14
+*v0.87 solve window in pin close. //2009-08-14
 *
 *the next...
 *will make a complex real debugger by open a modal window...
 */
 
 var oDebugger = {
-	Version: '0.86',
+	Version: '0.87',
 /*
 *################################################################################################################################################
 *Public variables
@@ -1111,6 +1113,11 @@ var oDebugger = {
 		this.pBody.removeChild(this.Debugger);
 		this.unloadDebuggerJS();
 		//this.unloadDebuggerCss();
+		if(this._g_pinStatus){
+			this.DebuggerPinWin.close();
+			this.DebuggerPinWin = null;
+			this._g_pinStatus = false;
+		}
 		
 		oDebugger = null;
 		delete oDebugger;
@@ -1805,6 +1812,38 @@ var oDebugger = {
 		this._g_pinStatus = true;
 		return 'pin';
 	},
+	clonePageObj:function (obj){
+		if(!this._colonePageObj_deeploop) this._colonePageObj_deeploop = 1;
+		if(this._colonePageObj_deeploop > 100) return this._colonePageObj_deeploop;
+		this._colonePageObj_deeploop += 1;
+		if(obj == null || typeof(obj) != 'object')
+			return obj;
+		if (obj.constructor == Date)
+			return new obj.constructor(obj.valueOf());
+
+		if(obj.constructor != undefined){
+			var tmp = new obj.constructor(); // changed (twice)
+		}else{
+			var tmp = new Object();
+			//because it will clone all the object again and again in current page
+			//it'll exhaust all the memory, so skip it
+			//return;
+		}
+		for(var key in obj)
+			tmp[key] = this.clone(obj[key]);
+		return tmp;
+	},
+	clone:function (obj){
+		if(obj == null || typeof(obj) != 'object')
+			return obj;
+		if (obj.constructor == Date)
+			return new obj.constructor(obj.valueOf());
+
+		var tmp = new obj.constructor(); // changed (twice)
+		for(var key in obj)
+			tmp[key] = this.clone(obj[key]);
+		return tmp;
+	},
 	/*
 	*################################################################################################################################################
 	*Debug Methods
@@ -2366,7 +2405,7 @@ var oDebugger = {
 	*/
 	//help
 	showAbout:function (){
-		setTimeout(function(){alert('Debugger tools for javascript.\nCopyright (C) Jackey.King 2008-2009.\nMail:Jackey.King@gmail.com')}, 1);
+		setTimeout(function(){alert('Debug tools for javascript.\nCopyright (C) Jackey.King 2008-2009.\nMail:Jackey.King@gmail.com')}, 1);
 	}
 }
 
