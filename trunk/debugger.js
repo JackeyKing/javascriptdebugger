@@ -96,13 +96,14 @@ javascript:var head = document.getElementsByTagName("head")[0];var js = document
 *v0.86 watch variables. //2009-02-23
 *v0.861 add clone functions. //2009-08-14
 *v0.87 solve window in pin close. //2009-08-14
-*
+*      corrected scrolling bug //2009-12-04
+*v0.90 add Ajax class to solve/test something ;) It's a beta  //2009-12-04
 *the next...
 *will make a complex real debugger by open a modal window...
 */
 
 var oDebugger = {
-	Version: '0.87',
+	Version: '0.90',
 /*
 *################################################################################################################################################
 *Public variables
@@ -1846,6 +1847,114 @@ var oDebugger = {
 		for(var key in obj)
 			tmp[key] = this.clone(obj[key]);
 		return tmp;
+	},
+	getCurTime:function(b)
+	{
+		var d = new Date();
+		if(b){
+			return d.toTimeString().substring(0, 8) + ' ' + d.getMilliseconds();
+		}else{
+			return d.toTimeString().substring(0, 8);
+		}
+	},
+	Ajax:function (url, callbackFunc, method){
+		try{
+			if(!this.Ajax.init){
+				this.Ajax.callback = callback;
+				this.Ajax.init = true;
+				this.Ajax.parent = this;
+				this.Ajax.getRequest = getRequest;
+			}
+		}catch(e){this.showoutput(e.description, false, this.colors.ERROR);}
+		if(arguments.length < 1 || !url){
+			this.showoutput('Please give me a url', false, this.colors.ERROR);
+			return false;
+		}
+		var request = getRequest();
+		if(!request){
+			this.showoutput('Create xmlHttpRequest Error', false, this.colors.ERROR);
+			return false;
+		}
+		if(method){
+			request.open(method, url, true);
+		}else{
+			request.open('GET', url, true);
+		}
+		this.Ajax.userCallBack = null;
+		if(callbackFunc){
+			this.Ajax.userCallBack = callbackFunc;
+		}
+		request.onreadystatechange = oDebugger.Ajax.callback;
+		request.send(null);
+		return true;
+		function getRequest(){
+			var request = false;
+			try{
+				request = new ActiveXObject("Microsoft.XMLHTTP");
+			}catch(eMS){//trymicrosoft
+				try{
+				request = new ActiveXObject("Msxml2.XMLHTTP");
+				}catch(eOther){ //othermicrosoft
+					try{
+						request = new XMLHttpRequest();
+					}catch (e){
+						request = false;
+					}
+				}
+			}
+			return request;
+		}
+		function callback(datas){
+			var outStr = '';
+			if (request.readyState == 4){
+				switch(request.status){
+					case 200:
+						outStr = 'Server is Done!';
+						if(oDebugger.Ajax.userCallBack){
+							try{
+								oDebugger.Ajax.userCallBack(request.responseText);
+								return true;
+							}catch(e){
+								oDebugger.showoutput('(' + oDebugger.getCurTime(true) + ') ' + 'trying user callback function catched a error: ', false, oDebugger.colors.ERROR);
+								oDebugger.showoutput(e.description, false);
+								return false;
+							}
+						}
+						break;
+					case 404:
+						outStr = 'Request URL does not exist!';
+						break;
+					default:
+						outStr = 'Unknown Server return code: ' + request.status;
+						break;
+				}
+				if(outStr != ''){
+					oDebugger.showoutput('(' + oDebugger.getCurTime(true) + ') ' + outStr, false);
+				}
+				return oDebugger.showoutput(request.responseText, false);
+			}
+			switch(request.readyState){
+				case 0:
+					outStr = 'Request not send!';
+					break;
+				case 1:
+					outStr = 'Request created but not send!';
+					break;
+				case 2:
+					outStr = 'Request sent! processing...';
+					break;
+				case 3:
+					outStr = 'Request proccessed! receving...';
+					break;
+				case 4:
+					outStr = 'Requst recevied!';
+					break;
+				default:
+					outStr = 'Unknown redeay status code: ' + request.readyState;
+					break;
+			}
+			return oDebugger.showoutput('(' + oDebugger.getCurTime(true) + ') ' + outStr, false);
+		}
 	},
 	/*
 	*################################################################################################################################################
