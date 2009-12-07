@@ -22,6 +22,26 @@
 *
 */
 /*
+* 为了照顾英语不好的人（就像我），再作一份中文的声明如下：)
+* 作者: Jackey.King
+* 任何人可以免费获得这个软件的拷贝以及相关文档
+* 任何人可以再次修改、发布这个软件，但是必须包含声明前的文件头以及本声明和本声明下面的版权信息。
+*
+* 版权所有 (C) Jackey.King 邮箱:Jackey.King@gmail.com
+*
+* 如果你喜欢它，请让我知道
+* 如果你修改了它，请发给我一份拷贝
+* 如果你有好的建议, 那就不要吝啬你的手和键盘，让我知道这些建议吧
+* 统统发到我邮箱就好了，这是我的邮箱： Jackey.King@gmail.com
+*
+* 上述版权声明和本许可的内容必须包含在所有的副本或基于本软件开发的软件中。
+*
+* 还有，谁能帮做一份使用手册或是说明文件吗？
+*
+* 项目主页: http://code.google.com/p/javascriptdebugger
+*
+*/
+/*
 *################################################################################################################################################
 * Dynamic load debugger
 *################################################################################################################################################
@@ -98,6 +118,7 @@ javascript:var head = document.getElementsByTagName("head")[0];var js = document
 *v0.87 solve window in pin close. //2009-08-14
 *      corrected scrolling bug //2009-12-04
 *v0.90 add Ajax class to solve/test something ;) It's a beta  //2009-12-04
+*      corrected Ajax query bug //2009-12-07
 *the next...
 *will make a complex real debugger by open a modal window...
 */
@@ -1875,6 +1896,7 @@ var oDebugger = {
 			this.showoutput('Create xmlHttpRequest Error', false, this.colors.ERROR);
 			return false;
 		}
+		this.Ajax.httpRequest = request;
 		if(method){
 			request.open(method, url, true);
 		}else{
@@ -1883,8 +1905,12 @@ var oDebugger = {
 		this.Ajax.userCallBack = null;
 		if(callbackFunc){
 			this.Ajax.userCallBack = callbackFunc;
+			if(callbackFunc == alert && this._g_isFirefox){
+				this.showoutput("Warnning: alert in firefox doesn't work fine!", false, this.colors.ERROR);
+			}
 		}
-		request.onreadystatechange = oDebugger.Ajax.callback;
+		var callback = new CallBack(request, callbackFunc);
+		//request.onreadystatechange = oDebugger.Ajax.callback;
 		request.send(null);
 		return true;
 		function getRequest(){
@@ -1904,56 +1930,71 @@ var oDebugger = {
 			}
 			return request;
 		}
-		function callback(datas){
-			var outStr = '';
-			if (request.readyState == 4){
-				switch(request.status){
-					case 200:
-						outStr = 'Server is Done!';
-						if(oDebugger.Ajax.userCallBack){
+		function CallBack(httpRequest, callBackFunc){
+			this.callBackFunc = callBackFunc;
+			this.httpRequest = httpRequest;
+			this.onReadyStateChange = onReadyStateChange;
+			this.onReadyStateChange.httpRequest = httpRequest;
+			this.onReadyStateChange.userCallBack = callBackFunc;
+			httpRequest.onreadystatechange = this.onReadyStateChange;
+			function onReadyStateChange(){
+				var outStr = '';
+				if (onReadyStateChange.httpRequest.readyState == 4){
+					switch(onReadyStateChange.httpRequest.status){
+						case 200:
+							outStr = 'Requst recevied!';
+							oDebugger.showoutput('(' + oDebugger.getCurTime(true) + ') ' + outStr, false);
 							try{
-								oDebugger.Ajax.userCallBack(request.responseText);
-								return true;
-							}catch(e){
-								oDebugger.showoutput('(' + oDebugger.getCurTime(true) + ') ' + 'trying user callback function catched a error: ', false, oDebugger.colors.ERROR);
-								oDebugger.showoutput(e.description, false);
-								return false;
+								if(onReadyStateChange.userCallBack){
+									try{
+										onReadyStateChange.userCallBack(onReadyStateChange.httpRequest.responseText, onReadyStateChange.httpRequest);
+										return true;
+									}catch(e){
+										oDebugger.showoutput('(' + oDebugger.getCurTime(true) + ') ' + 'trying user callback function catched a error: ', false, oDebugger.colors.ERROR);
+										oDebugger.showoutput(e.description, false);
+										return false;
+									}
+								}
+							}catch(e){//userCallBack not define
 							}
-						}
+							oDebugger.showoutput(onReadyStateChange.httpRequest.responseText, false);
+							return true;
+							break;
+						case 404:
+							outStr = 'Request URL does not exist!';
+							break;
+						default:
+							outStr = 'Unknown Server return code: ' + onReadyStateChange.httpRequest.status;
+							break;
+					}
+					if(outStr != ''){
+						oDebugger.showoutput('(' + oDebugger.getCurTime(true) + ') ' + outStr, false);
+					}
+					return false;
+					//return oDebugger.showoutput(request.responseText, false);
+				}
+				switch(httpRequest.readyState){
+					case 0:
+						outStr = 'Request not send!';
 						break;
-					case 404:
-						outStr = 'Request URL does not exist!';
+					case 1:
+						outStr = 'Request created but not send!';
+						break;
+					case 2:
+						outStr = 'Request sent! processing...';
+						break;
+					case 3:
+						outStr = 'Request proccessed! receving...';
+						break;
+					case 4:
+						outStr = 'Requst recevied!';
 						break;
 					default:
-						outStr = 'Unknown Server return code: ' + request.status;
+						outStr = 'Unknown redeay status code: ' + onReadyStateChange.httpRequest.readyState;
 						break;
 				}
-				if(outStr != ''){
-					oDebugger.showoutput('(' + oDebugger.getCurTime(true) + ') ' + outStr, false);
-				}
-				return oDebugger.showoutput(request.responseText, false);
+				return oDebugger.showoutput('(' + oDebugger.getCurTime(true) + ') ' + outStr, false);
 			}
-			switch(request.readyState){
-				case 0:
-					outStr = 'Request not send!';
-					break;
-				case 1:
-					outStr = 'Request created but not send!';
-					break;
-				case 2:
-					outStr = 'Request sent! processing...';
-					break;
-				case 3:
-					outStr = 'Request proccessed! receving...';
-					break;
-				case 4:
-					outStr = 'Requst recevied!';
-					break;
-				default:
-					outStr = 'Unknown redeay status code: ' + request.readyState;
-					break;
-			}
-			return oDebugger.showoutput('(' + oDebugger.getCurTime(true) + ') ' + outStr, false);
 		}
 	},
 	/*
@@ -2275,7 +2316,7 @@ var oDebugger = {
 	//run debugger commands // deal commands
 	runCommand:function (obj){
 		if(this._g_isExiting){return;}
-		this.showoutput('COMMAND:', true, this.colors.COMMAND);
+		this.showoutput('COMMAND(' + this.getCurTime(true) + '):', true, this.colors.COMMAND);
 		this.showoutput(obj, false);
 		if(this.userDefineCommand(obj)){try{this.DebuggerWin.$('debuggerCommand').value = '';return;}catch(e){return;}}
 		if(this._g_specialMode.inject || this._g_specialMode.regex){
@@ -2288,7 +2329,7 @@ var oDebugger = {
 		}
 		if(!this._g_specialMode.execMode){return this.dealOtherMode();}
 		try{
-			this.showoutput('RETURN: ', true, this.colors.COMMAND);
+			this.showoutput('RETURN (' + this.getCurTime(true) + '):', true, this.colors.COMMAND);
 			//this._g_returnValue = this._g_eval(obj);
 			if(this._g_isIE){
 				this._g_returnValue = this._g_eval(obj);//execScript
@@ -2483,29 +2524,29 @@ var oDebugger = {
 	//help
 	showHelp:function (){
 		this.showoutput(
-			'Ctrl + Num for recent commands, or Ctrl + up arrow & Ctrl + down arrow <br/>' +
-			'Right Alt + Num to member a commands, Left Alt + Num to recall it to command lines<br/>' +
-			'bp &lt;funcName&gt; to set a breakpoint on function funcName<br/>' +
-			'bpx &lt;funcName&gt; to set a breakpoint on function funcName<br/>' +
+			'<b>Ctrl + Num</b> for recent commands, or <b>Ctrl + up arrow</b> & <b>Ctrl + down arrow</b> <br/>' +
+			'<b>Right Alt + Num</b> to member a commands, <b>Left Alt + Num</b> to recall it to command lines<br/>' +
+			'<b>bp &lt;funcName&gt;</b> to set a breakpoint on function funcName<br/>' +
+			'<b>bpx &lt;funcName&gt;</b> to set a breakpoint on function funcName<br/>' +
 			'  when funcName being called, will call debugger like VC to debug it.<br/>' +
-			'bl to list breakpoints.<br/>' +
-			'bc &lt;Number&gt; to remove a breakpoint which listed in bl.<br/>' +
-			'S(obj) show obj in output<br/>' +
-			'M(obj) show methods or properties in obj<br/>' +
-			'P(obj) or V(obj) to view obj property or value<br/>' +
-			'L(obj) to list ListObject property value<br/>' +
-			'l(Arrays) to list Arrays contents value<br/>' +
-			'mode keycode to toggle show keyCode status<br/>' +
-			'mode mousepos to toggle show mouse (x,y) pos. works well in unpin mode.<br/>' +
-			'mode select to toggle onoff focus inputCommand<br/>' +
-			'mode inspect to toggle status to inspect object which under mouse<br/>' +
-			'mode inject to toggle status of inject mode<br/>' +
-			'mode regex to toggle status of regularExpression validation.<br/>' +
-			'&nbsp;&nbsp;use \'case i on/off\' to set ignore case & \'case g on/off\' to set global & \'case\' to list current status.<br/>' +
-			'exit to exit debugger<br/>' +
-			'$toHex to convert number to Hex datas<br/>' +
-			'Move your mouse on some area, and press F8 or F7 to see what happend ;=) It\'s not just fan, there\'s some details in output<br/>' +
-			'ps: If you like it, you can use it like a caculator, just input numbers like \"1+2\" and press RETURN to see what happend! ;=) <br/>' +
+			'<b>bl</b> to list breakpoints.<br/>' +
+			'<b>bc &lt;Number&gt;</b> to remove a breakpoint which listed in bl.<br/>' +
+			'<b>S(obj)</b> show obj in output<br/>' +
+			'<b>M(obj)</b> show methods or properties in obj<br/>' +
+			'<b>P(obj)</b> or V(obj) to view obj property or value<br/>' +
+			'<b>L(obj)</b> to list ListObject property value<br/>' +
+			'<b>l(Arrays)</b> to list Arrays contents value<br/>' +
+			'<b>mode keycode</b> to toggle show keyCode status<br/>' +
+			'<b>mode mousepos</b> to toggle show mouse (x,y) pos. works well in unpin mode.<br/>' +
+			'<b>mode select</b> to toggle onoff focus inputCommand<br/>' +
+			'<b>mode inspect</b> to toggle status to inspect object which under mouse<br/>' +
+			'<b>mode inject</b> to toggle status of inject mode<br/>' +
+			'<b>mode regex</b> to toggle status of regularExpression validation.<br/>' +
+			'&nbsp;&nbsp;use \'<b>case i on/off</b>\' to set ignore case & \'<b>case g on/off</b>\' to set global & \'case\' to list current status.<br/>' +
+			'<b>exit</b> to exit debugger<br/>' +
+			'<b>$toHex</b> to convert number to Hex datas<br/>' +
+			'Move your mouse on some area, and press <b>F8</b> or <b>F7</b> to see what happend ;=) It\'s not just fan, there\'s some details in output<br/>' +
+			'ps: If you like it, you can use it like a caculator, just input numbers like \"<b>1+2</b>\" and press <b>RETURN</b> to see what happend! ;=) <br/>' +
 			'If you like it, please let me know, my EMail:<a href="mailto:Jackey.King@gmail.com" style="cursor:pointer;"><span color=blue>Jackey.King@gmail.com<span></a><br/>' +
 			'Javascript debugger ' + this.Version + '\nauthor:Jackey\nCopyRight (C) Jackey.King 2008-2009\n'
 			,false, this.colors.HELP);
