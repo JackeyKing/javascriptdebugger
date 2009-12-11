@@ -1901,7 +1901,18 @@ var oDebugger = {
 		}
 		this.Ajax.httpRequest = request;
 		if(method){
-			request.open(method, url, true);
+			if(method.toLowerCase() == 'post'){
+				if(url.constructor == Object){
+					request.open(method, url.action, true);
+				}else if($(url).tagName == 'FORM'){
+					request.open(method, $(url).action, true);
+				}else{
+					request.open(method, url, true);
+				}
+				request.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+			}else{
+				request.open(method, url, true);
+			}
 		}else{
 			request.open('GET', url, true);
 		}
@@ -1914,7 +1925,23 @@ var oDebugger = {
 		}
 		var callback = new CallBack(request, callbackFunc);
 		//request.onreadystatechange = oDebugger.Ajax.callback;
-		request.send(null);
+		if(method && method.toLowerCase() == 'post'){
+			request.setRequestHeader("Connection", "close");
+			if(!oDebugger._g_isIE){
+				request.overrideMimeType('text/html');
+			}
+			if((url.constructor == Object && url.tagName == 'FORM') || $(url).tagName == 'FORM'){
+				var content = form2URIString(url);
+				request.setRequestHeader("Content-Length",content.length);
+				request.send(content);
+			}else if(url){
+				request.send(url);
+			}else{
+				request.send("");
+			}
+		}else{
+			request.send(null);
+		}
 		return true;
 		function getRequest(){
 			var request = false;
@@ -1945,23 +1972,7 @@ var oDebugger = {
 				if (onReadyStateChange.httpRequest.readyState == 4){
 					switch(onReadyStateChange.httpRequest.status){
 						case 200:
-							outStr = 'Requst recevied!';
-							oDebugger.showoutput('(' + oDebugger.getCurTime(true) + ') ' + outStr, false);
-							try{
-								if(onReadyStateChange.userCallBack){
-									try{
-										onReadyStateChange.userCallBack(onReadyStateChange.httpRequest.responseText, onReadyStateChange.httpRequest);
-										return true;
-									}catch(e){
-										oDebugger.showoutput('(' + oDebugger.getCurTime(true) + ') ' + 'trying user callback function catched a error: ', false, oDebugger.colors.ERROR);
-										oDebugger.showoutput(e.description, false);
-										return false;
-									}
-								}
-							}catch(e){//userCallBack not define
-							}
-							oDebugger.showoutput(onReadyStateChange.httpRequest.responseText, false);
-							return true;
+							return onServer200(onReadyStateChange.httpRequest, onReadyStateChange);
 							break;
 						case 404:
 							outStr = 'Request URL does not exist!';
@@ -1998,6 +2009,131 @@ var oDebugger = {
 				}
 				return oDebugger.showoutput('(' + oDebugger.getCurTime(true) + ') ' + outStr, false);
 			}
+			function onServer200(httpRequest, onReadyStateChange){
+				var outStr = 'Requst recevied!';
+				oDebugger.showoutput('(' + oDebugger.getCurTime(true) + ') ' + outStr, false);
+				var res = null;
+				var otherRes = null;
+				var headerContent = '';
+				var httpContent = httpRequest.getResponseHeader('Content-Type');
+				if(httpContent){
+					httpContent = httpContent.split(';');
+					for(var i = 0; i < httpContent.length; i ++){
+						headerContent = trim(httpContent[i]).toLowerCase().split('/');
+						switch(headerContent[0]){
+							case 'text':
+								switch(headerContent[1]){
+									case 'xml':
+										res = httpRequest.responseXML + '';
+										break;
+									//case 'javascript':
+									case 'json':
+										//oDebugger._g_eval(' res = ' + httpRequest.responseText);
+										eval(' res = ' + httpRequest.responseText);
+										break;
+									case 'html':
+										res = httpRequest.responseText + '';
+										break;
+									default:
+										res = httpRequest.responseText;
+										break;
+								}
+								break;
+							case 'image':
+								otherRes = 'image';
+								break;
+							case 'audio':
+								otherRes = 'audio';
+								break;
+							case 'video':
+								otherRes = 'video';
+								break;
+							case 'multipart':
+								otherRes = 'multipart';
+								break;
+							case 'application':
+								otherRes = 'application';
+								break;
+							case 'x-form':
+								otherRes = 'x-form';
+								break;
+							case 'x-model':
+								otherRes = 'x-model';
+								break;
+							case 'message':
+								otherRes = 'message';
+								break;
+							case 'graphics':
+								otherRes = 'graphics';
+								break;
+							default:
+								res = httpRequest.responseText;
+								break;
+						}
+						break;
+					}
+				}
+				if(res == null){
+					res = httpRequest.responseText + '';
+				}
+				try{
+					if(onReadyStateChange.userCallBack){
+						try{
+							onReadyStateChange.userCallBack(res, onReadyStateChange.httpRequest);
+							return true;
+						}catch(e){
+							oDebugger.showoutput('(' + oDebugger.getCurTime(true) + ') ' + 'trying user callback function catched a error: ', false, oDebugger.colors.ERROR);
+							oDebugger.showoutput(e.description, false);
+							return false;
+						}
+					}
+				}catch(e){//userCallBack not define
+				}
+				if(otherRes){
+					oDebugger.showoutput('no process func with ' + otherRes + ' type!', false, oDebugger.colors.ERROR);
+					return false;
+				}
+				if(res.constructor == Object){
+					oDebugger.listObject(res);
+				}else{
+					oDebugger.showoutput(res, false);
+				}
+				return true;
+			}
+		}
+		function form2URIString(formID){
+			var uriStr = '';
+			var form = null;
+			if(formID.constructor == Object){
+				form = formID;
+			}else{
+				form = $(formID);
+			}
+			var childs = form.getElementsByTagName('INPUT');
+			for(var i = 0; i < childs.length; i++){
+				if(childs[i].id || childs[i].name){
+					if(childs[i].type == 'text' || childs[i].type == 'hidden'){
+						uriStr += '&' + (childs[i].name?childs[i].name:childs[i].id) + '=' + encodeURI(childs[i].value);
+					}else if(childs[i].type == 'checkbox' || childs[i].type == 'radiobox'){
+						if(childs[i].checked){
+							uriStr += '&' + (childs[i].name?childs[i].name:childs[i].id) + '=' + encodeURI(childs[i].value);
+						}
+					}
+				}
+			}
+			childs = form.getElementsByTagName('SELECT');
+			for(var i = 0; i < childs.length; i++){
+				if(childs[i].id || childs[i].name){
+					uriStr += '&' + (childs[i].name?childs[i].name:childs[i].id) + '=' + encodeURI(childs[i].value);
+				}
+			}
+			childs = form.getElementsByTagName('TEXTAREA');
+			for(var i = 0; i < childs.length; i++){
+				if(childs[i].id || childs[i].name){
+					uriStr += '&' + (childs[i].name?childs[i].name:childs[i].id) + '=' + encodeURI(childs[i].value);
+				}
+			}
+			return uriStr.substring(1, uriStr.length);
 		}
 	},
 	/*
