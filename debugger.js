@@ -2114,7 +2114,7 @@ var oDebugger = {
 				if(childs[i].id || childs[i].name){
 					if(childs[i].type == 'text' || childs[i].type == 'hidden'){
 						uriStr += '&' + (childs[i].name?childs[i].name:childs[i].id) + '=' + encodeURI(childs[i].value);
-					}else if(childs[i].type == 'checkbox' || childs[i].type == 'radiobox'){
+					}else if(childs[i].type == 'checkbox' || childs[i].type == 'radio'){
 						if(childs[i].checked){
 							uriStr += '&' + (childs[i].name?childs[i].name:childs[i].id) + '=' + encodeURI(childs[i].value);
 						}
