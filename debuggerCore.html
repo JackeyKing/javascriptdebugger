@@ -76,6 +76,7 @@ BODY{
     scrollbar-track-color: #445289;
     scrollbar-arrow-color:#38342C;
 	overflow-y:auto;
+	word-break: break-all;
 }
 
 #debugger_clearOutput{
@@ -421,7 +422,7 @@ function debuggerOnMouseMove(evt){
 function debuggerOnKeyDown(evt){
 	if(parentDebugger._g_isExiting){return;}
 	evt = evt || window.event;
-	if(evt.keyCode == 123){
+	if(evt.keyCode == parentDebugger.hotKey){
 		parentDebugger.showdebugger(parentDebugger.Debugger.style.display == 'none'?true:false);
 	}
 	if(evt.altKey){
