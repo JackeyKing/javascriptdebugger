@@ -286,7 +286,11 @@ function prerunCommand(){
 }
 
 function debuggerCommandOnKeyDown(evt){
-	if(parentDebugger._g_isExiting){return;}
+    try{
+	    if(parentDebugger._g_isExiting){return;}
+	}catch(e){
+	    return;
+	};
 	evt = evt || window.event;
 	var keyCode = evt.keyCode || evt.which;
 	try{
@@ -401,7 +405,11 @@ function debuggerOnMouseUp(){
 }
 
 function debuggerOnMouseMove(evt){
-	if(parentDebugger._g_isExiting){return;}
+    try{
+	    if(parentDebugger._g_isExiting){return;}
+	}catch(e){
+	    return;
+	};
 	if(_g_mouseDownStatus){
 		evt = evt || window.event;
 		var mouseX = (evt.pageX)?evt.pageX:evt.clientX;
