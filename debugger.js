@@ -51,11 +51,14 @@ javascript:var head = document.getElementsByTagName("head")[0];var js = document
 */
 /* for IE6 or IE7
 javascript:var head = document.getElementsByTagName("head")[0];var js = document.createElement("script");js.type="text/javascript";js.language="javascript";js.src = "file:///javascriptdebugger/debugger.js";head.appendChild(js);alert('inject success!');
-javascript:var head = main.document.getElementsByTagName("head")[0];var js = main.document.createElement("script");js.type="text/javascript";js.language="javascript";js.src = "file:///javascriptdebugger/debugger.js";head.appendChild(js);alert('inject success!');
+javascript:var head = document.getElementsByTagName("head")[0];var js = document.createElement("script");js.type="text/javascript";js.language="javascript";js.src = "file:///javascriptdebugger/debugger.js";head.appendChild(js);alert('inject success!');
 
 for Firefox or IE7:
 
 javascript:var head = document.getElementsByTagName("head")[0];var js = document.createElement("script");js.type="text/javascript";js.language="javascript";js.src = "file://C:/javascriptdebugger/debugger.js";head.appendChild(js);js.onload=function(){oDebugger.showdebugger(true)};alert('inject success!');
+
+for IE via web download
+javascript:var head = document.getElementsByTagName("head")[0];var js = document.createElement("script");js.type="text/javascript";js.language="javascript";js.src = "http://javascriptdebugger.googlecode.com/files/debugger.js";head.appendChild(js);alert('inject success!');
 */
 /*
 *################################################################################################################################################
@@ -124,10 +127,12 @@ javascript:var head = document.getElementsByTagName("head")[0];var js = document
 *      corrected Ajax query bug //2009-12-07
 *the next...
 *will make a complex real debugger by open a modal window...
+*v0.91	improving the function of 'mode inspect' //2011-11-21
+*		fixed inject error in IE9
 */
 
 var oDebugger = {
-	Version: '0.90',
+	Version: '0.91',
 /*
 *################################################################################################################################################
 *Public variables
@@ -156,6 +161,7 @@ var oDebugger = {
 	_g_enableShowKeyCode : false,
 	_g_enableShowMousePos : false,
 	_g_enableShowMouseObject : false,
+	_g_enableShowMouseObjectOutputMode: 0,  // -1: none, 0: detail(outerHTML), 1: tagName
 	_g_lastMouseObject : null,
 	_g_isExiting: false,
 	_g_lastMouseObjectStyle:{
@@ -163,7 +169,10 @@ var oDebugger = {
 		borderLeft:'',
 		borderRight:'',
 		borderTop:'',
-		borderBottom:''
+		borderBottom:'',
+		borderStyle:'',
+		borderColor:'',
+		borderWidth:''
 	},
 
 	_g_breakpoints : new Array(),
@@ -810,7 +819,7 @@ var oDebugger = {
 	injectDebugger:function(obj){
 		var head = obj.document.getElementsByTagName("head")[0];
 		var js = obj.document.createElement("script");
-		js.type="text/javascript";
+		//js.type="text/javascript";
 		js.language="javascript";
 		js.src = "file:///javascriptdebugger/debugger.js";
 		head.appendChild(js);alert('inject success!');
@@ -1412,7 +1421,7 @@ var oDebugger = {
 		}else{
 			script.src = 'file://C:/javascriptdebugger/debugger.js'; 
 		}
-		script.type = 'text/javascript';
+	//	script.type = 'text/javascript';
 		head.appendChild(script);
 	},
 	loadJs:function (file){
@@ -1773,6 +1782,7 @@ var oDebugger = {
 	stopBubble:function(e) {
 		if ( e && e.stopPropagation ){
 			e.stopPropagation();
+			//e.preventDefault();
 		}else{
 			window.event.cancelBubble = true;
 			window.event.returnValue = false;
@@ -1780,6 +1790,9 @@ var oDebugger = {
 	},
 	htmlEncode:function(args) {
 		var s = args;
+		if(s.prototype != String){
+			s = s + '';
+		}
 		s = s.replace(/\&/g, '&amp;');
 		s = s.replace(/\</g, '&lt;');
 		s = s.replace(/\>/g, '&gt;');
@@ -2364,37 +2377,49 @@ var oDebugger = {
 	},
 	showMouseObject:function(evt, obj){
 		try{
-			if(this._g_lastMouseObject != null && obj && this._g_lastMouseObject != obj){
-				this._g_lastMouseObject.style.border = this._g_lastMouseObjectStyle.border;
-				if(this._g_lastMouseObjectStyle.border == ''){
-				}
-				//this._g_lastMouseObject.style.borderLeft = this._g_lastMouseObjectStyle.borderLeft;
-				//this._g_lastMouseObject.style.borderRight = this._g_lastMouseObjectStyle.borderRight;
-				//this._g_lastMouseObject.style.borderTop = this._g_lastMouseObjectStyle.borderTop;
-				//this._g_lastMouseObject.style.borderBottom = this._g_lastMouseObjectStyle.borderBottom;
+			if(obj && obj == this._g_lastMouseObject){
+				return;
 			}
-			if(obj && (this._g_lastMouseObject == null || this._g_lastMouseObject  != obj)){
-				this._g_lastMouseObject = obj;
-				if(obj.style.border){
-					this._g_lastMouseObjectStyle.border = obj.style.border;
-				}else{
-					this._g_lastMouseObjectStyle.border = '';
+			//restore
+			if(this._g_lastMouseObject != null){
+				this._g_lastMouseObject.style.borderStyle = this._g_lastMouseObjectStyle.borderStyle;
+				this._g_lastMouseObject.style.borderColor = this._g_lastMouseObjectStyle.borderColor;
+				this._g_lastMouseObject.style.borderWidth = this._g_lastMouseObjectStyle.borderWidth;
+			}
+			//backup
+			if(obj){
+				this._g_lastMouseObjectStyle.borderStyle = obj.style.borderStyle;
+				this._g_lastMouseObjectStyle.borderColor = obj.style.borderColor;
+				this._g_lastMouseObjectStyle.borderWidth = obj.style.borderWidth;
+				switch(this._g_enableShowMouseObjectOutputMode){
+					case -1:	//none
+						break;
+					case 1:
+						this.showoutput('');
+						this.showoutput(this.htmlEncode(obj.tagName), false, this.colors.TIP);
+						break;
+					case 0:
+						this.showoutput('');
+						this.showoutput(this.htmlEncode(obj.outerHTML), false, this.colors.TIP);
+						break;
+					default:
+						this.showoutput('');
+						this.showoutput(this.htmlEncode(this._g_eval('obj.' + this._g_enableShowMouseObjectOutputMode)), false, this.colors.TIP);
+						break;
 				}
-				//this._g_lastMouseObjectStyle.borderLeft = obj.style.borderLeft;
-				//this._g_lastMouseObjectStyle.borderRight = obj.style.borderRight;
-				//this._g_lastMouseObjectStyle.borderTop = obj.style.borderTop;
-				//this._g_lastMouseObjectStyle.borderBottom = obj.style.borderBottom;
-
-				this.showoutput('');
-				this.showoutput(this.htmlEncode(obj.outerHTML), false, this.colors.TIP);
-				obj.style.border = '2px solid ' + this.colors.MOUSETIP;
-				//obj.style.borderLeft = '2px solid ' + this.colors.TIP;
-				//obj.style.borderRight = '2px solid ' + this.colors.TIP;
-				//obj.style.borderTop = '2px solid ' + this.colors.TIP;
-				//obj.style.borderBottom = '2px solid ' + this.colors.TIP;
+				if(this._g_enableShowMouseObjectWithoutOutput){
+					this.showoutput('');
+					this.showoutput(this.htmlEncode(obj.outerHTML), false, this.colors.TIP);
+				}
+				obj.style.borderStyle = 'solid';
+				obj.style.borderColor = this.colors.MOUSETIP;
+				obj.style.borderWidth = '2px';
+				this._g_lastMouseObject = obj;
 			}
 			if(arguments.length < 2 && this._g_lastMouseObject != null){
-				this._g_lastMouseObject.style.border = this._g_lastMouseObjectStyle.border;
+				this._g_lastMouseObject.style.borderStyle = this._g_lastMouseObjectStyle.borderStyle;
+				this._g_lastMouseObject.style.borderColor = this._g_lastMouseObjectStyle.borderColor;
+				this._g_lastMouseObject.style.borderWidth = this._g_lastMouseObjectStyle.borderWidth;
 				this._g_lastMouseObject = null;
 			}
 		}catch(e){
@@ -2632,6 +2657,22 @@ var oDebugger = {
 				break;
 			case 'inspect':
 				this._g_enableShowMouseObject = ! this._g_enableShowMouseObject;
+				if(args.length > 2){
+					switch(args[2]){
+						case 'none':
+							this._g_enableShowMouseObjectOutputMode = -1;
+							break;
+						case 'tagName':
+							this._g_enableShowMouseObjectOutputMode = 1;
+							break;
+						case 'outerHTML':
+							this._g_enableShowMouseObjectOutputMode = 0;
+							break;
+						default:
+							this._g_enableShowMouseObjectOutputMode = args[2];
+							break;
+					}
+				}
 				this.showMouseObject();
 				break;
 			case 'alpha':
@@ -2707,7 +2748,7 @@ var oDebugger = {
 			'<b>mode keycode</b> to toggle show keyCode status<br/>' +
 			'<b>mode mousepos</b> to toggle show mouse (x,y) pos. works well in unpin mode.<br/>' +
 			'<b>mode select</b> to toggle onoff focus inputCommand<br/>' +
-			'<b>mode inspect</b> to toggle status to inspect object which under mouse<br/>' +
+			'<b>mode inspect [none/tagName/outerHTML/ or any other tagNames]</b> to toggle status to inspect object which under mouse, may be with output of object detail<br/>' +
 			'<b>mode inject</b> to toggle status of inject mode<br/>' +
 			'<b>mode hotkey &lt;F2~F12 Key&gt;</b> to modified show/hide hotkey.<br/>' +
 			'<b>mode regex</b> to toggle status of regularExpression validation.<br/>' +
