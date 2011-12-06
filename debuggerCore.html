@@ -293,9 +293,12 @@ function debuggerCommandOnKeyDown(evt){
 	};
 	evt = evt || window.event;
 	var keyCode = evt.keyCode || evt.which;
+	var keycode;
 	try{
 		if(keyCode){
 			keycode = keyCode;
+		}else{
+			keycode = null;
 		}
 	}catch(e){}
 	if(parentDebugger._g_enableShowKeyCode){
