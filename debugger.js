@@ -164,6 +164,7 @@ var oDebugger = {
 	_g_enableShowMouseObjectOutputMode: 0,  // -1: none, 0: detail(outerHTML), 1: tagName
 	_g_lastMouseObject : null,
 	_g_isExiting: false,
+	_g_eventIsProcessed: false,
 	_g_lastMouseObjectStyle:{
 		border:'',
 		borderLeft:'',
@@ -212,7 +213,7 @@ var oDebugger = {
 		regex: false
 	},
 
-	debuggerStr : "<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.0 Transitional//EN'><HTML><HEAD><TITLE>oDebugger</TITLE><META NAME='Generator' CONTENT='EditPlus'><META NAME='Author' CONTENT='Jackey.King'><META NAME='Mail' CONTENT='Jackey.King@gmail.com'><META http-equiv='Content-Type' content='text/html; charset=UTF-8'> <style type='text/css'> *{ 	font-family: 宋体, simsun, Arial, Verdana, Times New Roman; 	font-size: 12px; 	margin:0; 	padding:0; 	scrollbar-3dlight-color: #AEB4CD;     scrollbar-arrow-color: #45423c;     scrollbar-base-color: #AEB4CD;     scrollbar-darkshadow-color: #AEB4CD;     scrollbar-face-color: #D9E0F6;     scrollbar-highlight-color: #AEB4CD;     scrollbar-shadow-color: #AEB4CD;     scrollbar-track-color: #445289;     scrollbar-arrow-color:#38342C; } BODY{ 	position: relative; 	background-color: white; 	/*filter: Alpha(Opacity = 50);*/ 	overflow: hidden; 	cursor: move; 	background-color: #F7F8FE; } #debugger_runCommand{ 	border-right: #2c59aa 1px solid; 	padding-right: 2px; 	border-top: #2c59aa 1px solid; 	padding-left: 2px; 	border-left: #2c59aa 1px solid; 	color: #445289; 	padding-top: 2px; 	border-bottom: #2c59aa 1px solid; 	cursor: pointer; 	height: 15px; 	width:49px; 	line-height: 5px; 	background-color: #E2E3E9; }  #debuggerCommand{ 	border-width: 1px; 	border-color: #abb9df; 	border-style: solid; 	background-color: #F2F3F9; 	width: 100%; }  #debuggerClientDiv{ 	border-width: 0px; 	width: 100%; 	height: 100%; 	position: relative; 	overflow:hidden; }  #DebuggerOutput{ 	border-width: 1px; 	border-color: #abb9df; 	border-style: solid; 	background-color: #F2F3F9; 	width: 100%; 	height: 100%; 	cursor: text; 	position: relative; 	overflow-x: auto; 	overflow-y: auto; 	scrollbar-3dlight-color: #AEB4CD;     scrollbar-arrow-color: #45423c;     scrollbar-base-color: #AEB4CD;     scrollbar-darkshadow-color: #AEB4CD;     scrollbar-face-color: #D9E0F6;     scrollbar-highlight-color: #AEB4CD;     scrollbar-shadow-color: #AEB4CD;     scrollbar-track-color: #445289;     scrollbar-arrow-color:#38342C; 	overflow-y:auto; 	word-break: break-all; }  #debugger_clearOutput{ 	border-right: #2c59aa 1px solid; 	padding-right: 2px; 	border-top: #2c59aa 1px solid; 	padding-left: 2px; 	font-size: 12px; 	color: #000000; 	border-left: #2c59aa 1px solid; 	color: #445289; 	padding-top: 2px; 	border-bottom: #2c59aa 1px solid; 	cursor: pointer; 	height: 15px; 	width:49px; 	line-height: 5px; 	background-color: #E2E3E9; }  #debuggerInfo{ 	width: 100%; 	border-width: 1px; 	border-color: #abb9df; 	border-style: solid; 	background-color: #F2F3F9; }  #debugger_hiddenBtn{ 	top: 0; 	right: 0; 	position: absolute; 	float: right; 	width: 10px; 	height: 10px; 	border-width: 1px; 	border-color: #abb9df; 	border-style: solid; 	background-color: #F2F3F9; 	cursor: pointer; 	text-align: center; }  #debugger_pinBtn{ 	top: 0; 	right: 15px; 	position: absolute; 	float: right; 	width: 10px; 	height: 10px; 	border-width: 1px; 	border-color: #abb9df; 	border-style: solid; 	background-color: #F2F3F9; 	cursor: pointer; 	text-align: center; }  #debugger_contentTopDivContainer{ 	top: 0px; 	left: 0px; 	border-width: 1px; 	border-color: #abb9df; 	border-style: solid; 	background-color: #F2F3F9; 	width: 100%; 	height: 50%; 	display: none; 	position: relative; }  #debugger_contentTopText{ 	top: 0px; 	left: 0px; 	border-width: 0px; 	background-color: #F2F3F9; 	width: 100%; 	height: 100%; 	position: relative; 	overflow-x: auto; 	overflow-y: auto; 	scrollbar-3dlight-color: #AEB4CD;     scrollbar-arrow-color: #45423c;     scrollbar-base-color: #AEB4CD;     scrollbar-darkshadow-color: #AEB4CD;     scrollbar-face-color: #D9E0F6;     scrollbar-highlight-color: #AEB4CD;     scrollbar-shadow-color: #AEB4CD;     scrollbar-track-color: #445289;     scrollbar-arrow-color:#38342C; }  #layoutTable{ 	width: 100%; 	height:100%; 	border:0; 	margin: 0; 	padding: 0; }  .MainMenu{ 	position: absolute; 	width: 160px; 	height: auto; 	display: none; 	background-color: #FFFFFF; 	filter: Alpha(Opacity = 75); 	overflow: hidden; 	cursor: pointer; 	font-size: 12px; }  .MainMenu LI{ 	padding: 0; 	margin: 0px 0px 0px 0px; 	border-top: 1px solid #CCCCCC; 	border-bottom: 1px solid #CCCCCC; 	list-style-type: none; 	height: auto; 	background-color: #CCCCCC; 	width: 100%; }  .MainMenu LI UL{ 	padding: 0; 	margin: 0px 1px 1px 10px; 	width: 100%; 	height: 24px; 	line-height: 24px; 	background-color: #FFFFFF; }  .MainMenu LI UL A{ 	padding: 0; 	margin: 0; 	text-decoration: none; 	display: block; 	width: 100%; 	height: 100%; }  .MainMenu LI UL A:hover{ 	background-color: #E8E8E8; } </style> <script type='text/javascript' language='javascript'> var Version = ''; var parentWin = window; var parentDebugger = window; var Debugger = window.document.body; var pBody = null; try{ 	if(top || window.dialogArguments){ 		parentWin = top || window.dialogArguments; 		parentDebugger = parentWin.oDebugger; 		pBody = parentWin.document.body; 		Debugger = parentWin.document.getElementById('id_g_oDebugger');/*top.frames.id_g_oDebugger;*/ 	} }catch(e){} var _g_mouseDownStatus = false; var _g_maxCommandHistory = 10; var _g_maxCommandStore = 10; var _g_lastpos_x = 0; var _g_lastpos_y = 0; var _g_cmdFocus = true; var _g_isExiting = false; var _g_isAltDown = false;  var lastMouseX = 0; var lastMouseY = 0;  var Menu = null; var SubMenu = null;  var colors = { 	ERROR: 'red', 	COMMAND:'blue', 	HELP:'#FF00FF', 	BACKGROUNDCOLOR:'#FFFF00', 	BACKGROUNDCOLOR_DEACTIVE:'#CCCCCC', 	TIP: 'red', 	MOUSETIP: 'blue', 	MENUBACKGROUNDCOLOR:'#FFFFFF', 	MENUCOLOR:'#CCCCCC', 	MENUOVER: '#E8E8E8' }; var alpha = { 	MENU: '75', 	BODY: '75' };  var _commandHistory = new Array(_g_maxCommandHistory); var _commandStore = new Array(_g_maxCommandStore); var _curCommandHistoryIndex = 0;  function $(objId){ 	return document.getElementById(objId); }  function clearOutput(){ 	$('DebuggerOutput').innerHTML=\'\'; } function prerunCommand(){ 	_commandHistory.pop(); 	_commandHistory.unshift(this.$('debuggerCommand').value); 	parentDebugger.runCommand($('debuggerCommand').value); }  function debuggerCommandOnKeyDown(evt){     try{ 	    if(parentDebugger._g_isExiting){return;} 	}catch(e){ 	    return; 	}; 	evt = evt || window.event; 	var keyCode = evt.keyCode || evt.which; 	var keycode = null; 	try{ 		if(keyCode){ 			keycode = keyCode; 		}else{ 			keycode = null; 		} 	}catch(e){} 	if(parentDebugger._g_enableShowKeyCode){ 		parentDebugger.showoutput(keycode, false, colors.ERROR); 	} 	if(evt.ctrlKey){ 		switch(keycode){ 			case 48: /*0*/ 			case 49: /*1*/ 			case 50: /*2*/ 			case 51: /*3*/ 			case 52: /*4*/ 			case 53: /*5*/ 			case 54: /*6*/ 			case 55: /*7*/ 			case 56: /*8*/ 			case 57: /*9*/ 				$('debuggerCommand').value = _commandHistory[Number(keycode) - 48]; 				break; 			case 38: /*up arrow*/ 				$('debuggerCommand').value = _commandHistory[_curCommandHistoryIndex]; 				_curCommandHistoryIndex += 1; 				if(_curCommandHistoryIndex > (_g_maxCommandHistory - 1)){ 					_curCommandHistoryIndex = 0; 				} 				break; 			case 40: /*down arrow*/ 				$('debuggerCommand').value = _commandHistory[_curCommandHistoryIndex]; 				_curCommandHistoryIndex -= 1; 				if(_curCommandHistoryIndex < 0){ 					_curCommandHistoryIndex = _g_maxCommandHistory - 1; 				} 				break; 			default: 				break; 		} 	} 	if(evt.altKey){ 		switch(keycode){ 			case 48: /*0*/ 			case 49: /*1*/ 			case 50: /*2*/ 			case 51: /*3*/ 			case 52: /*4*/ 			case 53: /*5*/ 			case 54: /*6*/ 			case 55: /*7*/ 			case 56: /*8*/ 			case 57: /*9*/ 				if(evt.altLeft){ 					$('debuggerCommand').value = _commandStore[Number(keycode) - 48]; 				}else{ 					_commandStore[Number(keycode) - 48] = $('debuggerCommand').value; 				} 				break; 			default: 				break; 		} 	} 	if(keycode == '13'){ 		prerunCommand(); 	} 	if(keycode == '27'){setTimeout(function(){$('debuggerCommand').value = \'\';},1);} /*ESC pressed*/ }  function debuggerCommandOnKeyUp(evt){ 	if(parentDebugger._g_isExiting){return;} 	evt = evt || window.event; 	var keycode = evt.keyCode || evt.which; 	if(keycode == 17){	/*ctrl key up*/ 		_curCommandHistoryIndex = 0; 	} }  function debuggerContentTopDivOnKeyDown(evt){ 	if(parentDebugger._g_isExiting){return;} 	evt = evt || window.event; 	var keycode = evt.keyCode || evt.which; 	if(keycode == 13){	/*Enter key down*/ 		if(parentDebugger._g_isIE){ 			var txtobj = document.selection.createRange(); 			txtobj.text == \'\'?txtobj.text='\\n':(document.selection.clear())&(txtobj.text='\\n'); 			document.selection.createRange().select(); 			stopBubble(evt); 			return false; 		}else{ 		} 	} }  function debuggerOnMouseDown(evt){ 	if(parentDebugger._g_isExiting){return;} 	_g_mouseDownStatus = true; 	evt = evt || window.event; 	var mouseX = (evt.pageX)?evt.pageX:evt.clientX; 	var mouseY = (evt.pageY)?evt.pageY:evt.clientY; 	lastMouseX = mouseX; 	lastMouseY = mouseY; }  function debuggerOnMouseUp(){ 	if(parentDebugger._g_isExiting){return;} 	_g_mouseDownStatus = false; 	if(_g_cmdFocus){ 		$('debuggerCommand').focus(); 	} }  function debuggerOnMouseMove(evt){     try{ 	    if(parentDebugger._g_isExiting){return;} 	}catch(e){ 	    return; 	}; 	if(_g_mouseDownStatus){ 		evt = evt || window.event; 		var mouseX = (evt.pageX)?evt.pageX:evt.clientX; 		var mouseY = (evt.pageY)?evt.pageY:evt.clientY; 		 		_g_lastpos_x = Debugger.style.left; 		_g_lastpos_y = Debugger.style.top; 		 		mouseX -= lastMouseX; 		mouseY -= lastMouseY; 		mouseX += parseInt(Debugger.style.left.replace('px',\'\')); 		mouseY += parseInt(Debugger.style.top.replace('px',\'\')); 		Debugger.style.left = mouseX; 		Debugger.style.top = mouseY; 	} }  function debuggerOnKeyDown(evt){ 	if(parentDebugger._g_isExiting){return;} 	evt = evt || window.event; 	if(evt.keyCode == parentDebugger.hotKey){ 		parentDebugger.showdebugger(parentDebugger.Debugger.style.display == 'none'?true:false); 	} 	if(evt.altKey){ 		$('debugger_hiddenBtn').style.cursor = 'move'; 		$('debuggerInfo').style.cursor = 'move'; 		$('debugger_clearOutput').style.cursor = 'move'; 		$('debugger_contentTopText').style.cursor = 'move'; 		$('DebuggerOutput').style.cursor = 'move'; 		$('debugger_runCommand').style.cursor = 'move'; 		_g_isAltDown = true; 	} }  function debuggerOnKeyUp(evt){ 	if(parentDebugger._g_isExiting){return;} 	evt = evt || window.event; 	if(_g_isAltDown){ 		$('debugger_hiddenBtn').style.cursor = ''; 		$('debuggerInfo').style.cursor = ''; 		$('debugger_clearOutput').style.cursor = ''; 		$('debugger_contentTopText').style.cursor = ''; 		$('DebuggerOutput').style.cursor = ''; 		$('debugger_runCommand').style.cursor = ''; 		_g_isAltDown = false; 	} }  function debuggerOnContextMenu(evt){ 	if(parentDebugger._g_isExiting){return;} 	evt = evt || window.event; 	var elem = (evt.target) ? evt.target : evt.srcElement; 	showMenu(evt, $('MainMenu'), true); 	stopBubble(evt); }  function debuggerOutputOnContextMenu(evt){ 	if(parentDebugger._g_isExiting){return;} 	evt = evt || window.event; 	var elem = (evt.target) ? evt.target : evt.srcElement; 	showMenu(evt, $('SubMenu'), true); 	stopBubble(evt); }  function debuggerClientDivOnMouseDown(evt){ 	if(parentDebugger._g_isExiting){return;} 	evt = evt || window.event; 	if(evt.altKey){ 	}else{ 		stopBubble(evt); 	} }  function setDebuggerStyle(){ 	try{ 		Debugger.style.position = 'absolute'; 		Debugger.style.width = '320px'; 		Debugger.style.height = '425px'; 		Debugger.style.filter = 'Alpha(Opacity = ' + alpha.BODY + ')'; 		Debugger.style.backgroundColor = color.BACKGROUNDCOLOR + ' '; 		Debugger.style.left = _g_lastpos_x; 		Debugger.style.top = _g_lastpos_y; 	}catch(e){} }  function stopBubble(e) { 	e = e || window.event; 	if ( e && e.stopPropagation ){ 		e.stopPropagation(); 	}else{ 		window.event.cancelBubble = true; 		window.event.returnValue = false; 	} }  function bindEventListner(obj, evt, funcName){ 	if(window.addEventListener){ 		obj.addEventListener(evt.substring(2), funcName, false); 	} else { 		obj.attachEvent(evt, funcName); 	} }  function showMenu(evt, obj, show){ 	if(show){ 		obj.style.top = (evt.pageY)?evt.pageY:evt.clientY; 		obj.style.left = (evt.pageX)?evt.pageX:evt.clientX; 		obj.style.display = 'block'; 	}else{ 		obj.style.display = 'none'; 	} }  function keepMenu(evt, obj, show){ 	obj.style.display = 'block'; }  function initEnv(){ 	try{ 		$('MainMenu').innerHTML = parentDebugger.menuStr; 		$('SubMenu').innerHTML = parentDebugger.subMenuStr; 		$('Version').innerHTML = parentDebugger.Version; 	}catch(e){} }  setTimeout(initEnv, 1); </script> </HEAD> <BODY onmousedown='debuggerOnMouseDown(event)' onmouseup='debuggerOnMouseUp(event)' onmousemove='debuggerOnMouseMove(event)' onkeydown='debuggerOnKeyDown(event)' onkeyup='debuggerOnKeyUp(event)' oncontextmenu='debuggerOnContextMenu(event)'> <span onclick='parentDebugger.dopin();' id='debugger_pinBtn'>un/pin</span> <span onclick='parentDebugger.showdebugger(false);' id='debugger_hiddenBtn'>x</span> <table cellpading='0' cellspacing='0' id='layoutTable'><tr><td colspan='2' style='height:16px;'> Debugger(Version:<span id='Version'></span>): </td></tr><tr><td style='height:16px;width:100%;'> <input type='text' id='debuggerInfo' /> </td><td style='height:16px;width:49px;'> <button onclick='clearOutput(event);' id='debugger_clearOutput' >clear</button> </td></tr><tr><td colspan='2'><div id='debuggerClientDiv' onmousedown='debuggerClientDivOnMouseDown(event)'><div id='debugger_contentTopDivContainer'><textarea id='debugger_contentTopText'></textarea></div><div id='DebuggerOutput' oncontextmenu='debuggerOutputOnContextMenu(event)'></div></div></td></tr><tr><td style='height:16px;'> <input type='text' id='debuggerCommand' onkeydown='debuggerCommandOnKeyDown(event)' onkeyup='debuggerCommandOnKeyUp(event)' onmousedown='stopBubble(event)'/> </td><td style='height:16px;width:49px;'> <button onclick='prerunCommand();' id='debugger_runCommand'>run</button> </td></tr></table> <div id='MainMenu' class='MainMenu' oncontextmenu='stopBubble(event)' onmouseover='keepMenu(event, this, true)' onmouseout='showMenu(event, this, false)' onclick='showMenu(event, this, false)'></div> <div id='SubMenu' class='MainMenu' oncontextmenu='stopBubble(event)' onmouseover='keepMenu(event, this, true)' onmouseout='showMenu(event, this, false)' onclick='showMenu(event, this, false)'></div> <script language='javascript' type='text/script'> </script> </BODY></HTML> ", 
+	debuggerStr : "<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.0 Transitional//EN'><HTML><HEAD><TITLE>oDebugger</TITLE><META NAME='Generator' CONTENT='EditPlus'><META NAME='Author' CONTENT='Jackey.King'><META NAME='Mail' CONTENT='Jackey.King@gmail.com'><META http-equiv='Content-Type' content='text/html; charset=UTF-8'> <style type='text/css'> *{ 	font-family: 宋体, simsun, Arial, Verdana, Times New Roman; 	font-size: 12px; 	margin:0; 	padding:0; 	scrollbar-3dlight-color: #AEB4CD;     scrollbar-arrow-color: #45423c;     scrollbar-base-color: #AEB4CD;     scrollbar-darkshadow-color: #AEB4CD;     scrollbar-face-color: #D9E0F6;     scrollbar-highlight-color: #AEB4CD;     scrollbar-shadow-color: #AEB4CD;     scrollbar-track-color: #445289;     scrollbar-arrow-color:#38342C; } BODY{ 	position: relative; 	background-color: white; 	/*filter: Alpha(Opacity = 50);*/ 	overflow: hidden; 	cursor: move; 	background-color: #F7F8FE; } #debugger_runCommand{ 	border-right: #2c59aa 1px solid; 	padding-right: 2px; 	border-top: #2c59aa 1px solid; 	padding-left: 2px; 	border-left: #2c59aa 1px solid; 	color: #445289; 	padding-top: 2px; 	border-bottom: #2c59aa 1px solid; 	cursor: pointer; 	height: 15px; 	width:49px; 	line-height: 5px; 	background-color: #E2E3E9; }  #debuggerCommand{ 	border-width: 1px; 	border-color: #abb9df; 	border-style: solid; 	background-color: #F2F3F9; 	width: 100%; }  #debuggerClientDiv{ 	border-width: 0px; 	width: 100%; 	height: 100%; 	position: relative; 	overflow:hidden; }  #DebuggerOutput{ 	border-width: 1px; 	border-color: #abb9df; 	border-style: solid; 	background-color: #F2F3F9; 	width: 100%; 	height: 100%; 	cursor: text; 	position: relative; 	overflow-x: auto; 	overflow-y: auto; 	scrollbar-3dlight-color: #AEB4CD;     scrollbar-arrow-color: #45423c;     scrollbar-base-color: #AEB4CD;     scrollbar-darkshadow-color: #AEB4CD;     scrollbar-face-color: #D9E0F6;     scrollbar-highlight-color: #AEB4CD;     scrollbar-shadow-color: #AEB4CD;     scrollbar-track-color: #445289;     scrollbar-arrow-color:#38342C; 	overflow-y:auto; 	word-break: break-all; }  #debugger_clearOutput{ 	border-right: #2c59aa 1px solid; 	padding-right: 2px; 	border-top: #2c59aa 1px solid; 	padding-left: 2px; 	font-size: 12px; 	color: #000000; 	border-left: #2c59aa 1px solid; 	color: #445289; 	padding-top: 2px; 	border-bottom: #2c59aa 1px solid; 	cursor: pointer; 	height: 15px; 	width:49px; 	line-height: 5px; 	background-color: #E2E3E9; }  #debuggerInfo{ 	width: 100%; 	border-width: 1px; 	border-color: #abb9df; 	border-style: solid; 	background-color: #F2F3F9; }  #debugger_hiddenBtn{ 	top: 0; 	right: 0; 	position: absolute; 	float: right; 	width: 10px; 	height: 10px; 	border-width: 1px; 	border-color: #abb9df; 	border-style: solid; 	background-color: #F2F3F9; 	cursor: pointer; 	text-align: center; }  #debugger_pinBtn{ 	top: 0; 	right: 15px; 	position: absolute; 	float: right; 	width: 10px; 	height: 10px; 	border-width: 1px; 	border-color: #abb9df; 	border-style: solid; 	background-color: #F2F3F9; 	cursor: pointer; 	text-align: center; }  #debugger_contentTopDivContainer{ 	top: 0px; 	left: 0px; 	border-width: 1px; 	border-color: #abb9df; 	border-style: solid; 	background-color: #F2F3F9; 	width: 100%; 	height: 50%; 	display: none; 	position: relative; }  #debugger_contentTopText{ 	top: 0px; 	left: 0px; 	border-width: 0px; 	background-color: #F2F3F9; 	width: 100%; 	height: 100%; 	position: relative; 	overflow-x: auto; 	overflow-y: auto; 	scrollbar-3dlight-color: #AEB4CD;     scrollbar-arrow-color: #45423c;     scrollbar-base-color: #AEB4CD;     scrollbar-darkshadow-color: #AEB4CD;     scrollbar-face-color: #D9E0F6;     scrollbar-highlight-color: #AEB4CD;     scrollbar-shadow-color: #AEB4CD;     scrollbar-track-color: #445289;     scrollbar-arrow-color:#38342C; }  #layoutTable{ 	width: 100%; 	height:100%; 	border:0; 	margin: 0; 	padding: 0; }  .MainMenu{ 	position: absolute; 	width: 160px; 	height: auto; 	display: none; 	background-color: #FFFFFF; 	filter: Alpha(Opacity = 75); 	overflow: hidden; 	cursor: pointer; 	font-size: 12px; }  .MainMenu LI{ 	padding: 0; 	margin: 0px 0px 0px 0px; 	border-top: 1px solid #CCCCCC; 	border-bottom: 1px solid #CCCCCC; 	list-style-type: none; 	height: auto; 	background-color: #CCCCCC; 	width: 100%; }  .MainMenu LI UL{ 	padding: 0; 	margin: 0px 1px 1px 10px; 	width: 100%; 	height: 24px; 	line-height: 24px; 	background-color: #FFFFFF; }  .MainMenu LI UL A{ 	padding: 0; 	margin: 0; 	text-decoration: none; 	display: block; 	width: 100%; 	height: 100%; }  .MainMenu LI UL A:hover{ 	background-color: #E8E8E8; } </style> <script type='text/javascript' language='javascript'> var Version = ''; var parentWin = window; var parentDebugger = window; var Debugger = window.document.body; var pBody = null; try{ 	if(top || window.dialogArguments){ 		parentWin = top || window.dialogArguments; 		parentDebugger = parentWin.oDebugger; 		pBody = parentWin.document.body; 		Debugger = parentWin.document.getElementById('id_g_oDebugger');/*top.frames.id_g_oDebugger;*/ 	} }catch(e){} var _g_mouseDownStatus = false; var _g_maxCommandHistory = 10; var _g_maxCommandStore = 10; var _g_lastpos_x = 0; var _g_lastpos_y = 0; var _g_cmdFocus = true; var _g_isExiting = false; var _g_isAltDown = false;  var lastMouseX = 0; var lastMouseY = 0;  var Menu = null; var SubMenu = null;  var colors = { 	ERROR: 'red', 	COMMAND:'blue', 	HELP:'#FF00FF', 	BACKGROUNDCOLOR:'#FFFF00', 	BACKGROUNDCOLOR_DEACTIVE:'#CCCCCC', 	TIP: 'red', 	MOUSETIP: 'blue', 	MENUBACKGROUNDCOLOR:'#FFFFFF', 	MENUCOLOR:'#CCCCCC', 	MENUOVER: '#E8E8E8' }; var alpha = { 	MENU: '75', 	BODY: '75' };  var _commandHistory = new Array(_g_maxCommandHistory); var _commandStore = new Array(_g_maxCommandStore); var _curCommandHistoryIndex = 0;  function $(objId){ 	return document.getElementById(objId); }  function clearOutput(){ 	$('DebuggerOutput').innerHTML=\'\'; } function prerunCommand(){ 	_commandHistory.pop(); 	_commandHistory.unshift(this.$('debuggerCommand').value); 	parentDebugger.runCommand($('debuggerCommand').value); }  function debuggerCommandOnKeyDown(evt){     try{ 	    if(parentDebugger._g_isExiting){return;} 	}catch(e){ 	    return; 	}; 	parentDebugger._g_eventIsProcessed = false; 	evt = evt || window.event; 	var keyCode = evt.keyCode || evt.which; 	var keycode; 	try{ 		if(keyCode){ 			keycode = keyCode; 		}else{ 			keycode = null; 		} 	}catch(e){} 	if(parentDebugger._g_enableShowKeyCode){ 		parentDebugger.showoutput(keycode, false, colors.ERROR); 	} 	if(evt.ctrlKey){ 		switch(keycode){ 			case 48: /*0*/ 			case 49: /*1*/ 			case 50: /*2*/ 			case 51: /*3*/ 			case 52: /*4*/ 			case 53: /*5*/ 			case 54: /*6*/ 			case 55: /*7*/ 			case 56: /*8*/ 			case 57: /*9*/ 				$('debuggerCommand').value = _commandHistory[Number(keycode) - 48]; 				parentDebugger._g_eventIsProcessed = true; 				break; 			case 38: /*up arrow*/ 				$('debuggerCommand').value = _commandHistory[_curCommandHistoryIndex]; 				_curCommandHistoryIndex += 1; 				if(_curCommandHistoryIndex > (_g_maxCommandHistory - 1)){ 					_curCommandHistoryIndex = 0; 				} 				parentDebugger._g_eventIsProcessed = true; 				break; 			case 40: /*down arrow*/ 				$('debuggerCommand').value = _commandHistory[_curCommandHistoryIndex]; 				_curCommandHistoryIndex -= 1; 				if(_curCommandHistoryIndex < 0){ 					_curCommandHistoryIndex = _g_maxCommandHistory - 1; 				} 				parentDebugger._g_eventIsProcessed = true; 				break; 			default: 				break; 		} 	} 	if(evt.altKey){ 		switch(keycode){ 			case 48: /*0*/ 			case 49: /*1*/ 			case 50: /*2*/ 			case 51: /*3*/ 			case 52: /*4*/ 			case 53: /*5*/ 			case 54: /*6*/ 			case 55: /*7*/ 			case 56: /*8*/ 			case 57: /*9*/ 				if(evt.altLeft){ 					$('debuggerCommand').value = _commandStore[Number(keycode) - 48]; 				}else{ 					_commandStore[Number(keycode) - 48] = $('debuggerCommand').value; 				} 				parentDebugger._g_eventIsProcessed = true; 				break; 			default: 				break; 		} 	} 	if(keycode == '13'){ 		prerunCommand(); 		parentDebugger._g_eventIsProcessed = true; 	} 	if(keycode == '27'){setTimeout(function(){$('debuggerCommand').value = \'\';},1);parentDebugger._g_eventIsProcessed = true;} /*ESC pressed*/ 	if(parentDebugger._g_eventIsProcessed){ 		stopBubble(evt); 	} }  function debuggerCommandOnKeyUp(evt){ 	parentDebugger._g_eventIsProcessed = false; 	if(parentDebugger._g_isExiting){return;} 	evt = evt || window.event; 	var keycode = evt.keyCode || evt.which; 	if(keycode == 17){	/*ctrl key up*/ 		_curCommandHistoryIndex = 0; 		parentDebugger._g_eventIsProcessed = true; 	} 	if(parentDebugger._g_eventIsProcessed){ 		stopBubble(evt); 	} }  function debuggerContentTopDivOnKeyDown(evt){ 	if(parentDebugger._g_isExiting){return;} 	evt = evt || window.event; 	var keycode = evt.keyCode || evt.which; 	if(keycode == 13){	/*Enter key down*/ 		if(parentDebugger._g_isIE){ 			var txtobj = document.selection.createRange(); 			txtobj.text == \'\'?txtobj.text='\\n':(document.selection.clear())&(txtobj.text='\\n'); 			document.selection.createRange().select(); 			stopBubble(evt); 			return false; 		}else{ 		} 	} }  function debuggerOnMouseDown(evt){ 	if(parentDebugger._g_isExiting){return;} 	_g_mouseDownStatus = true; 	evt = evt || window.event; 	var mouseX = (evt.pageX)?evt.pageX:evt.clientX; 	var mouseY = (evt.pageY)?evt.pageY:evt.clientY; 	lastMouseX = mouseX; 	lastMouseY = mouseY; }  function debuggerOnMouseUp(){ 	if(parentDebugger._g_isExiting){return;} 	_g_mouseDownStatus = false; 	if(_g_cmdFocus){ 		$('debuggerCommand').focus(); 	} }  function debuggerOnMouseMove(evt){     try{ 	    if(parentDebugger._g_isExiting){return;} 	}catch(e){ 	    return; 	}; 	if(_g_mouseDownStatus){ 		evt = evt || window.event; 		var mouseX = (evt.pageX)?evt.pageX:evt.clientX; 		var mouseY = (evt.pageY)?evt.pageY:evt.clientY; 		 		_g_lastpos_x = Debugger.style.left; 		_g_lastpos_y = Debugger.style.top; 		 		mouseX -= lastMouseX; 		mouseY -= lastMouseY; 		mouseX += parseInt(Debugger.style.left.replace('px',\'\')); 		mouseY += parseInt(Debugger.style.top.replace('px',\'\')); 		Debugger.style.left = mouseX; 		Debugger.style.top = mouseY; 	} }  function debuggerOnKeyDown(evt){ 	if(parentDebugger._g_isExiting){return;} 	evt = evt || window.event; 	if(evt.keyCode == parentDebugger.hotKey){ 		parentDebugger.showdebugger(parentDebugger.Debugger.style.display == 'none'?true:false); 	} 	if(evt.altKey){ 		$('debugger_hiddenBtn').style.cursor = 'move'; 		$('debuggerInfo').style.cursor = 'move'; 		$('debugger_clearOutput').style.cursor = 'move'; 		$('debugger_contentTopText').style.cursor = 'move'; 		$('DebuggerOutput').style.cursor = 'move'; 		$('debugger_runCommand').style.cursor = 'move'; 		_g_isAltDown = true; 	} }  function debuggerOnKeyUp(evt){ 	if(parentDebugger._g_isExiting){return;} 	evt = evt || window.event; 	if(_g_isAltDown){ 		$('debugger_hiddenBtn').style.cursor = ''; 		$('debuggerInfo').style.cursor = ''; 		$('debugger_clearOutput').style.cursor = ''; 		$('debugger_contentTopText').style.cursor = ''; 		$('DebuggerOutput').style.cursor = ''; 		$('debugger_runCommand').style.cursor = ''; 		_g_isAltDown = false; 	} }  function debuggerOnContextMenu(evt){ 	if(parentDebugger._g_isExiting){return;} 	evt = evt || window.event; 	var elem = (evt.target) ? evt.target : evt.srcElement; 	showMenu(evt, $('MainMenu'), true); 	stopBubble(evt); }  function debuggerOutputOnContextMenu(evt){ 	if(parentDebugger._g_isExiting){return;} 	evt = evt || window.event; 	var elem = (evt.target) ? evt.target : evt.srcElement; 	showMenu(evt, $('SubMenu'), true); 	stopBubble(evt); }  function debuggerClientDivOnMouseDown(evt){ 	if(parentDebugger._g_isExiting){return;} 	evt = evt || window.event; 	if(evt.altKey){ 	}else{ 		stopBubble(evt); 	} }  function setDebuggerStyle(){ 	try{ 		Debugger.style.position = 'absolute'; 		Debugger.style.width = '320px'; 		Debugger.style.height = '425px'; 		Debugger.style.filter = 'Alpha(Opacity = ' + alpha.BODY + ')'; 		Debugger.style.backgroundColor = color.BACKGROUNDCOLOR + ' '; 		Debugger.style.left = _g_lastpos_x; 		Debugger.style.top = _g_lastpos_y; 	}catch(e){} }  function stopBubble(e) { 	e = e || window.event; 	if ( e && e.stopPropagation ){ 		e.stopPropagation(); 	}else{ 		window.event.cancelBubble = true; 		window.event.returnValue = false; 	} }  function bindEventListner(obj, evt, funcName){ 	if(window.addEventListener){ 		obj.addEventListener(evt.substring(2), funcName, false); 	} else { 		obj.attachEvent(evt, funcName); 	} }  function showMenu(evt, obj, show){ 	if(show){ 		obj.style.top = (evt.pageY)?evt.pageY:evt.clientY; 		obj.style.left = (evt.pageX)?evt.pageX:evt.clientX; 		obj.style.display = 'block'; 	}else{ 		obj.style.display = 'none'; 	} }  function keepMenu(evt, obj, show){ 	obj.style.display = 'block'; }  function initEnv(){ 	try{ 		$('MainMenu').innerHTML = parentDebugger.menuStr; 		$('SubMenu').innerHTML = parentDebugger.subMenuStr; 		$('Version').innerHTML = parentDebugger.Version; 	}catch(e){} }  setTimeout(initEnv, 1); </script> </HEAD> <BODY onmousedown='debuggerOnMouseDown(event)' onmouseup='debuggerOnMouseUp(event)' onmousemove='debuggerOnMouseMove(event)' onkeydown='debuggerOnKeyDown(event)' onkeyup='debuggerOnKeyUp(event)' oncontextmenu='debuggerOnContextMenu(event)'> <span onclick='parentDebugger.dopin();' id='debugger_pinBtn'>un/pin</span> <span onclick='parentDebugger.showdebugger(false);' id='debugger_hiddenBtn'>x</span> <table cellpading='0' cellspacing='0' id='layoutTable'><tr><td colspan='2' style='height:16px;'> Debugger(Version:<span id='Version'></span>): </td></tr><tr><td style='height:16px;width:100%;'> <input type='text' id='debuggerInfo' /> </td><td style='height:16px;width:49px;'> <button onclick='clearOutput(event);' id='debugger_clearOutput' >clear</button> </td></tr><tr><td colspan='2'><div id='debuggerClientDiv' onmousedown='debuggerClientDivOnMouseDown(event)'><div id='debugger_contentTopDivContainer'><textarea id='debugger_contentTopText'></textarea></div><div id='DebuggerOutput' oncontextmenu='debuggerOutputOnContextMenu(event)'></div></div></td></tr><tr><td style='height:16px;'> <input type='text' id='debuggerCommand' onkeydown='debuggerCommandOnKeyDown(event)' onkeyup='debuggerCommandOnKeyUp(event)' onmousedown='stopBubble(event)'/> </td><td style='height:16px;width:49px;'> <button onclick='prerunCommand();' id='debugger_runCommand'>run</button> </td></tr></table> <div id='MainMenu' class='MainMenu' oncontextmenu='stopBubble(event)' onmouseover='keepMenu(event, this, true)' onmouseout='showMenu(event, this, false)' onclick='showMenu(event, this, false)'></div> <div id='SubMenu' class='MainMenu' oncontextmenu='stopBubble(event)' onmouseover='keepMenu(event, this, true)' onmouseout='showMenu(event, this, false)' onclick='showMenu(event, this, false)'></div> <script language='javascript' type='text/script'> </script> </BODY></HTML> ",
 	menuStr : '<li>' +
 		'<ul onclick="javascript:parentDebugger.showCurPageSource();"><a>View Page Source</a></ul>' +
 		'<ul onclick="javascript:parentDebugger.inject2IFrame();"><a>Inject to IFrames</a></ul>' +
@@ -328,7 +329,7 @@ var oDebugger = {
 				try{
 					this.showoutput(this._g_EventShow[i] + ':' + this._g_eval('args.' + this._g_EventShow[i]), false);
 				}catch(e){
-					this.showoutput('error occure on deal with: ' + this._g_EventShow[i], false);
+					this.showoutput('Error occure on deal with: ' + this._g_EventShow[i], false);
 					this.showoutput(e, false);
 					this._g_EventShow.splice(i, 1);
 				}
@@ -714,7 +715,7 @@ var oDebugger = {
 	},
 
 	listArrays:function (obj){
-		oDebugger.showoutput('length:' + obj.length , false);
+		oDebugger.showoutput('Length:' + obj.length , false);
 		for(var i = 0; i < obj.length; i++){
 			oDebugger.showoutput('' + i , true, oDebugger.colors.TIP);
 			oDebugger.showoutput(' = ', true);
@@ -778,7 +779,7 @@ var oDebugger = {
 	},
 	watch:function (obj, timerCount){
 		if(this.watch.caller != this.showMode){
-			this.showoutput('watch must be called by: mode watch (something to be watched)', false);
+			this.showoutput('Watch must be called by: mode watch (something to be watched)', false);
 			return true;
 		}
 		if(timerCount && timerCount > 0){
@@ -888,12 +889,16 @@ var oDebugger = {
 		srcwin.document.close();
 		
 	},
-	injectDebugger:function(obj){
+	injectDebugger:function(obj, src){
 		var head = obj.document.getElementsByTagName("head")[0];
 		var js = obj.document.createElement("script");
 		//js.type="text/javascript";
 		js.language="javascript";
-		js.src = "file:///javascriptdebugger/debugger.js";
+		if(arguments.length > 1){
+			js.src = src;
+		}else{
+			js.src = "file:///javascriptdebugger/debugger.js";
+		}
 		head.appendChild(js);alert('inject success!');
 	},
 	inject2IFrame:function(){
@@ -1328,6 +1333,7 @@ var oDebugger = {
 		this.Debugger.style.cursor='move';
 		this.Debugger.style.fontSize='15px';
 		this.DebuggerWin.$('DebuggerOutput').style.overflowY = 'auto';
+		this.DebuggerWin.$('DebuggerOutput').style.height = '375px';
 		if(!this._g_isIE){
 			this.DebuggerWin.$('debuggerClientDiv').style.height = '375px';
 		}
@@ -1499,16 +1505,38 @@ var oDebugger = {
 	//	script.type = 'text/javascript';
 		head.appendChild(script);
 	},
-	loadJs:function (file){
+	loadJs:function (file, args){
+			   debugger;
 		 var scriptTag = document.getElementById('loadScript');
 		 var head = window.document.getElementsByTagName('head').item(0);
 		 if(scriptTag) {
 			head.removeChild(scriptTag);
 		 }
 		 script = document.createElement('script');
+		 this.bindEventListner(script, 'onload', function(evt){try{evt = (evt) ? evt : ((window.event) ? window.event : "");var elem = (evt.target) ? evt.target : evt.srcElement; oDebugger.showoutput(elem.src + 'js have been loaded', false);}catch(e){}});
 		 script.src = ""+file; 
 		 script.type = 'text/javascript';
 		 script.id = 'loadScript';
+		 if(arguments.length > 1){
+			 if(args){
+				 for(var i in args){
+					 var c = '' + i;
+					 c = c.toLowerCase();
+					try{
+						switch(c){
+							case 'charset':
+								script.charset = args[i];
+								this.showoutput('Set charset ' + args[i], false);
+								break;
+							default:
+								break;
+						}
+					}catch(e){
+						this.showoutput(e.description, false, this.colors.ERROR);
+					}
+				 }
+			 }
+		 }
 		 head.appendChild(script);
 	},
 
@@ -1879,7 +1907,12 @@ var oDebugger = {
 			this.DebuggerWin = this.DebuggerPageWin;
 			this.showdebugger(true);
 			this.DebuggerPageWin.$('DebuggerOutput').innerHTML = this.DebuggerPinWin.$('DebuggerOutput').innerHTML;
+			this.DebuggerPageWin.$('DebuggerOutput').style.height= this.DebuggerPinWin.$('DebuggerOutput').style.height;
+			this.DebuggerPageWin.$('debugger_contentTopDivContainer').innerHTML = this.DebuggerPinWin.$('debugger_contentTopDivContainer').innerHTML;
+			this.DebuggerPageWin.$('debugger_contentTopDivContainer').style.display = this.DebuggerPinWin.$('debugger_contentTopDivContainer').style.display;
+			this.DebuggerPageWin.$('debugger_contentTopDivContainer').style.height= this.DebuggerPinWin.$('debugger_contentTopDivContainer').style.height;
 			this.DebuggerPageWin.$('debuggerCommand').value = this.DebuggerPinWin.$('debuggerCommand').value;
+			this.DebuggerPageWin.$('DebuggerOutput').scrollTop = this.DebuggerPinWin.$('DebuggerOutput').scrollTop;
 			this.DebuggerPageWin._commandHistory = this.DebuggerPinWin._commandHistory;
 			this.DebuggerPageWin._commandStore = this.DebuggerPinWin._commandStore;
 			this.DebuggerPageWin._curCommandHistoryIndex = this.DebuggerPinWin._curCommandHistoryIndex;
@@ -1930,7 +1963,12 @@ var oDebugger = {
 		}
 		this.DebuggerPinWin = newWin;
 		this.DebuggerPinWin.$('DebuggerOutput').innerHTML = this.DebuggerPageWin.$('DebuggerOutput').innerHTML;
+		this.DebuggerPinWin.$('DebuggerOutput').style.height = this.DebuggerPageWin.$('DebuggerOutput').style.height;
+		this.DebuggerPinWin.$('debugger_contentTopDivContainer').style.height = this.DebuggerPageWin.$('debugger_contentTopDivContainer').style.height;
+		this.DebuggerPinWin.$('debugger_contentTopDivContainer').style.display = this.DebuggerPageWin.$('debugger_contentTopDivContainer').style.display;
+		this.DebuggerPinWin.$('debugger_contentTopDivContainer').innerHTML = this.DebuggerPageWin.$('debugger_contentTopDivContainer').innerHTML;
 		this.DebuggerPinWin.$('debuggerCommand').value = this.DebuggerPageWin.$('debuggerCommand').value;
+		this.DebuggerPinWin.$('DebuggerOutput').scrollTop = this.DebuggerPageWin.$('DebuggerOutput').scrollTop;
 		this.DebuggerPinWin._commandHistory = this.DebuggerPageWin._commandHistory;
 		this.DebuggerPinWin._commandStore = this.DebuggerPageWin._commandStore;
 		this.DebuggerPinWin._curCommandHistoryIndex = this.DebuggerPageWin._curCommandHistoryIndex;
@@ -2194,7 +2232,7 @@ var oDebugger = {
 				}catch(e){//userCallBack not define
 				}
 				if(otherRes){
-					oDebugger.showoutput('no process func with ' + otherRes + ' type!', false, oDebugger.colors.ERROR);
+					oDebugger.showoutput('No process func with ' + otherRes + ' type!', false, oDebugger.colors.ERROR);
 					return false;
 				}
 				if(res.constructor == Object){
@@ -2277,18 +2315,22 @@ var oDebugger = {
 			return this.jsEncode(args);
 		},
 		testFuncName:function(args){
+			if(!args){
+				this.father.showoutput('Please input a valid argument.', false, this.father.colors.ERROR);
+				return false;
+			}
 			if(!this.father.funcName.test(args)){
-				this.father.showoutput('arguments ' + args + ' looks not like a function name', false, this.father.colors.ERROR);
+				this.father.showoutput('Arguments ' + args + ' looks not like a function name', false, this.father.colors.ERROR);
 				return false;
 			}
 			if(this.father._g_isIE){
 				if(!this.father._g_eval('typeof(' + args + ') == \'function\'')){
-					this.father.showoutput('arguments ' + args + ' looks not like a function', false, this.father.colors.ERROR);
+					this.father.showoutput('Arguments ' + args + ' looks not like a function', false, this.father.colors.ERROR);
 					return false;
 				}
 			}else{
 				if(!window.eval('typeof(' + args + ') == \'function\'')){
-					this.father.showoutput('arguments ' + args + ' looks not like a function', false, this.father.colors.ERROR);
+					this.father.showoutput('Arguments ' + args + ' looks not like a function', false, this.father.colors.ERROR);
 					return false;
 				}
 			}
@@ -2300,7 +2342,7 @@ var oDebugger = {
 			return true;
 		},
 		registereSuccess:function(args){
-			this.father.showoutput('breakpoint setted on function ' + args + ' successfully!', false);
+			this.father.showoutput('Breakpoint setted on function ' + args + ' successfully!', false);
 		},
 		setBreakPoint:function(cmdSource, args){
 			//this.father.showoutput(cmdSource);
@@ -2375,7 +2417,7 @@ var oDebugger = {
 			//'\'\' :\',\');' +
 			'    }' +
 			'    cmd += "this, arguments)";' +
-			'    oDebugger.showoutput("function ' + args[1] +
+			'    oDebugger.showoutput("Function ' + args[1] +
 
 			' was called,arguments:\" + args +\"' +
 
@@ -2427,6 +2469,11 @@ var oDebugger = {
 				this.father.showoutput('ERROR: There\'s no breakpoint.', false, this.father.colors.ERROR);
 				return;
 			}
+
+			if(args >= this.father._g_breakpoints.length){
+				this.father.showoutput('ERROR: Please input a number between 0 to ' + this.father._g_breakpoints.length, false, this.father.color.ERROR);
+				return;
+			}
 			
 			var funcName = this.father._g_breakpoints[args];
 			this.father.showoutput(funcName, false);
@@ -2443,7 +2490,7 @@ var oDebugger = {
 					window.eval(funcName + " = window." + funcName.replace(/\./g, '_') + '_bak');
 				}
 				this.father.showoutput('* ', true, this.father.colors.TIP);
-				return this.father.showoutput('breakpoint on function ' + funcName + ' deleted successfully.', false);
+				return this.father.showoutput('Breakpoint on function ' + funcName + ' deleted successfully.', false);
 			} catch (e) {
 				this.father.showError(e);
 			}
@@ -2505,12 +2552,12 @@ var oDebugger = {
 	showTopContent:function(args){
 		if(args){
 			this.DebuggerWin.$('debugger_contentTopDivContainer').style.display = 'block';
-			if(this._g_isIE){
-				this.DebuggerWin.$('DebuggerOutput').style.height = '50%';
-			}else{
-				this.DebuggerWin.$('DebuggerOutput').style.height = this.DebuggerWin.$('debuggerClientDiv').offsetHeight/2.0;
-				this.DebuggerWin.$('debugger_contentTopDivContainer').style.height = this.DebuggerWin.$('debuggerClientDiv').offsetHeight/2.0;
-			}
+//			if(this._g_isIE){
+//				this.DebuggerWin.$('DebuggerOutput').style.height = '50%';
+//			}else{
+				this.DebuggerWin.$('DebuggerOutput').style.height = this.DebuggerWin.$('debuggerClientDiv').offsetHeight/2.0 + 'px';
+				this.DebuggerWin.$('debugger_contentTopDivContainer').style.height = this.DebuggerWin.$('debuggerClientDiv').offsetHeight/2.0 + 'px';
+//			}
 			if(this._g_specialMode.debug){
 			}
 			if(this._g_specialMode.inject || this._g_specialMode.regex){
@@ -2518,11 +2565,11 @@ var oDebugger = {
 			}
 		}else{
 			this.DebuggerWin.$('debugger_contentTopDivContainer').style.display = 'none';
-			if(this._g_isIE){
-				this.DebuggerWin.$('DebuggerOutput').style.height = '';
-			}else{
-				this.DebuggerWin.$('DebuggerOutput').style.height = '';
-			}
+//			if(this._g_isIE){
+//				this.DebuggerWin.$('DebuggerOutput').style.height = '';
+//			}else{
+				this.DebuggerWin.$('DebuggerOutput').style.height = this.DebuggerWin.$('debuggerClientDiv').offsetHeight + 'px';
+//			}
 		}
 	},
 	injectSth:function(args){
@@ -2554,7 +2601,7 @@ var oDebugger = {
 			tip += 'lines: ' + line;
 		}
 		//alert(tip);
-		this.showoutput(tip, false, this.colors.ERROR);
+		oDebugger.showoutput(tip, false, oDebugger.colors.ERROR);
 	},
 	/*
 	*################################################################################################################################################

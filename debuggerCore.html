@@ -291,6 +291,7 @@ function debuggerCommandOnKeyDown(evt){
 	}catch(e){
 	    return;
 	};
+	parentDebugger._g_eventIsProcessed = false;
 	evt = evt || window.event;
 	var keyCode = evt.keyCode || evt.which;
 	var keycode;
@@ -317,6 +318,7 @@ function debuggerCommandOnKeyDown(evt){
 			case 56: /*8*/
 			case 57: /*9*/
 				$('debuggerCommand').value = _commandHistory[Number(keycode) - 48];
+				parentDebugger._g_eventIsProcessed = true;
 				break;
 			case 38: /*up arrow*/
 				$('debuggerCommand').value = _commandHistory[_curCommandHistoryIndex];
@@ -324,6 +326,7 @@ function debuggerCommandOnKeyDown(evt){
 				if(_curCommandHistoryIndex > (_g_maxCommandHistory - 1)){
 					_curCommandHistoryIndex = 0;
 				}
+				parentDebugger._g_eventIsProcessed = true;
 				break;
 			case 40: /*down arrow*/
 				$('debuggerCommand').value = _commandHistory[_curCommandHistoryIndex];
@@ -331,6 +334,7 @@ function debuggerCommandOnKeyDown(evt){
 				if(_curCommandHistoryIndex < 0){
 					_curCommandHistoryIndex = _g_maxCommandHistory - 1;
 				}
+				parentDebugger._g_eventIsProcessed = true;
 				break;
 			default:
 				break;
@@ -353,6 +357,7 @@ function debuggerCommandOnKeyDown(evt){
 				}else{
 					_commandStore[Number(keycode) - 48] = $('debuggerCommand').value;
 				}
+				parentDebugger._g_eventIsProcessed = true;
 				break;
 			default:
 				break;
@@ -360,16 +365,25 @@ function debuggerCommandOnKeyDown(evt){
 	}
 	if(keycode == '13'){
 		prerunCommand();
+		parentDebugger._g_eventIsProcessed = true;
 	}
-	if(keycode == '27'){setTimeout(function(){$('debuggerCommand').value = \'\';},1);} /*ESC pressed*/
+	if(keycode == '27'){setTimeout(function(){$('debuggerCommand').value = \'\';},1);parentDebugger._g_eventIsProcessed = true;} /*ESC pressed*/
+	if(parentDebugger._g_eventIsProcessed){
+		stopBubble(evt);
+	}
 }
 
 function debuggerCommandOnKeyUp(evt){
+	parentDebugger._g_eventIsProcessed = false;
 	if(parentDebugger._g_isExiting){return;}
 	evt = evt || window.event;
 	var keycode = evt.keyCode || evt.which;
 	if(keycode == 17){	/*ctrl key up*/
 		_curCommandHistoryIndex = 0;
+		parentDebugger._g_eventIsProcessed = true;
+	}
+	if(parentDebugger._g_eventIsProcessed){
+		stopBubble(evt);
 	}
 }
 
